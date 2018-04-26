@@ -1,7 +1,14 @@
 import c from '../src/c';
 
-const m = c.model();
+window.c = c;
 
-window.m = m;
+let modal = c.model({
+	name: "modal",
+	verify: {
+		"a": c.verify.isObject,
+		"a.b": c.verify.isNumber
+	}
+});
 
-console.log(m);
+window.modal = modal;
+

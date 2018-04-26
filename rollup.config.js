@@ -65,6 +65,8 @@ const builder = async function(){
     name: "c",
     // sourcemap: true
   });
+
+  return bundle;
 };
 
 builder();
