@@ -47,7 +47,7 @@ const plugins = [
     ],
   }),
   // 压缩
-  uglify(),
+  uglify.uglify(),
 ];
 
 const inputfile = path.resolve('./')+"/src/c.js";

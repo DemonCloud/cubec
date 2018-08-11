@@ -231,7 +231,7 @@ model.prototype = {
     return this;
   },
 
-  pipe: function(config) {
+  pipe: function(config={}) {
     if (_isObject(config)) {
       let conf = _merge(
         {
