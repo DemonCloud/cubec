@@ -14,9 +14,11 @@ c.struct = struct;
 c.verify = verify;
 
 c.atom = createC(atom);
+c.view = createC(view);
 c.model = createC(model);
 
 c.atom.extend = createExtend(atom);
+c.view.extend = createExtend(view);
 c.model.extend = createExtend(model);
 
 export default Object.freeze(c);

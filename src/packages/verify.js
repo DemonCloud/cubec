@@ -20,6 +20,7 @@ const _toString = struct.convert('string');
 const checker = function(check, type) {
   return function(value, warnStatic) {
     let res = check(value);
+
     return !warnStatic
       ? res ||
           warnning(value, '[ validation -> verify.' + _toString(type) + ' ]')
@@ -28,14 +29,15 @@ const checker = function(check, type) {
 };
 
 const warnning = function(value, message) {
-  console.warn(
-    'The value Of *( ' +
-      value +
-      ' ) with type [ ' +
-      _type(value) +
-      ' ] not pass validate! ' +
-      _toString(message),
-  );
+  // @target warning msg
+  // console.warn(
+  //   'The value Of *( ' +
+  //     value +
+  //     ' ) with type [ ' +
+  //     _type(value) +
+  //     ' ] not pass validate! ' +
+  //     _toString(message),
+  // );
 
   return false;
 };
@@ -47,20 +49,20 @@ const makeC = function(compare) {
 };
 
 const verify = {
-  isRequired: checker(_isNeed, 'required'),
-  isFunc: checker(_isFn, 'function'),
-  isInt: checker(_isInt, 'int'),
-  isArray: checker(_isArray, 'array'),
-  isFloat: checker(_isFloat, 'float'),
-  isString: checker(_isString, 'string'),
-  isObject: checker(_isObject, 'object'),
-  isNumber: checker(_isNumber, 'number'),
-  isArrayLike: checker(_isArrayLike, 'arrayLike'),
-  isPrimitive: checker(_isPrim, 'primitive'),
-  isBool: checker(_isBool, 'boolean'),
-  isModel: checker(makeC(model), 'model'),
-  isView: checker(makeC(view), 'view'),
-  isAtom: checker(makeC(atom), 'atom'),
+  isRequired  : checker(_isNeed, 'required'),
+  isFunc      : checker(_isFn, 'function'),
+  isInt       : checker(_isInt, 'int'),
+  isArray     : checker(_isArray, 'array'),
+  isFloat     : checker(_isFloat, 'float'),
+  isString    : checker(_isString, 'string'),
+  isObject    : checker(_isObject, 'object'),
+  isNumber    : checker(_isNumber, 'number'),
+  isArrayLike : checker(_isArrayLike, 'arrayLike'),
+  isPrimitive : checker(_isPrim, 'primitive'),
+  isBool      : checker(_isBool, 'boolean'),
+  isModel     : checker(makeC(model), 'model'),
+  isView      : checker(makeC(view), 'view'),
+  isAtom      : checker(makeC(atom), 'atom'),
 };
 
 export default verify;

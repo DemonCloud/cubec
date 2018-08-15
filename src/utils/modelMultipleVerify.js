@@ -23,6 +23,7 @@ function modelMutipleVerify(newData, model) {
 
     if (!isRequired(value)) {
       error.push(key[i], value);
+      console.error(`model of key ( ${key[i]} ) except error with model verify, please check your model verify define!`);
       break;
     }
   }
