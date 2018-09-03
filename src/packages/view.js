@@ -135,7 +135,7 @@ function renderSlotComponent(args, slot) {
 }
 
 function completeTemplate(stencil, name, vid) {
-  return `<axt id=${name || vid}>${stencil}</axt>`;
+  return `<ct id="_c-${name || 'v' + vid}">${stencil}</ct>`;
 }
 
 Selector.prototype.render = function(newhtml, view, props, args) {
@@ -192,6 +192,8 @@ const view = function(options = {}) {
       stencil != _noop
         ? function() {
             let args = _slice(arguments);
+
+            if (args[0] instanceof cmodel) args[0] = args[0].get();
 
             z(this.root).render(stencil.apply(this, args), this, props, args);
 
