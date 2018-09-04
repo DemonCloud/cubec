@@ -13,10 +13,12 @@ c.version = "0.0.1";
 c.struct = struct;
 c.verify = verify;
 
+// create module
 c.atom = createC(atom);
 c.view = createC(view);
 c.model = createC(model);
 
+// create Extra option
 c.atom.extend = createExtend(atom);
 c.view.extend = createExtend(view);
 c.model.extend = createExtend(model);

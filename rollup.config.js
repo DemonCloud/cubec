@@ -23,25 +23,23 @@ const plugins = [
   }),
   // babel 打包
   babel({
-    exclude: "node_modules/**", // only transpile our source code,
+    exclude: 'node_modules/**', // only transpile our source code,
     runtimeHelpers: true,
+    externalHelpers: true,
     presets: [
       [
-        "env",
+        '@babel/preset-env',
         {
-          "modules": false
-        }
-      ]
+          // modules: false,
+        },
+      ],
     ],
     plugins: [
-      "external-helpers",
-      "transform-class-properties",
-      ["transform-object-rest-spread", {useBuiltIns: true}],
+      '@babel/external-helpers',
       [
-        "transform-runtime",
+        '@babel/transform-runtime',
         {
-          polyfill: false,
-          regenerator: false,
+          regenerator: false
         },
       ],
     ],
@@ -50,19 +48,19 @@ const plugins = [
   uglify.uglify(),
 ];
 
-const inputfile = path.resolve('./')+"/src/c.js";
-const outputfile = path.resolve('./')+"/dist/c.min.js";
+const inputfile = path.resolve('./') + '/src/c.js';
+const outputfile = path.resolve('./') + '/dist/c.min.js';
 
-const builder = async function(){
+const builder = async function() {
   const bundle = await rollup.rollup({
     input: inputfile,
-    plugins
+    plugins,
   });
 
   await bundle.write({
     file: outputfile,
-    format: "umd",
-    name: "c",
+    format: 'umd',
+    name: 'c',
     // sourcemap: true
   });
 

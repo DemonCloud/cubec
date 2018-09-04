@@ -7,6 +7,15 @@ module.exports = {
   mode: 'development',
   // mode: 'production',
 
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [ 'style-loader', 'css-loader' ]
+      }
+    ]
+  },
+
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'c.webpack.min.js',
@@ -24,5 +33,5 @@ module.exports = {
     port: 9001,
   },
 
-  devtool: 'cheap-source-map',
+  devtool: 'inline-cheap-source-map',
 };

@@ -5,8 +5,9 @@ import cmodel from './model';
 import {z, Selector} from '../utils/viewSelector';
 import slik from '../utils/viewHTMLDiff';
 
-// Ax template engine
 let vid = 0;
+
+// Ax template engine
 const _axt = struct.doom();
 const _axtc = struct.doom('cache');
 const _lock = struct.lock();
@@ -166,7 +167,7 @@ const view = function(options = {}) {
   this._vid = vid++;
   this._updateSlotQueue = [];
 
-  var options = _extend(_clone(VIEW.DEFAULT_OPTION), options || {});
+  options = _extend(_clone(VIEW.DEFAULT_OPTION), options || {});
 
   let props = _lock(_isObj(options.props) ? options.props : {}),
     vroot = options.root,
@@ -174,7 +175,8 @@ const view = function(options = {}) {
     events = options.events,
     name = options.name,
     model = options.model,
-    stencil = options.template;
+    stencil = options.template,
+    isDirectRender = !!options.directRender;
 
   // parse template
   // building the render function
@@ -190,16 +192,28 @@ const view = function(options = {}) {
 
     render =
       stencil != _noop
-        ? function() {
-            let args = _slice(arguments);
+        ? isDirectRender
+          ? function() {
+              // direct Render without virtual node render!
+              let args = _slice(arguments);
 
-            if (args[0] instanceof cmodel) args[0] = args[0].get();
+              if (args[0] instanceof cmodel) args[0] = args[0].get();
 
-            z(this.root).render(stencil.apply(this, args), this, props, args);
+              this.root.innerHTML = stencil.apply(this, args) || '';
 
-            // async render Slot
-            return updateSlotComponent(this, args);
-          }
+              return this;
+            }
+          : function() {
+              // virtual render with patch
+              let args = _slice(arguments);
+
+              if (args[0] instanceof cmodel) args[0] = args[0].get();
+
+              z(this.root).render(stencil.apply(this, args), this, props, args);
+
+              // async render Slot
+              return updateSlotComponent(this, args);
+            }
         : _noop;
   }
 
