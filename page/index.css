@@ -1,0 +1,11 @@
+.main-table{
+  table-layout: fixed;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  font-size: 400;
+}
+
+.main-table tr{
+  border: 1px solid #ccc;
+}
