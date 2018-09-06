@@ -2,7 +2,7 @@ import model from './packages/model';
 import view from './packages/view';
 import atom from './packages/atom';
 import verify from './packages/verify';
-import struct from 'ax-struct-js';
+import struct from './lib/struct';
 
 import createC from './utils/createC';
 import createExtend from './utils/createExtend';

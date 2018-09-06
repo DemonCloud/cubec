@@ -1,7 +1,7 @@
 import ATOM from '../constant/atom.define';
 import ERRORS from '../constant/errors.define';
 
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 import store from './store';
 import {on, off, emit} from '../utils/universalEvent';
 import atomAssertMake from '../utils/atomAssertMake';

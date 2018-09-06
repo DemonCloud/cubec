@@ -1,4 +1,4 @@
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 
 const _isFn = struct.type('function');
 const _on = struct.event('on');

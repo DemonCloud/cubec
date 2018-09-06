@@ -1,4 +1,4 @@
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 import { z } from './viewSelector';
 
 const _set = struct.prop("set");

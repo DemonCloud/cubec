@@ -1,7 +1,7 @@
 import atom from './atom';
 import view from './view';
 import model from './model';
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 
 const _isNeed = struct.type('required');
 const _isFn = struct.type('function');

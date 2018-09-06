@@ -1,7 +1,7 @@
 import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
 
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 import store from './store';
 import registerEvent from '../utils/registerEvent';
 import modelDefined from '../utils/modelDefined';

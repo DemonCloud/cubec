@@ -1,7 +1,6 @@
 import './index.css';
 
 import c from '../src/c';
-import model from '../src/packages/model';
 
 window.c = c;
 
@@ -24,26 +23,58 @@ let modal = c.model({
 
 let xmodal = c.model.extend({
   data: {
-    a: [6, 8, 9, 11, 23],
+    a: [{
+      a: "1",
+      b: "string",
+      c: "pengsihao"
+    },{
+      a: "2",
+      b: "number",
+      c: 21332
+    },{
+      a: "3",
+      b: "boolean",
+      c: "yes"
+    },{
+      a: "4",
+      b: "function",
+      c: "func!"
+    },{
+      a: "5",
+      b: "type",
+      c: "this type"
+    },{
+      a: "6",
+      b: "html",
+      c: '<b>2</b>'
+    },{
+      a: "7",
+      b: "git flow",
+      c: "gitgit"
+    },{
+      a: "8",
+      b: "object",
+      c: "{}"
+    },],
   },
 });
 
 let views = c.view({
   root: document.body,
   name: 'begin',
-  model: modal,
 
-  directRender: true,
+  // directRender: true,
 
   template: `
   <div ref="cba"></div>
   <table ref="abc" class="main-table">
     {{*each [val] in a }}
     <tr>
-      <td>{{#val}}</td>
+      <td>{{#val.a}}</td>
       <td style="color:#188221">
-        <div>{{#val+1}}</div>
+        <div>{{#val.b}}</div>
       </td>
+      <td>{{-val.c}}</td>
     </tr>
     {{*/}}
   </table>
@@ -52,9 +83,9 @@ let views = c.view({
   events: {
     'click:div': function(event) {
       // console.log(event.target);
-      // this.refs.cba.innerHTML = `<b style="font-size: 28px; color: #931">${
-      //   event.target.textContent
-      // }</b>`;
+      this.refs.cba.innerHTML = `<b style="font-size: 28px; color: #931">${
+        event.target.textContent
+      }</b>`;
     },
   },
 });

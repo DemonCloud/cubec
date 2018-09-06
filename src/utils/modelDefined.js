@@ -1,4 +1,4 @@
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 
 const _each = struct.each('object');
 const _define = struct.define();

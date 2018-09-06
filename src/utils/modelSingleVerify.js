@@ -1,4 +1,4 @@
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 import modelMutipleVerify from './modelMultipleVerify';
 
 const _set = struct.prop("set");

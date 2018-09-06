@@ -1,6 +1,6 @@
 import VIEW from '../constant/view.define';
 
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 import cmodel from './model';
 import {z, Selector} from '../utils/viewSelector';
 import slik from '../utils/viewHTMLDiff';

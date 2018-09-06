@@ -1,5 +1,5 @@
 import MODEL from '../constant/model.define';
-import struct from 'ax-struct-js';
+import struct from '../lib/struct';
 
 const _ajax = struct.ajax();
 
