@@ -23,30 +23,11 @@
  * @Document: https://yj1028.me/Ax/v3/#introduce
  */
 
-(function(root,struct,factory,_){
-  _ = factory(struct);
 
-  if(typeof define === 'function' && define.amd)
-  // Ruler by UMD Javascript
-  // support AMD define
-    define('struct',[],function(){ return _; });
-  else if(typeof module === 'object' && module.exports)
-    module.exports = _;
-  else
-  // build on browser global object
-    root.struct = _;
+  function struct(){
+    return self || window || this;
+  }
 
-  // due to [ Webpack ] fucking should return [ Window ]
-}(this, function(root){
-  if(typeof self !== 'undefined') root = self;
-  else root = this || global;
-  return root;
-}, function(struct){
-  'use strict';
-
-  // Strict model
-  // Link to Ax.VERSION
-  // define const
   struct.VERSION = '4.2.6';
 
   // base method
@@ -2598,6 +2579,4 @@
   struct.toString = toString;
   struct.prototype = struct.__proto__ = null;
 
-  return frozen(v8(struct));
-
-}, void 0));
+  export default frozen(v8(struct));

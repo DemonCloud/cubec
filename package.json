@@ -9,7 +9,8 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/plugin-external-helpers": "^7.0.0",
@@ -21,6 +22,7 @@
     "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-commonjs": "^9.1.6",
     "rollup-plugin-node-resolve": "^3.4.0",
+    "rollup-plugin-optimize-js": "^0.0.4",
     "rollup-plugin-uglify": "^5.0.2",
     "style-loader": "^0.23.0",
     "webpack": "^4.17.2",

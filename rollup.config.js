@@ -6,9 +6,14 @@ const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
 const uglify = require('rollup-plugin-uglify');
 const babel = require('rollup-plugin-babel');
+const optimizeJs = require('rollup-plugin-optimize-js')
+
 // const { minify } = require('uglify-es');
 
 const path = require('path');
+const inputfile = path.resolve('./') + '/src/c.js';
+const outputfile = path.resolve('./') + '/dist/c.min.js';
+
 
 // 定义plugin
 const plugins = [
@@ -21,16 +26,17 @@ const plugins = [
     //   'node_modules/_@ali_app-detector@0.3.0@@ali/app-detector/index.js': [ 'isWeex','isWeb' ]
     // }
   }),
+
   // babel 打包
   babel({
-    exclude: 'node_modules/**', // only transpile our source code,
+    exclude: ['node_modules/**','src/lib/**'], // only transpile our source code,
     runtimeHelpers: true,
     externalHelpers: true,
     presets: [
       [
         '@babel/preset-env',
         {
-          // modules: false,
+          modules: false,
         },
       ],
     ],
@@ -46,10 +52,9 @@ const plugins = [
   }),
   // 压缩
   uglify.uglify(),
-];
 
-const inputfile = path.resolve('./') + '/src/c.js';
-const outputfile = path.resolve('./') + '/dist/c.min.js';
+  optimizeJs()
+];
 
 const builder = async function() {
   const bundle = await rollup.rollup({
@@ -59,9 +64,13 @@ const builder = async function() {
 
   await bundle.write({
     file: outputfile,
+    sourcemap: false,
     format: 'umd',
     name: 'c',
-    // sourcemap: true
+    onwarn(warning, warn) {
+      if (warning.code === 'THIS_IS_UNDEFINED') return;
+      warn(warning); // this requires Rollup 0.46
+    }
   });
 
   return bundle;
