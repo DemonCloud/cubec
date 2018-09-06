@@ -35,6 +35,8 @@ const _eq = struct.eq();
 // Model has a written convention that the data stored by the model must be a standard JSON object.
 // This special data format is because the model only cares about the data structure
 // how to store data, how to communicate with the server, and how to persist locally.
+let mid = 0;
+
 const model = function(option = {}) {
   const config = _extend(_clone(MODEL.DEFAULT_OPTION), option);
 
@@ -47,7 +49,7 @@ const model = function(option = {}) {
   const identify_existname = _isString(config.name);
   const identify_usestore =
     _isBool(config.store) && config.store && identify_existname;
-  let identify_lock = this.isLock = !!config.lock;
+  let identify_lock = (this.isLock = !!config.lock);
 
   let ram = [];
   let cdata = config.data || {};
@@ -65,6 +67,8 @@ const model = function(option = {}) {
         const pass = _isFn(todo) ? todo : _cool;
         return v === _identify ? pass(cdata) : {};
       },
+
+      _mid: mid++,
 
       _asl: v => (v === _identify ? this.isLock : null),
 
@@ -231,7 +235,7 @@ model.prototype = {
     return this;
   },
 
-  pipe: function(config={}) {
+  pipe: function(config = {}) {
     if (_isObject(config)) {
       let conf = _merge(
         {

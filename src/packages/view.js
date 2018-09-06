@@ -18,10 +18,12 @@ const _slice = struct.slice();
 const _isFn = struct.type('func');
 const _isStr = struct.type('string');
 const _isNum = struct.type('number');
+const _isArray = struct.type('array');
 const _isObj = struct.type('object');
 const _isElm = struct.type('elm');
 const _isAryL = struct.type('arraylike');
 const _get = struct.prop('get');
+const _size = struct.size();
 const _ayc = struct.ayc();
 const _noop = struct.noop();
 const _link = struct.link();
@@ -82,7 +84,18 @@ function setRender(view, render) {
         return renderFn;
       },
       set: function(newRender) {
-        if (_isFn(newRender)) renderFn = packRender(view, newRender.bind(view));
+        if (_isFn(newRender)) {
+          renderFn = packRender(view, newRender.bind(view));
+
+          if (_size(view._bounderModels)) {
+            // switch connnect event
+            _eachObject(view._bounderModels, model => {
+              model.off('change', view.render);
+              model.on('change', renderFn);
+            });
+          }
+        }
+
         return renderFn;
       },
       enumerable: false,
@@ -165,6 +178,7 @@ Selector.prototype.render = function(newhtml, view, props, args) {
 const view = function(options = {}) {
   this.refs = {};
   this._vid = vid++;
+  this._bounderModels = {};
   this._updateSlotQueue = [];
 
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options || {});
@@ -174,7 +188,12 @@ const view = function(options = {}) {
     render = options.render,
     events = options.events,
     name = options.name,
-    model = options.model,
+    connect = options.connect,
+    models = _isArray(connect)
+      ? connect
+      : connect instanceof cmodel
+        ? [connect]
+        : [],
     stencil = options.template,
     isDirectRender = !!options.directRender;
 
@@ -224,7 +243,7 @@ const view = function(options = {}) {
 
     _eachObject(events, uon, setRender(this, render));
 
-    if (model instanceof cmodel) model.on('change', this.render);
+    this.connect.apply(this, models);
   } else {
     this.mount = function(el) {
       if (checkElm(el)) {
@@ -233,8 +252,7 @@ const view = function(options = {}) {
 
         _eachObject(events, uon, setRender(this, render));
 
-        if (model instanceof cmodel) model.on('change', this.render);
-
+        this.connect.apply(this, models);
         // trigger render
         if (1 in arguments) this.render.apply(this, _slice(arguments, 1));
 
@@ -323,6 +341,42 @@ view.prototype = {
     }
 
     return _emit(this, type, args);
+  },
+
+  connect: function() {
+    let models = _slice(arguments);
+
+    if (models.length) {
+      _eachArray(models, model => {
+        if (model instanceof cmodel && model._mid != null) {
+          if (!this._bounderModels[model._mid]) {
+            this._bounderModels[model._mid] = model;
+
+            model.on('change', this.render);
+          }
+        }
+      });
+    }
+
+    return this;
+  },
+
+  disconnect: function() {
+    let models = _slice(arguments);
+
+    if (models.length) {
+      _eachArray(models, model => {
+        if (model instanceof cmodel && model._mid != null) {
+          if (this._bounderModels[model._mid]) {
+            delete this._bounderModels[model._mid];
+
+            model.off('change', this.render);
+          }
+        }
+      });
+    }
+
+    return this;
   },
 
   destroy: function(withRoot) {

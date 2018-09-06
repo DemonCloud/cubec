@@ -1,12 +1,8 @@
 const ATOM = {
   DEFAULT_OPTION: {
-    use: []
+    use: [],
   },
-  IGNORE_KEYWORDS: [
-    "use",
-    "events",
-    "assert"
-  ]
+  IGNORE_KEYWORDS: ['use', 'events', 'assert'],
 };
 
 export default ATOM;
