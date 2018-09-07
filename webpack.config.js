@@ -18,7 +18,7 @@ module.exports = {
 
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'c.webpack.min.js',
+    filename: 'cubec.webpack.min.js',
   },
 
   plugins: [

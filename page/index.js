@@ -1,6 +1,6 @@
 import './index.css';
 
-import c from '../src/c';
+import c from '../src/cubec';
 
 window.c = c;
 

@@ -11,8 +11,8 @@ const optimizeJs = require('rollup-plugin-optimize-js')
 // const { minify } = require('uglify-es');
 
 const path = require('path');
-const inputfile = path.resolve('./') + '/src/c.js';
-const outputfile = path.resolve('./') + '/dist/c.min.js';
+const inputfile = path.resolve('./') + '/src/cubec.js';
+const outputfile = path.resolve('./') + '/dist/cubec.min.js';
 
 
 // 定义plugin
@@ -66,7 +66,7 @@ const builder = async function() {
     file: outputfile,
     sourcemap: false,
     format: 'umd',
-    name: 'c',
+    name: 'cubec',
     onwarn(warning, warn) {
       if (warning.code === 'THIS_IS_UNDEFINED') return;
       warn(warning); // this requires Rollup 0.46

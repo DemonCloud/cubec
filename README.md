@@ -1,12 +1,6 @@
-# C
+# Cubec
 
-Micro mvc framework
-
-C 是对 Ax的模块化 和 微重构
-
-包括了浏览器升级之后, Chrome不再支持的事件和特性bug的修复
-
-支持程度提升到了IE10 以上. IE9 渐进增强
+Cubec, micro mvc framework
 
 
 # Module
@@ -62,7 +56,7 @@ directRender实质就是模板直出渲染，也就是模板结果直接输出�
 
 # 旧文档
 
-> ax替换成c, 如ax.model()替换成c.model()可用
+> ax替换成cubec, 如ax.model()替换成cubec.model()可用
 
 [Ax项目地址](https://github.com/DemonCloud/Ax)
 
