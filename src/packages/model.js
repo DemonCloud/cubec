@@ -8,6 +8,7 @@ import modelDefined from '../utils/modelDefined';
 import modelMultipleVerify from '../utils/modelMultipleVerify';
 import modelSingleVerify from '../utils/modelSingleVerify';
 import modelPipe from '../utils/modelPipe';
+import modelFetch from '../utils/modelFetch';
 import {on, off, emit} from '../utils/universalEvent';
 
 const _identify = struct.broken;
@@ -20,6 +21,7 @@ const _isArray = struct.type('array');
 const _isPrim = struct.type('prim');
 const _isFn = struct.type('function');
 const _each = struct.each('object');
+const _eachArray = struct.each('array');
 const _cool = struct.cool();
 const _size = struct.size();
 const _get = struct.prop('get');
@@ -28,6 +30,7 @@ const _rm = struct.prop('rm');
 const _merge = struct.merge();
 const _noop = struct.noop();
 const _link = struct.link();
+const _slice = struct.slice();
 const _eq = struct.eq();
 
 // C.Model
@@ -36,6 +39,16 @@ const _eq = struct.eq();
 // This special data format is because the model only cares about the data structure
 // how to store data, how to communicate with the server, and how to persist locally.
 let mid = 0;
+
+function defaultFetcher() {
+  let args = _slice(arguments);
+  let res = {};
+
+  if (args.length > 1) _eachArray(args, data => (res = _merge(res, data)));
+  else res = args[0];
+
+  return res;
+}
 
 const model = function(option = {}) {
   const config = _extend(_clone(MODEL.DEFAULT_OPTION), option);
@@ -235,81 +248,79 @@ model.prototype = {
     return this;
   },
 
-  pipe: function(config = {}) {
-    if (_isObject(config)) {
-      let conf = _merge(
-        {
-          type: 'get',
-          async: true,
-          success: _noop,
-          error: _noop,
-        },
-        config,
-      );
+  toJSON: function() {
+    return JSON.stringify(this.get());
+  },
 
-      return modelPipe.call(
-        this,
-        conf.type,
-        conf.url,
-        conf.param,
-        conf.success,
-        conf.error,
-        conf.header,
-      );
-    }
+  ajax: function(config = {}) {
+    let conf = _merge(
+      {
+        type: 'get',
+        async: true,
+        success: _noop,
+        error: _noop,
+      },
+      config,
+    );
+
+    return modelPipe.call(
+      this,
+      conf.type,
+      conf.url,
+      conf.param,
+      conf.success,
+      conf.error,
+      conf.header,
+    );
+  },
+
+  fetch: function(param, header) {
+    let actions = [];
+    let urls = _isArray(this.url)
+      ? this.url
+      : _isString(this.url)
+        ? [this.url]
+        : [];
+    let params = _isArray(param) ? param : _isObject(param) ? [param] : [];
+    let fetchFilter = this.fetchFilter || defaultFetcher;
+
+    _eachArray(urls, (url, i) => {
+      actions.push(modelFetch.call(this, 'fetch', url, params[i], header));
+    });
+
+    Promise.all(actions)
+      .then(
+        datas => {
+          let source = fetchFilter.apply(this, datas);
+
+          this.set(source);
+          this.emit('fetch:success', [source]);
+        },
+        error => {
+          this.emit('fetch:error', [error]);
+        },
+      )
+      .catch(error => {
+        this.emit('fetch:error', [error]);
+      });
 
     return this;
   },
 
-  send: function(url, header) {
-    if (_isObject(url)) {
-      header = url;
-      url = null;
-    }
-
-    return this.pipe({
-      type: 'send',
-      url: url || this.url,
-      param: this.get(),
-      header: header,
-    });
-  },
-
-  fetch: function(param, byFilter, header) {
-    if (_isFn(param)) {
-      header = byFilter;
-      byFilter = param;
-      param = {};
-    }
-
-    return this.pipe({
-      type: 'fetch',
-      url: this.url,
-      param: this.get(),
-      success: _link(
-        _isFn(byFilter) ? byFilter : JSON.parse,
-        this.set.bind(this),
-      ),
-      header: header,
-    });
-  },
-
   sync: function(url, header) {
-    if (_isObject(url)) {
-      header = url;
-      url = null;
+    if(_isString(url)){
+      return modelPipe.call(
+        this,
+        "post",
+        url,
+        this.get(),
+        ()=>(this.emit("sync:success")),
+        error=>(this.emit("sync:error")),
+        header,
+      );
     }
 
-    return this.pipe({
-      type: 'sync',
-      url: url || this.url,
-      param: this.get(),
-      header: header,
-    });
-  },
-
-  toJSON: function() {
-    return JSON.stringify(this.get());
+    return this;
   },
 };
 

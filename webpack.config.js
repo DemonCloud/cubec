@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const mockApp = require('./mock');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
@@ -31,6 +32,7 @@ module.exports = {
   devServer: {
     compress: true,
     port: 9001,
+    before : mockApp,
   },
 
   devtool: 'inline-cheap-source-map',

@@ -2,23 +2,21 @@ import './index.css';
 
 import c from '../src/cubec';
 
-window.c = c;
+window.cubec= c;
 
 let modal = c.model({
   name: 'modal',
-  data: {
-    a: [],
-  },
-  verify: {
-    a: c.verify.isArray,
-  },
+  url: ['/mock1','/mock2','/mock3'],
 
   events: {
-    'verify:fail': (a, b) => {
-      console.log(a);
-      console.log(b);
+    "fetch:success": function(){
+      console.log("fetch!", this.get())
     },
-  },
+
+    "sync:success": function(){
+      console.log("sync!");
+    }
+  }
 });
 
 let xmodal = c.model.extend({
@@ -62,21 +60,28 @@ let xmodal = c.model.extend({
 let views = c.view({
   root: document.body,
   name: 'begin',
+  connect: modal,
 
   // directRender: true,
 
   template: `
   <div ref="cba"></div>
   <table ref="abc" class="main-table">
-    {{*each [val] in a }}
     <tr>
-      <td>{{#val.a}}</td>
-      <td style="color:#188221">
-        <div>{{#val.b}}</div>
-      </td>
-      <td>{{-val.c}}</td>
+      {{*each [val] in a }}
+      <td>{{#val}}</td>
+      {{*/}}
     </tr>
-    {{*/}}
+    <tr>
+      {{*each [val] in b }}
+      <td style="color:#911"><div>{{#val}}</div></td>
+      {{*/}}
+    </tr>
+    <tr>
+      {{*each [val] in c }}
+      <td>{{#val}}</td>
+      {{*/}}
+    </tr>
   </table>
   `,
 
