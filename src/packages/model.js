@@ -256,7 +256,6 @@ model.prototype = {
     let conf = _merge(
       {
         type: 'get',
-        url: this.url,
         async: true,
         success: _noop,
         error: _noop,
