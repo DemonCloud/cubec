@@ -135,7 +135,7 @@ function renderSlotComponent(args, slot) {
     render = function() {
       if (slotTarget.root) {
         slotTarget.root = slot.root;
-        slotTarget.render(slotData);
+        slotTarget.render.apply(slotTarget, slotData);
       } else {
         slotTarget.mount(slot.root, slotData);
       }
