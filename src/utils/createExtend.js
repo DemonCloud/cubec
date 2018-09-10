@@ -9,6 +9,7 @@ function createExtend(module) {
     };
 
     extender.constructor = module;
+    extender._isExtender = true;
 
     return extender;
   };

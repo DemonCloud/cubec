@@ -125,11 +125,20 @@ function renderSlotComponent(args, slot) {
       : args
     : args;
 
-  if (slotTarget.constructor === view) {
+  if (slotTarget.constructor === view && slotTarget._isExtender) {
     // is extends constructor view
     render = function() {
       let t = slotTarget({root: slot.root});
       t.render.apply(t, slotData);
+    };
+  } else if (slotTarget instanceof view && _isNum(slotTarget._vid)) {
+    render = function() {
+      if (slotTarget.root) {
+        slotTarget.root = slot.root;
+        slotTarget.render(slotData);
+      } else {
+        slotTarget.mount(slot.root, slotData);
+      }
     };
   } else if (_isFn(slotTarget)) {
     render = function() {
