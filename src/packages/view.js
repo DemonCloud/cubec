@@ -72,7 +72,20 @@ function packRender(view, render) {
     m = packMain(view, render),
     c = packComplete(view);
 
-  return _link(b, m, c);
+  let aycrender = function(args) {
+    _ayc(
+      _link(
+        ()=>args,
+        m,
+        c,
+      ),
+    );
+    return view;
+  };
+
+  // return _link(b,m,c);
+
+  return _link(b, aycrender);
 }
 
 function setRender(view, render) {
