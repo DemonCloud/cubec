@@ -247,9 +247,10 @@ const view = function(options = {}) {
   } else {
     this.mount = function(el) {
       if (checkElm(el)) {
-        // bind events
+        // create Root Element
         this.root = vroot = el;
 
+        // bind events
         _eachObject(events, uon, setRender(this, render));
 
         this.connect.apply(this, models);

@@ -19,7 +19,7 @@ const _isBool = struct.type('bool');
 const _isObject = struct.type('object');
 const _isArray = struct.type('array');
 const _isPrim = struct.type('prim');
-const _isFn = struct.type('function');
+const _isFn = struct.type('func');
 const _each = struct.each('object');
 const _eachArray = struct.each('array');
 const _cool = struct.cool();
@@ -309,7 +309,6 @@ model.prototype = {
         .catch(error => {
           console.error(error);
         });
-
     } else if (actions.length > 1) {
       Promise.all(actions)
         .then(
@@ -343,6 +342,26 @@ model.prototype = {
         header,
       );
     }
+
+    return this;
+  },
+
+  merge: function(data) {
+    if (data instanceof model) {
+      data = data.get();
+    }
+
+    if (_isObject(data) && data != null) {
+      this.set(_merge(this.get(), data));
+    }
+
+    return this;
+  },
+
+  transTo: function(md, ft) {
+    let trans = _isFn(ft) ? ft : _cool;
+
+    if (md instanceof model) md.set(trans(this.get()));
 
     return this;
   },

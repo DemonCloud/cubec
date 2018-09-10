@@ -1,6 +1,6 @@
 import struct from '../lib/struct';
 
-const _isFn = struct.type('function');
+const _isFn = struct.type('func');
 const _on = struct.event('on');
 const _off = struct.event('off');
 const _emit = struct.event('emit');

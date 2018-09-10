@@ -9,6 +9,13 @@ let modal = c.model({
   url: ['/mock1', '/mock2', '/mock3'],
   // url: ['/mock4'],
 
+  getAB: function(){
+    return {
+      a: this.get("a"),
+      b: this.get("b")
+    };
+  },
+
   events: {
     "fetch:success": function(source){
       console.log("fetch!", source);

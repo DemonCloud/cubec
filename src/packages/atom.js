@@ -16,7 +16,7 @@ const _has = struct.has();
 const _index = struct.index();
 const _one = struct.index('one');
 const _isNumber = struct.type('number');
-const _isFn = struct.type('function');
+const _isFn = struct.type('func');
 const _isString = struct.type('string');
 const _isArray = struct.type('array');
 const _cool = struct.cool();
@@ -69,7 +69,7 @@ atom.prototype = {
   get: function(name) {
     let res;
 
-    if(name === void 0) res = this.all();
+    if (name === void 0) res = this.all();
     else if (_isString(name)) res = _one(this.all(), atomAssertModel(name));
     else if (_isArray(name) && _size(name)) {
       res = _map(name, n => this.get(n));

@@ -4,7 +4,7 @@ import model from './model';
 import struct from '../lib/struct';
 
 const _isNeed = struct.type('required');
-const _isFn = struct.type('function');
+const _isFn = struct.type('func');
 const _isInt = struct.type('int');
 const _isArray = struct.type('array');
 const _isFloat = struct.type('float');
@@ -49,20 +49,20 @@ const makeC = function(compare) {
 };
 
 const verify = {
-  isRequired  : checker(_isNeed, 'required'),
-  isFunc      : checker(_isFn, 'function'),
-  isInt       : checker(_isInt, 'int'),
-  isArray     : checker(_isArray, 'array'),
-  isFloat     : checker(_isFloat, 'float'),
-  isString    : checker(_isString, 'string'),
-  isObject    : checker(_isObject, 'object'),
-  isNumber    : checker(_isNumber, 'number'),
-  isArrayLike : checker(_isArrayLike, 'arrayLike'),
-  isPrimitive : checker(_isPrim, 'primitive'),
-  isBool      : checker(_isBool, 'boolean'),
-  isModel     : checker(makeC(model), 'model'),
-  isView      : checker(makeC(view), 'view'),
-  isAtom      : checker(makeC(atom), 'atom'),
+  isRequired: checker(_isNeed, 'required'),
+  isFunc: checker(_isFn, 'function'),
+  isInt: checker(_isInt, 'int'),
+  isArray: checker(_isArray, 'array'),
+  isFloat: checker(_isFloat, 'float'),
+  isString: checker(_isString, 'string'),
+  isObject: checker(_isObject, 'object'),
+  isNumber: checker(_isNumber, 'number'),
+  isArrayLike: checker(_isArrayLike, 'arrayLike'),
+  isPrimitive: checker(_isPrim, 'primitive'),
+  isBool: checker(_isBool, 'boolean'),
+  isModel: checker(makeC(model), 'model'),
+  isView: checker(makeC(view), 'view'),
+  isAtom: checker(makeC(atom), 'atom'),
 };
 
 export default verify;
