@@ -137,7 +137,7 @@ function renderSlotComponent(args, slot) {
         slotTarget.root = slot.root;
         slotTarget.render.apply(slotTarget, slotData);
       } else {
-        slotTarget.mount(slot.root, slotData);
+        slotTarget.mount.apply(slotTarget, [slot.root].concat(slotData));
       }
     };
   } else if (_isFn(slotTarget)) {
