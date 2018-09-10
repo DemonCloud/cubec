@@ -6,55 +6,22 @@ window.cubec= c;
 
 let modal = c.model({
   name: 'modal',
-  url: ['/mock1','/mock2','/mock3'],
+  url: ['/mock1', '/mock2', '/mock3'],
+  // url: ['/mock4'],
 
   events: {
-    "fetch:success": function(){
-      console.log("fetch!", this.get())
+    "fetch:success": function(source){
+      console.log("fetch!", source);
+    },
+
+    "fetch:error": function(error){
+      // console.log(error);
     },
 
     "sync:success": function(){
       console.log("sync!");
     }
   }
-});
-
-let xmodal = c.model.extend({
-  data: {
-    a: [{
-      a: "1",
-      b: "string",
-      c: "pengsihao"
-    },{
-      a: "2",
-      b: "number",
-      c: 21332
-    },{
-      a: "3",
-      b: "boolean",
-      c: "yes"
-    },{
-      a: "4",
-      b: "function",
-      c: "func!"
-    },{
-      a: "5",
-      b: "type",
-      c: "this type"
-    },{
-      a: "6",
-      b: "html",
-      c: '<b>2</b>'
-    },{
-      a: "7",
-      b: "git flow",
-      c: "gitgit"
-    },{
-      a: "8",
-      b: "object",
-      c: "{}"
-    },],
-  },
 });
 
 let views = c.view({
@@ -97,4 +64,3 @@ let views = c.view({
 
 window.modal = modal;
 window.views = views;
-window.xmodal = xmodal;

@@ -256,6 +256,7 @@ model.prototype = {
     let conf = _merge(
       {
         type: 'get',
+        url: this.url,
         async: true,
         success: _noop,
         error: _noop,
@@ -281,41 +282,64 @@ model.prototype = {
       : _isString(this.url)
         ? [this.url]
         : [];
+
     let params = _isArray(param) ? param : _isObject(param) ? [param] : [];
+
     let fetchFilter = this.fetchFilter || defaultFetcher;
 
     _eachArray(urls, (url, i) => {
       actions.push(modelFetch.call(this, 'fetch', url, params[i], header));
     });
 
-    Promise.all(actions)
-      .then(
-        datas => {
-          let source = fetchFilter.apply(this, datas);
+    if (actions.length === 1) {
+      let action = actions[0];
 
-          this.set(source);
-          this.emit('fetch:success', [source]);
-        },
-        error => {
-          this.emit('fetch:error', [error]);
-        },
-      )
-      .catch(error => {
-        this.emit('fetch:error', [error]);
-      });
+      action
+        .then(
+          datas => {
+            let source = fetchFilter.call(this, datas);
+            this.emit('fetch:success', [source]);
+            this.set(source);
+          },
+          error => {
+            console.error(error);
+            this.emit('fetch:error', [error]);
+          },
+        )
+        .catch(error => {
+          console.error(error);
+        });
+
+    } else if (actions.length > 1) {
+      Promise.all(actions)
+        .then(
+          datas => {
+            let source = fetchFilter.apply(this, datas);
+            this.emit('fetch:success', [source]);
+            this.set(source);
+          },
+          error => {
+            console.error(error);
+            this.emit('fetch:error', [error]);
+          },
+        )
+        .catch(error => {
+          console.error(error);
+        });
+    }
 
     return this;
   },
 
   sync: function(url, header) {
-    if(_isString(url)){
+    if (_isString(url)) {
       return modelPipe.call(
         this,
-        "post",
+        'post',
         url,
         this.get(),
-        ()=>(this.emit("sync:success")),
-        error=>(this.emit("sync:error")),
+        () => this.emit('sync:success'),
+        error => this.emit('sync:error', error),
         header,
       );
     }

@@ -29,7 +29,12 @@ function modelPipe(type, url, param, fnsucess, fnerror, header) {
   };
 
   st.error = () => {
-    fnerror.apply(this, arguments);
+    try {
+      fnerror.apply(this, arguments);
+    } catch (error) {
+      return this.emit(type + ':error', arguments);
+    }
+
     this.emit(type + ':error', arguments);
   };
 

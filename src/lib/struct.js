@@ -1507,13 +1507,17 @@
     // End wrap res@ String
     // use default paramKey to compline
     res = 'with(__('+(!rname ? '__({},_x_||{})' : '{}')+',_bounds)){ ' + res + '\'; }';
-    res = 'var _t,_d,_ext=struct.exist(),_=struct.html(\'encode\'),__=struct.extend(),_p=\'\'; ' + res + ' return _p;';
+    res = 'var _t,_d,_ext=struct.exist(),_=struct.html(\'encode\'),__=struct.extend(),_p=\'\';  try{ ' + res + ' return _p; }catch(e){ console.error("[cubec view] Template rendering Error!"); console.error("[cubec view] Template exec error rendering data as: ",arguments[2]); throw e }';
 
     // Complete building Function string
     // try to build anmousyous function
     // console.warn(res);
     try{ render = ev('(function(_bounds,struct,'+(rname||'_x_')+(args.length?','+args.toString():'')+'){ '+res+' })');
-    }catch(e){ console.error(e.res = res); throw e; }
+    }catch(e){
+      console.error("[cubec view] Template parser Error!");
+      e.res = res;
+      throw e;
+    }
 
     // @ Precomplete JavaScript Template Function
     // @ the you build once template that use diff Data, not use diff to build function again
