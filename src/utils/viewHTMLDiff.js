@@ -1,5 +1,5 @@
 import struct from '../lib/struct';
-import { z } from './viewSelector';
+import $ from '../lib/jquery';
 
 const _set = struct.prop("set");
 const _isStr = struct.type("string");
@@ -114,12 +114,12 @@ const attrSetter = function(elm, attr, values) {
   } else if (attrName[0] === '*')
     _set(elm, attrName.slice(1), val === 'true' || val === true);
   else if (attrName[0] === '@') elm.setAttribute(attrName.slice(1), val);
-  else if (attrName[0] === ':') z(elm).on(attrName.slice(1), val);
+  else if (attrName[0] === ':') $(elm).on(attrName.slice(1), val);
   else _set(elm, attrName, val);
 };
 
 const attrClear = function(elm, key, val) {
-  if (key[0] === ':' && _isFn(val)) z(elm).off(key.slice(1), val);
+  if (key[0] === ':' && _isFn(val)) $(elm).off(key.slice(1), val);
   else if (elm[key] && !delete elm[key])
     try {
       elm[key] = null;

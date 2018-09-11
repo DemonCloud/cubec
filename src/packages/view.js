@@ -2,7 +2,7 @@ import VIEW from '../constant/view.define';
 
 import struct from '../lib/struct';
 import cmodel from './model';
-import {z, Selector} from '../utils/viewSelector';
+import $ from '../lib/jquery';
 import slik from '../utils/viewHTMLDiff';
 
 let vid = 0;
@@ -73,13 +73,7 @@ function packRender(view, render) {
     c = packComplete(view);
 
   let aycrender = function(args) {
-    _ayc(
-      _link(
-        ()=>args,
-        m,
-        c,
-      ),
-    );
+    _ayc(_link(() => args, m, c));
     return view;
   };
 
@@ -174,28 +168,33 @@ function completeTemplate(stencil, name, vid) {
   return `<ct id="_c-${name || 'v' + vid}">${stencil}</ct>`;
 }
 
-Selector.prototype.render = function(newhtml, view, props, args) {
-  return this.each(function(elm) {
-    let target = slik.createTreeFromHTML(newhtml, props);
+// extend render methods
+$.fn.extend({
+  render(newhtml, view, props, args) {
+    return this.each(function(i, elm) {
+      let target = slik.createTreeFromHTML(newhtml, props);
 
-    if (elm._vid !== view._vid) {
-      elm._destory = () => view.destroy();
+      if (elm._vid !== view._vid) {
+        elm._destory = () => view.destroy();
 
-      return elm.appendChild(
-        slik.createDOMElement((view.axml = target), view).firstElementChild,
-        (elm.innerHTML = ''),
+        return elm.appendChild(
+          slik.createDOMElement((view.axml = target), view).firstElementChild,
+          (elm.innerHTML = ''),
+        );
+      }
+
+      slik.applyPatch(
+        elm,
+        slik.treeDiff(view.axml, target, [], null, null, view),
+        (view.axml = target),
       );
-    }
+      // async render Slot
+      return updateSlotComponent(view, args);
+    });
+  },
+});
 
-    slik.applyPatch(
-      elm,
-      slik.treeDiff(view.axml, target, [], null, null, view),
-      (view.axml = target),
-    );
-    // async render Slot
-    return updateSlotComponent(view, args);
-  });
-};
+// Selector.prototype.render = function(newhtml, view, props, args) {};
 
 const view = function(options = {}) {
   this.refs = {};
@@ -250,7 +249,7 @@ const view = function(options = {}) {
 
               if (args[0] instanceof cmodel) args[0] = args[0].get();
 
-              z(this.root).render(stencil.apply(this, args), this, props, args);
+              $(this.root).render(stencil.apply(this, args), this, props, args);
 
               // async render Slot
               return updateSlotComponent(this, args);
@@ -304,7 +303,9 @@ view.prototype = {
           // DOM Element events
 
           if (param.length > 1) {
-            z(this.root).on(param[0], param[1], fn, this);
+            let tfn = fn.bind(this);
+            tfn._fn = fn;
+            $(this.root).on(param[0], param[1], tfn);
           } else {
             _on(this, mk, fn);
           }
@@ -323,9 +324,11 @@ view.prototype = {
         function(mk) {
           let param = mk.split(':');
 
-          z(this.root).off(param[0], param[1], fn);
-
-          _off(this, mk, fn);
+          if (param.length > 1) {
+            $(this.root).off(param[0], param[1], fn._fn || fn);
+          }else{
+            _off(this, mk, fn);
+          }
         },
         this,
       );
@@ -333,7 +336,7 @@ view.prototype = {
       return this;
     }
 
-    z(this.root).off();
+    $(this.root).off();
 
     return this;
   },
@@ -347,7 +350,7 @@ view.prototype = {
         t.split('|'),
         function(mk) {
           var mkf = mk.split(':');
-          z(this.root)
+          $(this.root)
             .find(mkf[1])
             .trigger(mkf[0], args);
         },
@@ -357,7 +360,7 @@ view.prototype = {
     }
 
     if (k.length > 1) {
-      z(this.root)
+      $(this.root)
         .find(k[1])
         .trigger(k[0], args);
       return this;
@@ -406,9 +409,9 @@ view.prototype = {
     this.root._vid = void 0;
 
     let createDestory = function() {
-      z(this.root)
+      $(this.root)
         .off()
-        [withRoot ? 'remove' : 'html']();
+        .html("");
       this.emit('destroy', delete this.root);
     }.bind(this);
 

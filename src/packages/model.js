@@ -319,7 +319,6 @@ model.prototype = {
             this.set(source);
           },
           error => {
-            console.error(error);
             this.emit('fetch:error', [error]);
           },
         )

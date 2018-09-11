@@ -363,6 +363,8 @@ z.Event = function(type, props) {
 z.xEvent = function(event) {
   let key;
 
+  this._event = event;
+
   for (key in event) this[key] = event[key];
 };
 
