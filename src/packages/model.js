@@ -66,9 +66,11 @@ const model = function(option = {}) {
 
   let ram = [];
 
-  let initlize_data = identify_usestore ? store.get(config.name) || {} : {};
+  let cdata  = config.data || {};
 
-  let cdata = _clone(initlize_data);
+  let initlize_data = identify_usestore ? store.get(config.name) || cdata : cdata;
+
+  cdata = _clone(initlize_data);
 
   _each(
     events,
