@@ -65,10 +65,10 @@ const model = function(option = {}) {
   let identify_lock = (this.isLock = !!config.lock);
 
   let ram = [];
-  let cdata = config.data || {};
-  let initlize_data = identify_usestore
-    ? store.get(config.name) || cdata
-    : cdata;
+
+  let initlize_data = identify_usestore ? store.get(config.name) || {} : {};
+
+  let cdata = _clone(initlize_data);
 
   _each(
     events,
@@ -336,8 +336,8 @@ model.prototype = {
         'post',
         url,
         this.get(),
-        () => this.emit('sync:success'),
-        error => this.emit('sync:error', error),
+        () => this.emit('sync:success', arguments),
+        () => this.emit('sync:error', arguments),
         header,
       );
     }
@@ -357,10 +357,17 @@ model.prototype = {
     return this;
   },
 
-  transTo: function(md, ft) {
+  transTo: function(md, isStatic, ft) {
+    if (_isFn(isStatic)) {
+      ft = isStatic;
+      isStatic = false;
+    }
+
     let trans = _isFn(ft) ? ft : _cool;
 
-    if (md instanceof model) md.set(trans(this.get()));
+    if (md instanceof model) {
+      md.set(trans(this.get()), isStatic);
+    }
 
     return this;
   },
