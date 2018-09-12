@@ -11,6 +11,8 @@ import modelPipe from '../utils/modelPipe';
 import modelFetch from '../utils/modelFetch';
 import {on, off, emit} from '../utils/universalEvent';
 
+let mid = 0;
+
 const _identify = struct.broken;
 const _extend = struct.extend();
 const _clone = struct.clone();
@@ -38,7 +40,6 @@ const _eq = struct.eq();
 // Model has a written convention that the data stored by the model must be a standard JSON object.
 // This special data format is because the model only cares about the data structure
 // how to store data, how to communicate with the server, and how to persist locally.
-let mid = 0;
 
 function defaultFetcher() {
   let args = _slice(arguments);

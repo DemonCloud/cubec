@@ -409,9 +409,7 @@ view.prototype = {
     this.root._vid = void 0;
 
     let createDestory = function() {
-      $(this.root)
-        .off()
-        .html("");
+      $(this.root).detach();
       this.emit('destroy', delete this.root);
     }.bind(this);
 
