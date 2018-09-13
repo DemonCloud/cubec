@@ -291,6 +291,52 @@ const view = function(options = {}) {
     .off('init');
 };
 
+let _iid = 1;
+const ime = {};
+const isFF = navigator.userAgent.indexOf('Firefox') > -1;
+
+function compositionIn(e) {
+  if(e.data && e.data.iid){
+    ime[e.data.iid] = true;
+  }
+}
+
+function compositionOut(e) {
+  if(e.data && e.data.iid){
+    ime[e.data.iid]= false;
+    $(e.target).trigger('input');
+  }
+}
+
+function capCursor(elm) {
+  let pos = 0;
+
+  if (elm.selectionStart != null) pos = elm.selectionStart;
+  // IE Support
+  else if (document.selection) {
+    elm.focus();
+
+    let sel = document.selection.createRange();
+    sel.moveStart('character', -elm.value.length);
+    // The caret position is selection length
+    pos = sel.text.length;
+  }
+
+  return pos;
+}
+
+function setCursor(elm, pos) {
+  if (elm.createTextRange) {
+    let range = elm.createTextRange();
+    range.move('character', pos);
+    return range.select();
+  }
+
+  return elm.selectionStart
+    ? elm.setSelectionRange(pos, pos, elm.focus())
+    : elm.focus();
+}
+
 view.prototype = {
   constructor: view,
 
@@ -300,12 +346,41 @@ view.prototype = {
         _toStr(type).split('|'),
         function(mk) {
           let param = mk.split(':');
-          // DOM Element events
 
+          // DOM Element events
           if (param.length > 1) {
-            let tfn = fn.bind(this);
-            tfn._fn = fn;
-            $(this.root).on(param[0], param[1], tfn);
+            // hack for input
+            if (param[0] === 'input') {
+              let pid = _iid++;
+              let pida = { iid: pid };
+
+              let pfn = function(e){
+
+                if(ime[pid]) return false;
+
+                let pos = capCursor(e.target);
+
+                fn.apply(this, arguments);
+
+                if (pos) setCursor(e.target, pos);
+
+              }.bind(this);
+
+              fn._fn = pfn;
+
+              $(this.root)
+                .on('compositionstart', pida, compositionIn)
+                .on('compositionend', pida, compositionOut)
+                .on(param[0], param[1], pfn);
+
+            } else {
+              let tfn = fn.bind(this);
+
+              fn._fn = tfn;
+
+              $(this.root).on(param[0], param[1], tfn);
+
+            }
           } else {
             _on(this, mk, fn);
           }
@@ -326,7 +401,7 @@ view.prototype = {
 
           if (param.length > 1) {
             $(this.root).off(param[0], param[1], fn._fn || fn);
-          }else{
+          } else {
             _off(this, mk, fn);
           }
         },
