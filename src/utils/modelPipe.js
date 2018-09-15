@@ -11,6 +11,7 @@ function modelPipe(type, url, param, fnsucess, fnerror, header) {
     url: url || this.url || '',
     type: MODEL.EMULATEHTTP[type],
     async: true,
+    emulateJSON: this.emulateJSON,
     param: param || this.ajaxParam || {},
     header: header || this.ajaxHeader || {},
   };
