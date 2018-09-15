@@ -340,6 +340,16 @@ function setCursor(elm, pos) {
 view.prototype = {
   constructor: view,
 
+  inject(root){
+    let r = root || this.root;
+
+    r._vid = view._vid;
+
+    this.axml = slik.createTreeFromHTML(r.innerHTML);
+
+    return this;
+  },
+
   on: function(type, fn) {
     if (_isFn(fn)) {
       _eachArray(
@@ -357,6 +367,8 @@ view.prototype = {
               let pfn = function(e){
 
                 if(ime[pid]) return false;
+
+                e.target.focus && e.target.focus();
 
                 let pos = capCursor(e.target);
 
