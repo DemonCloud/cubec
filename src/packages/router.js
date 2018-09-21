@@ -159,7 +159,7 @@ class Router {
         e.preventDefault();
         e.stopPropagation();
 
-        const elm = e.currentTarget;
+        const elm = e.target;
 
         // click event trigger
         return _this.to(
