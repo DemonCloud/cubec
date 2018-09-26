@@ -67,9 +67,11 @@ const model = function(option = {}) {
 
   let ram = [];
 
-  let cdata  = config.data || {};
+  let cdata = config.data || {};
 
-  let initlize_data = identify_usestore ? store.get(config.name) || cdata : cdata;
+  let initlize_data = identify_usestore
+    ? store.get(config.name) || cdata
+    : cdata;
 
   cdata = _clone(initlize_data);
 
@@ -300,8 +302,11 @@ model.prototype = {
         .then(
           datas => {
             let source = fetchFilter.call(this, datas);
-            this.emit('fetch:success', [source]);
-            this.set(source);
+
+            if (source != null) {
+              this.emit('fetch:success', [source]);
+              this.set(source);
+            }
           },
           error => {
             console.error(error);
@@ -316,8 +321,11 @@ model.prototype = {
         .then(
           datas => {
             let source = fetchFilter.apply(this, datas);
-            this.emit('fetch:success', [source]);
-            this.set(source);
+
+            if (source != null) {
+              this.emit('fetch:success', [source]);
+              this.set(source);
+            }
           },
           error => {
             this.emit('fetch:error', [error]);
