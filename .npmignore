@@ -5,3 +5,9 @@ rollup.config.js
 webpack.config.js
 text.html
 yarn.lock
+src/*
+src
+page
+page/*
+mock
+mock/*
