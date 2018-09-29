@@ -31,7 +31,6 @@ const _set = struct.prop('set');
 const _rm = struct.prop('rm');
 const _merge = struct.merge();
 const _noop = struct.noop();
-const _link = struct.link();
 const _slice = struct.slice();
 const _eq = struct.eq();
 
@@ -41,12 +40,20 @@ const _eq = struct.eq();
 // This special data format is because the model only cares about the data structure
 // how to store data, how to communicate with the server, and how to persist locally.
 
-function defaultFetcher() {
+function defaultParse() {
   let args = _slice(arguments);
   let res = {};
 
-  if (args.length > 1) _eachArray(args, data => (res = _merge(res, data)));
-  else res = args[0];
+  try {
+    if (args.length > 1) _eachArray(args, data => (res = _merge(res, data)));
+    else res = args[0];
+  } catch (error) {
+    console.error(
+      '[cubec model] the fetch data with parse error, please check server response data format with model-{ catch } event!',
+    );
+    this.emit('catch', [error]);
+    return false;
+  }
 
   return res;
 }
@@ -280,6 +287,8 @@ model.prototype = {
   },
 
   fetch: function(param, header) {
+    param = param || this.param;
+
     let actions = [];
     let urls = _isArray(this.url)
       ? this.url
@@ -289,19 +298,17 @@ model.prototype = {
 
     let params = _isArray(param) ? param : _isObject(param) ? [param] : [];
 
-    let fetchFilter = this.fetchFilter || defaultFetcher;
+    let parse = this.parse || defaultParse;
 
     _eachArray(urls, (url, i) => {
       actions.push(modelFetch.call(this, 'fetch', url, params[i], header));
     });
 
     if (actions.length === 1) {
-      let action = actions[0];
-
-      action
+      actions[0]
         .then(
           datas => {
-            let source = fetchFilter.call(this, datas);
+            let source = parse.call(this, datas);
 
             if (source != null) {
               this.emit('fetch:success', [source]);
@@ -309,18 +316,19 @@ model.prototype = {
             }
           },
           error => {
-            console.error(error);
             this.emit('fetch:error', [error]);
+            console.error(error);
           },
         )
         .catch(error => {
+          this.emit('catch', [error]);
           console.error(error);
         });
     } else if (actions.length > 1) {
       Promise.all(actions)
         .then(
           datas => {
-            let source = fetchFilter.apply(this, datas);
+            let source = parse.apply(this, datas);
 
             if (source != null) {
               this.emit('fetch:success', [source]);
@@ -329,9 +337,11 @@ model.prototype = {
           },
           error => {
             this.emit('fetch:error', [error]);
+            console.error(error);
           },
         )
         .catch(error => {
+          this.emit('catch', [error]);
           console.error(error);
         });
     }

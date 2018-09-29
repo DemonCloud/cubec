@@ -14,8 +14,8 @@ function modelFetch(type, url, param, header) {
       type: MODEL.EMULATEHTTP[type],
       async: true,
       emulateJSON: this.emulateJSON,
-      param: param || this.fetchParam || {},
-      header: header || this.fetchHeader || {},
+      param: param || this.param || {},
+      header: header || this.header || {},
     };
 
     st.header['X-HTTP-Method-Override'] = type;

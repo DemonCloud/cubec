@@ -12,8 +12,8 @@ function modelPipe(type, url, param, fnsucess, fnerror, header) {
     type: MODEL.EMULATEHTTP[type],
     async: true,
     emulateJSON: this.emulateJSON,
-    param: param || this.ajaxParam || {},
-    header: header || this.ajaxHeader || {},
+    param: param || this.param || {},
+    header: header || this.header || {},
   };
 
   if (st.type === 'POST' && this.emulateJSON)
@@ -25,7 +25,13 @@ function modelPipe(type, url, param, fnsucess, fnerror, header) {
   // set http header param
   st.success = () => {
     // change the data before dispatch event;
-    fnsucess.apply(this, arguments);
+    try{
+      fnsucess.apply(this, arguments);
+    } catch(error) {
+      console.error(error);
+      return this.emit("catch",[error])
+    }
+
     this.emit(type + ':success', arguments);
   };
 
@@ -33,7 +39,9 @@ function modelPipe(type, url, param, fnsucess, fnerror, header) {
     try {
       fnerror.apply(this, arguments);
     } catch (error) {
-      return this.emit(type + ':error', arguments);
+      console.error(error);
+      return this.emit("catch",[error])
+      // return this.emit(type + ':error', arguments);
     }
 
     this.emit(type + ':error', arguments);

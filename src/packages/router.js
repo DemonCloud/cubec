@@ -136,10 +136,7 @@ const DEFAULT_ROUTER_OPTION = {
 class Router {
   constructor(option = {}) {
     const _this = this;
-    let source = merge(
-      clone(DEFAULT_ROUTER_OPTION),
-      option,
-    );
+    let source = merge(clone(DEFAULT_ROUTER_OPTION), option);
 
     // create Assert method
     this._status = 0;
@@ -159,7 +156,7 @@ class Router {
         e.preventDefault();
         e.stopPropagation();
 
-        const elm = e.target;
+        const elm = e.currentTarget;
 
         // click event trigger
         return _this.to(
@@ -229,10 +226,6 @@ class Router {
   back() {
     H.back();
     return this;
-  }
-
-  length() {
-    return H.length;
   }
 
   go(current) {
