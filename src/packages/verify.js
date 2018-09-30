@@ -14,8 +14,8 @@ const _isNumber = struct.type('number');
 const _isPrim = struct.type('primitive');
 const _isArrayLike = struct.type('arraylike');
 const _isBool = struct.type('boolean');
-const _type = struct.type();
 const _toString = struct.convert('string');
+const _v8 = struct.v8();
 
 const checker = function(check, type) {
   return function(value, warnStatic) {
@@ -65,4 +65,4 @@ const verify = {
   isAtom: checker(makeC(atom), 'atom'),
 };
 
-export default verify;
+export default Object.freeze(_v8(verify));

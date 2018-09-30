@@ -495,12 +495,12 @@ view.prototype = {
   destroy: function(withRoot) {
     this.root._vid = void 0;
 
-    let createDestory = function() {
+    let createDestory = ()=> {
       $(this.root).detach();
       this.emit('destroy', delete this.root);
-    }.bind(this);
+    };
 
-    _ayc(createDestory);
+    return createDestory();
   },
 };
 

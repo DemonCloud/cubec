@@ -3,8 +3,8 @@ import struct from '../lib/struct';
 const _identify = struct.broken;
 const _keys = struct.keys();
 const _get = struct.prop('get');
-const _size = struct.size();
-const _clone = struct.clone();
+const _toString = struct.convert('string');
+const _typec = struct.type();
 
 function modelMutipleVerify(newData, model) {
   if (!model._v) return true;
@@ -23,17 +23,21 @@ function modelMutipleVerify(newData, model) {
 
     if (!isRequired(value)) {
       error.push(key[i], value);
-      console.error(`model of key ( ${key[i]} ) except error with model verify, please check your model verify define!`);
+
+      console.error(
+        `model of key ( ${key[i]} ) except error with model verify => ${_typec(
+          value,
+        ).toUpperCase()} [ ${_toString(value)} ]`,
+      );
       break;
     }
   }
 
-  valid = !_size(error);
+  valid = !error.length;
 
-  model.emit(
-    'verify:' + (valid ? 'success' : 'fail'),
-    valid ? [_clone(newData)] : error,
-  );
+  if (!valid) {
+    model.emit('catch:verify', error);
+  }
 
   return valid;
 }

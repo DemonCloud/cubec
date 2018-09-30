@@ -10,7 +10,8 @@ import createExtend from './utils/createExtend';
 
 const cubec = Object.create(null);
 
-cubec.version = "1.0.0";
+// information
+cubec.version = "1.2.0";
 cubec.struct = struct;
 cubec.verify = verify;
 
