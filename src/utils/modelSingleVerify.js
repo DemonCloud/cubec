@@ -55,6 +55,7 @@ function modelSingleVerify(key, val, model) {
 
   if (!valid) {
     model.emit('catch:verify', error);
+    model.emit(`catch:verify:${parKey}`, error);
   }
 
   return valid;

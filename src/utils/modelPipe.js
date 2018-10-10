@@ -1,10 +1,11 @@
 import MODEL from '../constant/model.define';
 import struct from '../lib/struct';
+import modelLockStatus from './modelLockStatus';
 
 const _ajax = struct.ajax();
 
 function modelPipe(type, url, param, fnsucess, fnerror, header) {
-  if (this.isLock) return this;
+  if (modelLockStatus(this)) return this;
 
   //param must be object typeof
   let st = {

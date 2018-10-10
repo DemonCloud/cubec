@@ -9,6 +9,7 @@ import modelMultipleVerify from '../utils/modelMultipleVerify';
 import modelSingleVerify from '../utils/modelSingleVerify';
 import modelPipe from '../utils/modelPipe';
 import modelFetch from '../utils/modelFetch';
+import modelLockStatus from '../utils/modelLockStatus';
 import {on, off, emit} from '../utils/universalEvent';
 
 let mid = 0;
@@ -95,7 +96,7 @@ const model = function(option = {}) {
 
       _mid: mid++,
 
-      _asl: v => (v === _identify ? this.isLock : null),
+      _asl: v => (v === _identify ? identify_lock : null),
 
       _asv: v => (v === _identify ? verify : {}),
 
@@ -145,7 +146,7 @@ model.prototype = {
   },
 
   set: function(key, val, isStatic) {
-    if (this.isLock) return this;
+    if (modelLockStatus(this)) return this;
 
     let ref;
     let assert = this._ast(_cool, _identify);
@@ -164,7 +165,7 @@ model.prototype = {
           modelMultipleVerify(ref, this)
         ) {
           // create history
-          assertram.push(_clone(assert));
+          if (this.history) assertram.push(_clone(assert));
 
           this._c(ref, _identify, (this.change = true));
 
@@ -175,7 +176,7 @@ model.prototype = {
       } else {
         if (!_eq(_get(assert, key), val) && modelSingleVerify(key, val, this)) {
           // create history
-          assertram.push(_clone(assert));
+          if (this.history) assertram.push(_clone(assert));
 
           _set(assert, key, val, (this.change = true));
 
@@ -202,14 +203,14 @@ model.prototype = {
   },
 
   remove: function(prop, rmStatic) {
-    if (this.isLock) return this;
+    if (modelLockStatus(this)) return this;
 
     var assert = this._ast(_cool, _identify),
       assertram = this._ash(_identify);
 
     if (_isPrim(prop) && prop != null) {
       // create history
-      assertram.push(_clone(assert));
+      if (this.history) assertram.push(_clone(assert));
 
       _rm(assert, prop);
 
@@ -246,7 +247,7 @@ model.prototype = {
   },
 
   back: function(isStatic) {
-    if (this._asl(_identify) === void 0) return this;
+    if (modelLockStatus(this) || !this.history) return this;
 
     let ram = this._ash(_identify),
       source;

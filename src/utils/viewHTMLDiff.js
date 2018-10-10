@@ -392,14 +392,14 @@ const slik = {
   },
 
   createTreeFromHTML: function(html, vprops) {
-    var axroot = {
-      tagName: '__AX_VIEWROOT__',
+    var cubecRoot = {
+      tagName: '__CUBEC_VIEWROOT__',
       isRoot: true,
       child: [],
     };
 
-    var p = axroot,
-      c = axroot.child,
+    var p = cubecRoot,
+      c = cubecRoot.child,
       n;
 
     html.replace(
@@ -427,7 +427,7 @@ const slik = {
       }.bind(this),
     );
 
-    return axroot;
+    return cubecRoot;
   },
 
   createObjElement: function(str, vprops) {

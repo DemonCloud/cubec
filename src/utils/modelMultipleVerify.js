@@ -14,7 +14,7 @@ function modelMutipleVerify(newData, model) {
   let key = _keys(verify);
   let i = 0;
   let s = key.length;
-  let isRequired, value, valid;
+  let isRequired, value, valid, errorKey;
 
   for (; i < s; i++) {
     // get validate funtion
@@ -29,6 +29,9 @@ function modelMutipleVerify(newData, model) {
           value,
         ).toUpperCase()} [ ${_toString(value)} ]`,
       );
+
+      errorKey = key[i];
+
       break;
     }
   }
@@ -37,6 +40,7 @@ function modelMutipleVerify(newData, model) {
 
   if (!valid) {
     model.emit('catch:verify', error);
+    model.emit(`catch:verify:${errorKey}`, error);
   }
 
   return valid;
