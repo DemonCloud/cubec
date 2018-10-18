@@ -24,29 +24,29 @@ function modelPipe(type, url, param, fnsucess, fnerror, header) {
 
   // deal with arguments
   // set http header param
-  st.success = () => {
+  st.success = function(){
     // change the data before dispatch event;
     try{
       fnsucess.apply(this, arguments);
     } catch(error) {
       console.error(error);
-      return this.emit("catch",[error])
+      return this.emit("catch",[error]);
     }
 
     this.emit(type + ':success', arguments);
-  };
+  }.bind(this);
 
-  st.error = () => {
+  st.error = function(){
     try {
       fnerror.apply(this, arguments);
     } catch (error) {
       console.error(error);
-      return this.emit("catch",[error])
+      return this.emit("catch",[error]);
       // return this.emit(type + ':error', arguments);
     }
 
     this.emit(type + ':error', arguments);
-  };
+  }.bind(this);
 
   return this.emit(type, [_ajax(st), st]);
 }

@@ -1,3 +1,6 @@
+import struct from '../lib/struct';
+import view from './view';
+
 // Router use HTML5 History API
 
 // author: YiJun
@@ -29,9 +32,6 @@
 //     article: act_post
 //   }
 // });
-
-import struct from '../lib/struct';
-import view from './view';
 
 const _ = [],
   H = window.history,

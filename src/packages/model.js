@@ -357,8 +357,8 @@ model.prototype = {
         'post',
         url,
         this.get(),
-        () => this.emit('sync:success', arguments),
-        () => this.emit('sync:error', arguments),
+        function(){ this.emit('sync:success', arguments); }.bind(this),
+        function(){ this.emit('sync:error', arguments); }.bind(this),
         header,
       );
     }
@@ -366,13 +366,13 @@ model.prototype = {
     return this;
   },
 
-  merge: function(data) {
+  merge: function(data, isStatic) {
     if (data instanceof model) {
       data = data.get();
     }
 
     if (_isObject(data) && data != null) {
-      this.set(_merge(this.get(), data));
+      this.set(_merge(this.get(), data), isStatic);
     }
 
     return this;
