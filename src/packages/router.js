@@ -69,7 +69,7 @@ function returnT() {
   return true;
 }
 
-function toActive(source, path, query, state, notpush, isLink=true) {
+function toActive(source, path, query, state, notpush, isLink=true, isPopState) {
   let cpath = checkPath(path);
 
   if (!(isLink && !cpath) && this._status) {
@@ -208,6 +208,8 @@ class Router {
           location.search,
           event.state,
           true,
+          false,
+          true
         );
       }.bind(this),
     );
@@ -238,6 +240,7 @@ class Router {
 
   start(path, query, state) {
     if (this._status) return this;
+
     this._status = 1;
 
     if (0 in arguments && path){
