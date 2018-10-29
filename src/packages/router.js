@@ -69,7 +69,7 @@ function returnT() {
   return true;
 }
 
-function toActive(source, path, query, state, notpush, isLink) {
+function toActive(source, path, query, state, notpush, isLink=true) {
   let cpath = checkPath(path);
 
   if (!(isLink && !cpath) && this._status) {
@@ -80,7 +80,7 @@ function toActive(source, path, query, state, notpush, isLink) {
       key = keys(source.mapping),
       route,
       param;
-    state = is(state, 'Object') ? state : {};
+    state = is(state, 'Object') ? state : (isStr(state) ? JSON.parse(state) : {} );
 
     for (i = 0, l = key.length, checker; i < l; i++)
       if ((checker = source.mapping[key[i]]).test(path)) {
@@ -99,9 +99,11 @@ function toActive(source, path, query, state, notpush, isLink) {
 
       query = is(query, 'Object') ? query : qpars(query);
 
-      if (source.beforeActions(param, query, state)) {
+      if (source.beforeActions(path, param, query, state)) {
+        let names = source.routes[route];
+
         each(
-          map(source.routes[route], function(name) {
+          map(names, function(name) {
             // setup funtion call
             return source.actions[name] || noop;
           }),
@@ -117,7 +119,7 @@ function toActive(source, path, query, state, notpush, isLink) {
             path + queryString,
           );
 
-        source.completedActions(param, query, state);
+        source.completedActions(path, param, query, state);
       }
     }
   }
