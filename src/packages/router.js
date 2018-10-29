@@ -239,7 +239,15 @@ class Router {
   start(path, query, state) {
     if (this._status) return this;
     this._status = 1;
-    if (0 in arguments && path) this.to(path, query, state);
+
+    if (0 in arguments && path){
+      if(path === location.pathname){
+        this.resolve();
+      }else{
+        this.to(path, query, state);
+      }
+    }
+
     return this;
   }
 
