@@ -1514,7 +1514,7 @@
     // console.warn(res);
     try{ render = ev('(function(_bounds,struct,'+(rname||'_x_')+(args.length?','+args.toString():'')+'){ '+res+' })');
     }catch(e){
-      console.error("[cubec view] Template parser Error!");
+      console.error("[cubec view] Template parser Error!", { template : res });
       e.res = res;
       throw e;
     }
@@ -1705,7 +1705,7 @@
           try{
             result = config.emulateJSON ? JSON.parse(xhr.responseText) : xhr.responseText;
           }catch(e){
-            return config.error.call(root,xhr,e,"json parser error")
+            return config.error.call(root,xhr.responseText,xhr,event);
           }
 
           config.success.call(root,result,xhr,event);
@@ -1717,7 +1717,15 @@
             ls.setItem('_',JSON.stringify(cache));
           }
         } else {
-          config.error.call(root,xhr,event);
+          var errData = {};
+
+          try{
+            errData = JSON.parse(xhr.response);
+          }catch(e){
+            console.error(e);
+          }
+
+          config.error.call(root,errData,xhr,event);
         }
       }
     };

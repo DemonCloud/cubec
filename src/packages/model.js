@@ -354,11 +354,11 @@ model.prototype = {
     if (_isString(url)) {
       return modelPipe.call(
         this,
-        'post',
+        'sync',
         url,
         this.get(),
-        function(){ this.emit('sync:success', arguments); }.bind(this),
-        function(){ this.emit('sync:error', arguments); }.bind(this),
+        _noop,
+        _noop,
         header,
       );
     }
