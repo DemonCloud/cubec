@@ -11,7 +11,7 @@
  *  Chrome 30+
  *  FireFox 4+
  *  IE 9+
- *  Android 4+
+ *  Android 4.4+
  *  Safari 5+
  *
  * Server Version With

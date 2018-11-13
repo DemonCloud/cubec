@@ -15,16 +15,20 @@
     "url": "git+https://github.com/DemonCloud/cubec.git"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.2",
+    "@babel/core": "^7.1.5",
     "@babel/plugin-external-helpers": "^7.0.0",
     "@babel/plugin-transform-runtime": "^7.1.0",
-    "@babel/preset-env": "^7.1.0",
-    "@babel/runtime": "^7.1.2",
+    "@babel/preset-env": "^7.1.5",
+    "@babel/runtime": "^7.1.5",
     "body-parser": "^1.18.3",
-    "css-loader": "^1.0.0",
+    "css-loader": "^1.0.1",
+    "dot": "^1.1.2",
+    "handlebars": "^4.0.12",
     "html-webpack-plugin": "^3.2.0",
     "mockjs": "^1.0.1-beta3",
     "multer": "^1.4.1",
+    "mustache": "^3.0.1",
+    "pug": "^2.0.3",
     "rollup": "^0.65.2",
     "rollup-plugin-babel": "^4.0.3",
     "rollup-plugin-commonjs": "^9.2.0",
@@ -32,7 +36,7 @@
     "rollup-plugin-optimize-js": "^0.0.4",
     "rollup-plugin-uglify": "^5.0.2",
     "style-loader": "^0.23.1",
-    "webpack": "^4.23.1",
+    "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10"
   }

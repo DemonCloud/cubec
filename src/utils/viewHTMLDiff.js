@@ -123,9 +123,7 @@ const attrClear = function(elm, key, val) {
   else if (elm[key] && !delete elm[key])
     try {
       elm[key] = null;
-    } catch (e) {
-      /**/
-    }
+    } catch (e) { }
   else elm.removeAttribute(key);
 };
 
