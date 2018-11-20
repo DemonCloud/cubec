@@ -311,7 +311,7 @@ model.prototype = {
           datas => {
             let source = parse.call(this, datas);
 
-            if (source != null) {
+            if (source) {
               this.emit('fetch:success', [source]);
               this.set(source);
             }
