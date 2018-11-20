@@ -156,7 +156,6 @@ class Router {
     ) {
       delegatorEvents[events] = function(e) {
         e.preventDefault();
-        e.stopPropagation();
 
         const elm = e.currentTarget;
 
