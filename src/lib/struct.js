@@ -2227,8 +2227,11 @@
     return decodeURIComponent(escape(atob(toString(input).replace(/\s/g,''))));
   }
 
-  function ayc(fn,time){
-    return setTimeout(fn,toNumber(time));
+  function ayc(fn){
+    if(window.Promise){
+      return window.Promise.resolve().then(fn);
+    }
+    return setTimeout(fn,0);
   }
 
   function cyc(st){
