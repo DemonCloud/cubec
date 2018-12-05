@@ -12,6 +12,7 @@ const _eachObject = struct.each("object");
 const _map = struct.map();
 const _noop = struct.noop();
 const _eq = struct.eq();
+const _v8 = struct.v8();
 
 // attr list mapping
 const attrList = {
@@ -499,4 +500,4 @@ const slik = {
   }
 };
 
-export default slik;
+export default Object.freeze(_v8(slik));

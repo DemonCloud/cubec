@@ -1,9 +1,9 @@
+import struct from './lib/struct';
 import model from './packages/model';
 import view from './packages/view';
 import atom from './packages/atom';
 import router from './packages/router';
 import verify from './packages/verify';
-import struct from './lib/struct';
 
 import createC from './utils/createC';
 import createExtend from './utils/createExtend';
@@ -11,7 +11,9 @@ import createExtend from './utils/createExtend';
 const cubec = Object.create(null);
 
 // information
-cubec.version = "1.2.0";
+cubec.version = "1.3.0";
+
+// utils
 cubec.struct = struct;
 cubec.verify = verify;
 

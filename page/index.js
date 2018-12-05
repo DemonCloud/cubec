@@ -1,6 +1,8 @@
 import "./index.css";
 import cubec from '../dist/cubec.min';
 
+window.cubec = cubec;
+
 const view = cubec.view({
   root: document.body,
 
