@@ -1,13 +1,15 @@
 import VIEW from '../constant/view.define';
 
 import struct from '../lib/struct';
+import catom from './atom';
 import cmodel from './model';
 import $ from '../lib/jquery';
 import slik from '../utils/viewHTMLDiff';
+import {on, off, emit} from '../utils/universalEvent';
 
 let vid = 0;
 
-// Ax template engine
+// cubec Template engine
 const _axt = struct.doom();
 const _axtc = struct.doom('cache');
 const _lock = struct.lock();
@@ -94,9 +96,9 @@ function setRender(view, render) {
         if (_isFn(newRender)) {
           renderFn = packRender(view, newRender.bind(view));
 
-          if (_size(view._bounderModels)) {
+          if (_size(view._bounder)) {
             // switch connnect event
-            _eachObject(view._bounderModels, model => {
+            _eachObject(view._bounder, model => {
               model.off('change', view.render);
               model.on('change', renderFn);
             });
@@ -199,7 +201,7 @@ $.fn.extend({
 const view = function(options = {}) {
   this.refs = {};
   this._vid = vid++;
-  this._bounderModels = {};
+  this._bounder = {};
   this._updateSlotQueue = [];
 
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options || {});
@@ -212,7 +214,7 @@ const view = function(options = {}) {
     connect = options.connect,
     models = _isArray(connect)
       ? connect
-      : connect instanceof cmodel
+      : (connect instanceof cmodel || connect instanceof catom)
         ? [connect]
         : [],
     stencil = options.template,
@@ -457,15 +459,21 @@ view.prototype = {
   },
 
   connect: function() {
-    let models = _slice(arguments);
+    let items;
 
-    if (models.length) {
-      _eachArray(models, model => {
-        if (model instanceof cmodel && model._mid != null) {
-          if (!this._bounderModels[model._mid]) {
-            this._bounderModels[model._mid] = model;
+    if(_isAryL(arguments[0])){
+      items = arguments[0];
+    }else{
+      items = _slice(arguments);
+    }
 
-            model.on('change', this.render);
+    if (items.length) {
+      _eachArray(items, item => {
+        if ((item instanceof cmodel || item instanceof catom) && item._mid != null) {
+          if (!this._bounder[item._mid]) {
+            this._bounder[item._mid] = item;
+
+            on.call(item, 'change', this.render);
           }
         }
       });
@@ -475,15 +483,21 @@ view.prototype = {
   },
 
   disconnect: function() {
-    let models = _slice(arguments);
+    let items;
 
-    if (models.length) {
-      _eachArray(models, model => {
-        if (model instanceof cmodel && model._mid != null) {
-          if (this._bounderModels[model._mid]) {
-            delete this._bounderModels[model._mid];
+    if(_isAryL(arguments[0])){
+      items = arguments[0];
+    }else{
+      items = _slice(arguments);
+    }
 
-            model.off('change', this.render);
+    if (items.length) {
+      _eachArray(items, item => {
+        if ((item instanceof cmodel || item instanceof catom) && item._mid != null ) {
+          if (this._bounder[item._mid]) {
+            delete this._bounder[item._mid];
+
+            off.call(item, 'change', this.render);
           }
         }
       });
@@ -493,6 +507,8 @@ view.prototype = {
   },
 
   destroy: function(withRoot) {
+    this.emit('beforeDestory');
+
     this.root._vid = void 0;
 
     let createDestory = ()=>{

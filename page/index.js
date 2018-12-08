@@ -1,44 +1,39 @@
 import "./index.css";
-import cubec from '../dist/cubec.min';
+import cubec from '../src/cubec';
 
 window.cubec = cubec;
 
-const view = cubec.view({
-  root: document.body,
+var model1 = cubec.model({ name:"m1", data: {a:1} });
+var model2 = cubec.model({ name:"m2", data: {b:2} });
+var model3 = cubec.model({ name:"m3", data: {c:3} });
+var model4 = cubec.model({
+  data: {
+    modify: [{ a:1, b: 2, c: 3}, { a: 2, c:4, d: 3}, { c: 2}],
+    chunk: { a:3, b:2, c:[{a:4},{b:2,a:5},{c:4},{b:4}], d:{ b: 6, a:7 } },
+    a:6,
+    b:1
+  }
+});
 
+var atom = cubec.atom({
+  use: [model1, model2, model3],
+
+  connect: true,
+});
+
+var view = cubec.view({
+  root: document.body,
+  connect: atom,
   template: `
-  <table>
-    <thead>
-      <th>Template Engine</th>
-      <th>Compile time(ms)</th>
-      <th>Render time(ms)</th>
-      <th>Support cache</th>
-      <th>Built-in method</th>
-      <th>Virtual DOM</th>
-      <th>Refs</th>
-    </thead>
-    <tbody>
-      {{*each [item] in data}}
-      <tr>
-        <td @data-report-click="213">{{#item.name}}</td>
-        <td>{{#item.ct}}</td>
-        <td>{{#item.rt}}</td>
-        <td><input type="checkbox" {{#item.ca ? "checked" : ""}}></td>
-        <td><input type="checkbox" {{#item.bt ? "checked" : ""}}></td>
-        <td><input type="checkbox" {{#item.vd ? "checked" : ""}}></td>
-        <td><input type="checkbox" {{#item.re ? "checked" : ""}}></td>
-      </tr>
-      {{*/each}}
-    </tbody>
-  </table>
+  <div>m1: {{#JSON.stringify(m1)}}</div>
+  <div>m2: {{#JSON.stringify(m2)}}</div>
+  <div>m3: {{#JSON.stringify(m3)}}</div>
   `
 });
 
-const data = [
- { name: "cubec", ct: 0.1, rt: 0.2, ca:true, bt: true, vd: true, re: true },
- { name: "handlebars", ct: 1.1, rt: 12.1, ca:true, bt: true, vd: false, re: false },
- { name: "mustache", ct: 0.92, rt: 1.9, ca:true, bt: true, vd: false, re: false },
- { name: "jTemplate", ct: 0.87, rt: 18.1, ca:false, bt: false, vd: false, re: false },
-];
-
-view.render({ data });
+window.model1 = model1;
+window.model2 = model2;
+window.model3 = model3;
+window.model4 = model4;
+window.atom = atom;
+window.view = view;

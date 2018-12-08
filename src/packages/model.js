@@ -10,6 +10,8 @@ import modelSingleVerify from '../utils/modelSingleVerify';
 import modelPipe from '../utils/modelPipe';
 import modelFetch from '../utils/modelFetch';
 import modelLockStatus from '../utils/modelLockStatus';
+import modelSeek from '../utils/modelSeek';
+import modelCombined from '../utils/modelCombined';
 import {on, off, emit} from '../utils/universalEvent';
 
 let mid = 0;
@@ -331,7 +333,7 @@ model.prototype = {
           datas => {
             let source = parse.apply(this, datas);
 
-            if (source != null) {
+            if (source) {
               this.emit('fetch:success', [source]);
               this.set(source);
             }
@@ -392,6 +394,23 @@ model.prototype = {
 
     return this;
   },
+
+  seek: function(keys, needCombined){
+
+    if(keys){
+
+      if(_isString(keys)){
+        keys = [keys];
+      }
+
+      if(_isArray(keys)){
+        const resource = modelSeek(this.get(),keys);
+        return needCombined ? modelCombined(resource) : resource;
+      }
+    }
+
+    return {};
+  }
 };
 
 export default model;
