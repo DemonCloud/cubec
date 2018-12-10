@@ -1884,10 +1884,13 @@
   }
 
   function fireEvent(obj,type,args){
+    var res = [];
     var id = obj._eid || 0; args = args||[];
 
     if(id && _events[id] && type!=='')
-      ol(_events[id][type],function(f){ f.apply(this,args); },obj);
+      ol(_events[id][type],function(f){ res.push(f.apply(this,args)); },obj);
+    
+    return res;
   }
 
   function emit(obj,type,args){
@@ -2501,6 +2504,7 @@
       keys      : keys,
       noop      : noop,
       clone     : clone,
+      fireEvent : fireEvent,
       cloneDeep : clonedeep,
       depclone  : clonedeep,
       not       : not,

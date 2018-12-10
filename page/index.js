@@ -28,7 +28,10 @@ var view = cubec.view({
   <div>m1: {{#JSON.stringify(m1)}}</div>
   <div>m2: {{#JSON.stringify(m2)}}</div>
   <div>m3: {{#JSON.stringify(m3)}}</div>
-  `
+  `,
+
+  events: {
+  }
 });
 
 window.model1 = model1;

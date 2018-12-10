@@ -5,7 +5,7 @@ import catom from './atom';
 import cmodel from './model';
 import $ from '../lib/jquery';
 import slik from '../utils/viewHTMLDiff';
-import {on, off, emit} from '../utils/universalEvent';
+import {on, off} from '../utils/universalEvent';
 
 let vid = 0;
 
@@ -14,6 +14,7 @@ const _axt = struct.doom();
 const _axtc = struct.doom('cache');
 const _lock = struct.lock();
 const _extend = struct.extend();
+const _some = struct.some();
 const _eachArray = struct.each('array');
 const _eachObject = struct.each('object');
 const _slice = struct.slice();
@@ -35,6 +36,7 @@ const _toStr = struct.convert('string');
 const _on = struct.event('on');
 const _off = struct.event('off');
 const _emit = struct.event('emit');
+const _fireEvent = struct.fireEvent();
 
 function uon(fn, type) {
   return this.on(type, fn);
@@ -48,9 +50,18 @@ function checkElm(el) {
   return true;
 }
 
+function isUnAllowedRender(val){
+   return !val;
+}
+
 function packBefore(view) {
   return function() {
-    view.emit('beforeRender', arguments);
+    let res = _fireEvent(view, 'beforeRender', arguments);
+
+    if(res && res.length && _some(res, isUnAllowedRender)){
+      return false;
+    }
+
     return arguments;
   };
 }
@@ -75,7 +86,11 @@ function packRender(view, render) {
     c = packComplete(view);
 
   let aycrender = function(args) {
-    _ayc(_link(() => args, m, c));
+    if(args){
+      // run complete render
+      _ayc(_link(() => args, m, c));
+    }
+
     return view;
   };
 
@@ -236,7 +251,7 @@ const view = function(options = {}) {
       stencil != _noop
         ? isDirectRender
           ? function() {
-              // direct Render without virtual node render!
+              // directRender without virtual node render!
               let args = _slice(arguments);
 
               if (args[0] instanceof cmodel) args[0] = args[0].get();
@@ -295,7 +310,6 @@ const view = function(options = {}) {
 
 let _iid = 1;
 const ime = {};
-const isFF = navigator.userAgent.indexOf('Firefox') > -1;
 
 function compositionIn(e) {
   if(e.data && e.data.iid){
