@@ -283,6 +283,12 @@ const view = function(options = {}) {
 
     this.connect.apply(this, models);
   } else {
+    // spec with "init" event
+    if(events && events.init){
+      this.on("init", events.init);
+      delete events.init;
+    }
+
     this.mount = function(el) {
       if (checkElm(el)) {
         // create Root Element
@@ -297,9 +303,11 @@ const view = function(options = {}) {
 
         // delete mount
         delete this.mount;
-
-        return this;
+      } else {
+        console.error("mount position is not a pure HTMLElement or Node");
       }
+
+      return this;
     };
   }
 
@@ -521,7 +529,7 @@ view.prototype = {
   },
 
   destroy: function(withRoot) {
-    this.emit('beforeDestory');
+    this.emit('beforeDestroy');
 
     this.root._vid = void 0;
 

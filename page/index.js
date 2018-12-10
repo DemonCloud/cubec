@@ -25,12 +25,15 @@ var view = cubec.view({
   root: document.body,
   connect: atom,
   template: `
-  <div>m1: {{#JSON.stringify(m1)}}</div>
-  <div>m2: {{#JSON.stringify(m2)}}</div>
-  <div>m3: {{#JSON.stringify(m3)}}</div>
+    <div>m1: {{#JSON.stringify(m1)}}</div>
+    <div>m2: {{#JSON.stringify(m2)}}</div>
+    <div>m3: {{#JSON.stringify(m3)}}</div>
   `,
 
   events: {
+    init(){
+      console.log("init View");
+    }
   }
 });
 

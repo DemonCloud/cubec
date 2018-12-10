@@ -31,7 +31,7 @@ module.exports = {
 
   devServer: {
     compress: true,
-    port: 9002,
+    port: 9006,
     before : mockApp,
   },
 
