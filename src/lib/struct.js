@@ -1364,7 +1364,8 @@
 
       else if(
         (elseifpart === 'elseif' ||
-      elseifpart === 'elseif(')
+      elseifpart === 'elseif(' ||
+      elseifpart === 'esle if')
       )
         evaluatec = '}else if(' + parserEval.slice(6) + '){';
 
@@ -1507,7 +1508,7 @@
     // End wrap res@ String
     // use default paramKey to compline
     res = 'with(__('+(!rname ? '__({},_x_||{})' : '{}')+',_bounds)){ ' + res + '\'; }';
-    res = 'var _t,_d,_ext=struct.exist(),_=struct.html(\'encode\'),__=struct.extend(),_p=\'\';  try{ ' + res + ' return _p; }catch(e){ console.error("[cubec view] Template rendering Error!"); console.error("[cubec view] Template exec error rendering data as: ",arguments[2]); throw e }';
+    res = 'var _t,_d,_ext=struct.exist(),_=struct.html("encode"),__=struct.extend(),_p=\'\'; ' + res + ' return _p;';
 
     // Complete building Function string
     // try to build anmousyous function

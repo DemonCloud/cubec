@@ -10,6 +10,7 @@ import {on, off} from '../utils/universalEvent';
 let vid = 0;
 
 // cubec Template engine
+const _idt = struct.broken;
 const _axt = struct.doom();
 const _axtc = struct.doom('cache');
 const _lock = struct.lock();
@@ -36,6 +37,7 @@ const _toStr = struct.convert('string');
 const _on = struct.event('on');
 const _off = struct.event('off');
 const _emit = struct.event('emit');
+const _hasEvent = struct.event('has');
 const _fireEvent = struct.fireEvent();
 
 function uon(fn, type) {
@@ -68,15 +70,18 @@ function packBefore(view) {
 
 function packMain(view, renderFunc) {
   return function(args) {
-    renderFunc.apply(view, args);
-    return args;
+    return renderFunc.apply(view, args);
   };
 }
 
 function packComplete(view) {
   return function(args) {
-    view.root._vid = view._vid;
-    return view.emit('completeRender', args);
+    if(args !== _idt){
+      view.root._vid = view._vid;
+      return view.emit('completeRender', args);
+    }
+
+    return view.emit('catch');
   };
 }
 
@@ -99,6 +104,18 @@ function packRender(view, render) {
   return _link(b, aycrender);
 }
 
+function compactRender(view,render){
+  return function(){
+    try{
+      return render.apply(view, arguments);
+    }catch(e){
+      console.error("view {custom} render static throw error with using illegality arguments", arguments);
+      if (!_hasEvent(view, "catch")) throw e;
+      return _idt;
+    }
+  };
+}
+
 function setRender(view, render) {
   if (_isFn(render)) {
     let renderFn = packRender(view, render.bind(view));
@@ -109,13 +126,14 @@ function setRender(view, render) {
       },
       set: function(newRender) {
         if (_isFn(newRender)) {
-          renderFn = packRender(view, newRender.bind(view));
+          let prevFn = view.render;
+          renderFn = packRender(view, compactRender(view, newRender.bind(view)));
 
           if (_size(view._bounder)) {
             // switch connnect event
-            _eachObject(view._bounder, model => {
-              model.off('change', view.render);
-              model.on('change', renderFn);
+            _eachObject(view._bounder, item => {
+              off.call(item, 'change', prevFn);
+              on.call(item, 'change', renderFn);
             });
           }
         }
@@ -191,7 +209,7 @@ $.fn.extend({
     return this.each(function(i, elm) {
       let target = slik.createTreeFromHTML(newhtml, props);
 
-      if (elm._vid !== view._vid) {
+      if (elm._vid !== view._vid || !view.axml) {
         elm._destory = () => view.destroy();
 
         return elm.appendChild(
@@ -232,8 +250,7 @@ const view = function(options = {}) {
       : (connect instanceof cmodel || connect instanceof catom)
         ? [connect]
         : [],
-    stencil = options.template,
-    isDirectRender = !!options.directRender;
+    stencil = options.template;
 
   // parse template
   // building the render function
@@ -248,30 +265,30 @@ const view = function(options = {}) {
         : _noop;
 
     render =
-      stencil != _noop
-        ? isDirectRender
-          ? function() {
+      stencil != _noop ?
+          function() {
               // directRender without virtual node render!
-              let args = _slice(arguments);
+              try{
+                let args = _slice(arguments);
 
-              if (args[0] instanceof cmodel) args[0] = args[0].get();
+                if (args[0] instanceof cmodel) args[0] = args[0].get();
 
-              this.root.innerHTML = stencil.apply(this, args) || '';
+                if(this.directRender){
+                  this.axml = null;
+                  this.root.innerHTML = stencil.apply(this, args) || '';
+                }else{
+                  $(this.root).render(stencil.apply(this, args), this, props, args);
+                }
 
-              return this;
-            }
-          : function() {
-              // virtual render with patch
-              let args = _slice(arguments);
-
-              if (args[0] instanceof cmodel) args[0] = args[0].get();
-
-              $(this.root).render(stencil.apply(this, args), this, props, args);
-
-              // async render Slot
-              return updateSlotComponent(this, args);
-            }
-        : _noop;
+                return arguments;
+              }catch(e){
+                console.error("view render static throw error with using illegality arguments", arguments);
+                if(!_hasEvent(this,"catch")) throw e;
+                return _idt;
+              }
+          } : _noop;
+  }else{
+    render=compactRender(this,render);
   }
 
   // if userobj has more events

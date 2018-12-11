@@ -22,7 +22,6 @@ var atom = cubec.atom({
 });
 
 var view = cubec.view({
-  root: document.body,
   connect: atom,
   template: `
     <div>m1: {{#JSON.stringify(m1)}}</div>
@@ -33,6 +32,15 @@ var view = cubec.view({
   events: {
     init(){
       console.log("init View");
+    },
+
+    completeRender(){
+      console.log("completeRender");
+    },
+
+    catch(){
+      console.log("catch");
+      atom.use(["m1","m2","m3"]);
     }
   }
 });

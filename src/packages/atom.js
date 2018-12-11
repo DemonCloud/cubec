@@ -152,11 +152,6 @@ atom.prototype = {
     return this;
   },
 
-  get: function(name){
-    console.warn("[atom.get] will deprecate in cubec 2.0 version, please use [atom.getModelByNames] instead of get API");
-    return this.getModelByNames(name);
-  },
-
   getModelByNames: function(name) {
     let res;
 
