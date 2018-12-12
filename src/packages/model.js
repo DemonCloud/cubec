@@ -277,7 +277,7 @@ model.prototype = {
   remove: function(prop, rmStatic) {
     if (modelLockStatus(this)) return this;
 
-    var assert = this._ast(_cool, _identify),
+    let assert = this._ast(_cool, _identify),
       assertram = this._ash(_identify);
 
     if (_isPrim(prop) && prop != null) {

@@ -149,27 +149,33 @@ function setRender(view, render) {
 
 function updateSlotComponent(view, args) {
   const slotQueue = view._ass(_idt);
+
   if (view && slotQueue.length) {
     _eachArray(slotQueue.splice(0, slotQueue.length), renderSlotComponent.bind(view, args));
   }
 }
 
-function renderSlotComponent(args, slot) {
-  var slotTarget = _get(this, slot.name);
+function renderSlotComponent(args, slot, index) {
+  let slotTarget = _get(this, slot.name);
   if (!slotTarget) return;
 
-  var render = _noop;
-  var slotOneArg = args[0];
-  var slotData = slot.path
+  let _view = this;
+  let render = _noop;
+  let slotOneArg = args[0];
+  let slotData = slot.path
     ? _isObj(slotOneArg)
       ? [_get(slotOneArg, slot.path)]
       : args
     : args;
 
+  if(slot.root){
+    slot.root.setAttribute("id",`_cslot-${(_view.name || `v${_view._vid}`)}.${index}`);
+  }
+
   if (slotTarget.constructor === view && slotTarget._isExtender) {
     // is extends constructor view
     render = function() {
-      let t = slotTarget({root: slot.root});
+      let t = slotTarget({ root: slot.root });
       t.render.apply(t, slotData);
     };
   } else if (slotTarget instanceof view && _isNum(slotTarget._vid)) {
@@ -195,7 +201,7 @@ function renderSlotComponent(args, slot) {
     };
   }
 
-  return this.useAsyncRenderSlot ? _ayc(render) : render();
+  return render();
 }
 
 function completeTemplate(stencil, name, vid) {
@@ -211,10 +217,12 @@ $.fn.extend({
       if (elm._vid !== view._vid || !view.axml) {
         elm._destory = () => view.destroy();
 
-        return elm.appendChild(
-          slik.createDOMElement((view.axml = target), view).firstElementChild,
-          (elm.innerHTML = ''),
-        );
+        let internal = slik.createDOMElement((view.axml = target), view).firstElementChild;
+        updateSlotComponent(view, args);
+
+        elm.appendChild(internal, (elm.innerHTML = ''));
+
+        return view;
       }
 
       slik.applyPatch(
@@ -222,8 +230,11 @@ $.fn.extend({
         slik.treeDiff(view.axml, target, [], null, null, view),
         (view.axml = target),
       );
-      // async render Slot
-      return updateSlotComponent(view, args);
+
+      // sync render Slot
+      updateSlotComponent(view, args);
+
+      return view;
     });
   },
 });
@@ -482,7 +493,7 @@ view.prototype = {
       _eachArray(
         t.split('|'),
         function(mk) {
-          var mkf = mk.split(':');
+          let mkf = mk.split(':');
           $(this.root)
             .find(mkf[1])
             .trigger(mkf[0], args);
