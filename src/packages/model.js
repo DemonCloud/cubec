@@ -241,10 +241,9 @@ model.prototype = {
           let prevData = _clone(assert);
 
           if (this.history) assertram.push(_clone(assert));
-          if (this._s) store.set(this.name, ref);
-
           // change data
           this._c(ref, _identify, (this.change = true));
+          if (this._s) store.set(this.name, ref);
 
           if (!isStatic){
             let currentData = _clone(ref);
@@ -259,9 +258,9 @@ model.prototype = {
           // create history
           let prevData = _clone(assert);
           if (this.history) assertram.push(_clone(assert));
+          _set(assert, key, val, (this.change = true));
           if (this._s) store.set(this.name, assert);
 
-          _set(assert, key, val, (this.change = true));
 
           if (!isStatic) {
             let currentData = _clone(assert);
@@ -284,9 +283,8 @@ model.prototype = {
       // create history
       let prevData = _clone(assert);
       if (this.history) assertram.push(_clone(assert));
-      if (this._s) store.set(this.name, assert);
-
       _rm(assert, prop);
+      if (this._s) store.set(this.name, assert);
 
       if (!rmStatic) {
         let currentData = _clone(assert);
