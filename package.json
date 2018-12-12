@@ -1,8 +1,8 @@
 {
   "name": "cubec",
-  "version": "1.3.7",
+  "version": "1.3.8",
   "description": "micro mvc framework",
-  "main": "src/cubec.min.js",
+  "main": "dist/cubec.min.js",
   "scripts": {
     "dev": "webpack-dev-server -d",
     "build": "node rollup.config.js"
