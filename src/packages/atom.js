@@ -5,7 +5,7 @@ import struct from '../lib/struct';
 import store from './store';
 import model from './model';
 import {on, off, emit} from '../utils/universalEvent';
-import atomDefined from '../utils/atomDefined';
+import defined from '../utils/defined';
 import atomAssertMake from '../utils/atomAssertMake';
 import atomAssertModel from '../utils/atomAssertModel';
 import atomAssertMatch from '../utils/atomAssertMatch';
@@ -51,7 +51,7 @@ const atom = function(option = {}) {
   const _isConnectivity = !!config.connect;
   let LIST = [];
 
-  atomDefined(this, {
+  defined(this, {
     _mid: "_at"+atid++,
     _assert : (todo, v) => (v === _identify ? todo(LIST) : []),
     _transmit : (v) => (v === _identify ? _transmit : _noop),

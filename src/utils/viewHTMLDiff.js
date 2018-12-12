@@ -13,6 +13,7 @@ const _map = struct.map();
 const _noop = struct.noop();
 const _eq = struct.eq();
 const _v8 = struct.v8();
+const _idt = struct.broken;
 
 // attr list mapping
 const attrList = {
@@ -476,7 +477,9 @@ const slik = {
     if (view && obj.isSlot) {
       var slotComponent = patchSlot(obj.text, elm);
       // parser success
-      if (slotComponent) view._updateSlotQueue.push(slotComponent);
+      if (slotComponent){
+        view._ass(_idt).push(slotComponent);
+      }
 
       return elm;
     }

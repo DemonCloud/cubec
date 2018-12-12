@@ -260,9 +260,7 @@ class Router {
 
   resolve(state) {
     if (!this._status) return;
-
-    H.replaceState(is(state, 'Object') ? state : {}, null, location.href);
-
+    H.replaceState(is(state, 'Object') ? state : { _resolveTimeStamp: Date.now() }, null, location.href);
     return this;
   }
 }

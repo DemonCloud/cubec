@@ -3,7 +3,18 @@ import cubec from '../src/cubec';
 
 window.cubec = cubec;
 
-var model1 = cubec.model({ name:"m1", data: {a:1} });
+var model1 = cubec.model({ name:"m1", data: {a:1},
+  events:{
+    "change:b": function(c,v){
+      console.log("b",c,v);
+    },
+
+    "change:b.a": function(c,v){
+      console.log("b.a",c,v);
+    }
+  }
+});
+
 var model2 = cubec.model({ name:"m2", data: {b:2} });
 var model3 = cubec.model({ name:"m3", data: {c:3} });
 var model4 = cubec.model({

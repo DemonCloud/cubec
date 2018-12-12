@@ -4,7 +4,7 @@ import ERRORS from '../constant/errors.define';
 import struct from '../lib/struct';
 import store from './store';
 import registerEvent from '../utils/registerEvent';
-import modelDefined from '../utils/modelDefined';
+import defined from '../utils/defined';
 import modelMultipleVerify from '../utils/modelMultipleVerify';
 import modelSingleVerify from '../utils/modelSingleVerify';
 import modelPipe from '../utils/modelPipe';
@@ -15,6 +15,8 @@ import modelCombined from '../utils/modelCombined';
 import {on, off, emit} from '../utils/universalEvent';
 
 let mid = 0;
+const changeReg = /^change:([a-zA-Z0-9_$.]+)$/;
+const replaceChangeReg = /^change:/;
 
 const _identify = struct.broken;
 const _extend = struct.extend();
@@ -35,7 +37,9 @@ const _rm = struct.prop('rm');
 const _merge = struct.merge();
 const _noop = struct.noop();
 const _slice = struct.slice();
+const _not = struct.not();
 const _eq = struct.eq();
+const _hasEvent = struct.event("has");
 
 // C.Model
 // A tool for storing data that uses a model to efficiently manage data structures while keeping the code clear and concise.
@@ -76,6 +80,7 @@ const model = function(option = {}) {
   let identify_lock = (this.isLock = !!config.lock);
 
   let ram = [];
+  let changeDetect = [];
 
   let cdata = config.data || {};
 
@@ -88,7 +93,7 @@ const model = function(option = {}) {
   _each(
     events,
     registerEvent,
-    modelDefined(this, {
+    defined(this, {
       name: identify_existname ? config.name : void 0,
 
       _ast: (todo, v) => {
@@ -103,6 +108,8 @@ const model = function(option = {}) {
       _asv: v => (v === _identify ? verify : {}),
 
       _ash: v => (v === _identify ? ram : []),
+
+      _asc: v => (v === _identify ? changeDetect : []),
 
       _v: !!_size(verify),
 
@@ -124,12 +131,76 @@ const model = function(option = {}) {
     .off('init');
 };
 
+function modelChangeDetecter(model,currentData,prevData,preset){
+  const res = [];
+  const detectList = model._asc(_identify);
+  model.emit("change", [currentData,prevData]);
+
+  if(detectList.length){
+    if(preset && _isString(preset)){
+      const currentPath = `change:${preset}`;
+      const testReg = new RegExp(`^${currentPath}\\.([a-zA-Z_$0-9])+`);
+
+      _eachArray(detectList, function(path){
+        if(currentPath === path || testReg.test(path)){
+          const spath = path.replace(replaceChangeReg,'');
+          const cv = _get(currentData,spath);
+          const pv = _get(prevData,spath);
+
+          if(!_eq(cv,pv)) res.push([path,[cv,pv]]);
+        }
+      });
+    }else{
+      _eachArray(detectList, function(path){
+        const spath = path.replace(replaceChangeReg,'');
+        const cv = _get(currentData,spath);
+        const pv = _get(prevData,spath);
+
+        if(!_eq(cv,pv)) res.push([path,[cv,pv]]);
+      });
+    }
+  }
+
+  _eachArray(res,function([event,args]){
+    model.emit(event,args);
+  });
+
+  return model;
+}
+
 model.prototype = {
   constructor: model,
 
-  on: on,
-  off: off,
   emit: emit,
+
+  on: function(type){
+    if(type && _isString(type)){
+      if(changeReg.test(type)){
+        let changeDetect = this._asc(_identify);
+        if(changeDetect.indexOf(type) === -1){
+          changeDetect.push(type);
+        }
+      }
+      return on.apply(this,arguments);
+    }
+  },
+
+  off: function(type,callback){
+    off.apply(this,arguments);
+    let changeDetect = this._asc(_identify);
+
+    if(type &&
+      _isString(type) &&
+      changeReg.test(type) &&
+      changeDetect.indexOf(type)>=-1 &&
+      !_hasEvent(this, type)){
+      _not(changeDetect, type);
+    }else if(type == null){
+      changeDetect.splice(0,changeDetect.length);
+    }
+
+    return this;
+  },
 
   lock: function() {
     this._l(true, _identify);
@@ -167,35 +238,34 @@ model.prototype = {
           modelMultipleVerify(ref, this)
         ) {
           // create history
+          let prevData = _clone(assert);
+
           if (this.history) assertram.push(_clone(assert));
-
-          this._c(ref, _identify, (this.change = true));
-
           if (this._s) store.set(this.name, ref);
 
-          if (!isStatic) this.emit('change', [_clone(ref)]);
+          // change data
+          this._c(ref, _identify, (this.change = true));
+
+          if (!isStatic){
+            let currentData = _clone(ref);
+            modelChangeDetecter(this,currentData,prevData);
+          }
         }
       } else {
-        if (!_eq(_get(assert, key), val) && modelSingleVerify(key, val, this)) {
+        if (
+          !_eq(_get(assert, key), val) &&
+          modelSingleVerify(key, val, this)
+        ) {
           // create history
+          let prevData = _clone(assert);
           if (this.history) assertram.push(_clone(assert));
+          if (this._s) store.set(this.name, assert);
 
           _set(assert, key, val, (this.change = true));
 
-          if (this._s) store.set(this.name, assert);
-
           if (!isStatic) {
-            this.emit('change', [_clone(assert)]);
-
-            var pkey = key.split('.'),
-              tkey = pkey[0],
-              tval = {};
-
-            tval[tkey] = _clone(assert[tkey]);
-
-            if (pkey.length > 1) this.emit('change:' + tkey, [tval]);
-
-            this.emit('change:' + key, [tval]);
+            let currentData = _clone(assert);
+            modelChangeDetecter(this,currentData,prevData,key);
           }
         }
       }
@@ -212,25 +282,17 @@ model.prototype = {
 
     if (_isPrim(prop) && prop != null) {
       // create history
+      let prevData = _clone(assert);
       if (this.history) assertram.push(_clone(assert));
+      if (this._s) store.set(this.name, assert);
 
       _rm(assert, prop);
 
-      if (this._s) store.set(this.name, assert);
-
       if (!rmStatic) {
-        this.emit('change', [_clone(assert)]);
+        let currentData = _clone(assert);
 
-        var pkey = prop.split('.'),
-          tkey = pkey[0],
-          tval = {};
-
-        tval[tkey] = _clone(assert[tkey]);
-
-        if (pkey.length > 1) this.emit('change:' + tkey, [tval]);
-
-        this.emit('change:' + prop, [tval]);
         this.emit('remove:' + prop);
+        modelChangeDetecter(this,currentData,prevData,prop);
       }
     }
 
@@ -255,9 +317,15 @@ model.prototype = {
       source;
 
     if (ram.length && (source = ram.pop())) {
+      let prevData = this.get();
+
       this._c(source, _identify, (this.change = true));
 
-      if (!isStatic) this.emit('change,back', [source]);
+      if (!isStatic){
+        let currentData = _clone(source);
+        this.emit('back', [currentData]);
+        modelChangeDetecter(this,currentData,prevData);
+      }
     }
 
     return this;

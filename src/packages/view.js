@@ -5,7 +5,9 @@ import catom from './atom';
 import cmodel from './model';
 import $ from '../lib/jquery';
 import slik from '../utils/viewHTMLDiff';
+import defined from '../utils/defined';
 import {on, off} from '../utils/universalEvent';
+import registerEvent from '../utils/registerEvent';
 
 let vid = 0;
 
@@ -39,10 +41,6 @@ const _off = struct.event('off');
 const _emit = struct.event('emit');
 const _hasEvent = struct.event('has');
 const _fireEvent = struct.fireEvent();
-
-function uon(fn, type) {
-  return this.on(type, fn);
-}
 
 function checkElm(el) {
   if (!(_isElm(el) || _isAryL(el)))
@@ -109,7 +107,7 @@ function compactRender(view,render){
     try{
       return render.apply(view, arguments);
     }catch(e){
-      console.error("view {custom} render static throw error with using illegality arguments", arguments);
+      console.error("view {custom} render static throw error with using illegality arguments",e,arguments);
       if (!_hasEvent(view, "catch")) throw e;
       return _idt;
     }
@@ -119,6 +117,7 @@ function compactRender(view,render){
 function setRender(view, render) {
   if (_isFn(render)) {
     let renderFn = packRender(view, render.bind(view));
+    let bounder = view._asb(_idt);
 
     _define(view, 'render', {
       get: function() {
@@ -129,9 +128,9 @@ function setRender(view, render) {
           let prevFn = view.render;
           renderFn = packRender(view, compactRender(view, newRender.bind(view)));
 
-          if (_size(view._bounder)) {
+          if (_size(bounder)) {
             // switch connnect event
-            _eachObject(view._bounder, item => {
+            _eachObject(bounder, item => {
               off.call(item, 'change', prevFn);
               on.call(item, 'change', renderFn);
             });
@@ -149,9 +148,9 @@ function setRender(view, render) {
 }
 
 function updateSlotComponent(view, args) {
-  if (view && view._updateSlotQueue.length) {
-    _eachArray(view._updateSlotQueue, renderSlotComponent.bind(view, args));
-    view._updateSlotQueue = [];
+  const slotQueue = view._ass(_idt);
+  if (view && slotQueue.length) {
+    _eachArray(slotQueue.splice(0, slotQueue.length), renderSlotComponent.bind(view, args));
   }
 }
 
@@ -233,9 +232,14 @@ $.fn.extend({
 
 const view = function(options = {}) {
   this.refs = {};
-  this._vid = vid++;
-  this._bounder = {};
-  this._updateSlotQueue = [];
+  let bounder = {};
+  let slotQueue = [];
+
+  defined(this, {
+    _vid : vid++,
+    _asb : (v)=>(v===_idt ? bounder : {}),
+    _ass : (v)=>(v===_idt ? slotQueue : [])
+  });
 
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options || {});
 
@@ -266,27 +270,28 @@ const view = function(options = {}) {
 
     render =
       stencil != _noop ?
-          function() {
-              // directRender without virtual node render!
-              try{
-                let args = _slice(arguments);
+        function() {
+          // directRender without virtual node render!
+          let args = _slice(arguments);
 
-                if (args[0] instanceof cmodel) args[0] = args[0].get();
+          try{
+            if (args[0] instanceof cmodel) args[0] = args[0].get();
+            if (args[0] instanceof catom) args[0] = args[0].toChunk();
 
-                if(this.directRender){
-                  this.axml = null;
-                  this.root.innerHTML = stencil.apply(this, args) || '';
-                }else{
-                  $(this.root).render(stencil.apply(this, args), this, props, args);
-                }
+            if(this.directRender){
+              this.axml = null;
+              this.root.innerHTML = stencil.apply(this, args) || '';
+            }else{
+              $(this.root).render(stencil.apply(this, args), this, props, args);
+            }
 
-                return arguments;
-              }catch(e){
-                console.error("view render static throw error with using illegality arguments", arguments);
-                if(!_hasEvent(this,"catch")) throw e;
-                return _idt;
-              }
-          } : _noop;
+            return arguments;
+          }catch(e){
+            console.error("view render static throw error with using illegality arguments",e,arguments);
+            if(!_hasEvent(this,"catch")) throw e;
+            return _idt;
+          }
+        } : _noop;
   }else{
     render=compactRender(this,render);
   }
@@ -296,7 +301,7 @@ const view = function(options = {}) {
     // bind events
     this.root = vroot;
 
-    _eachObject(events, uon, setRender(this, render));
+    _eachObject(events, registerEvent, setRender(this, render));
 
     this.connect.apply(this, models);
   } else {
@@ -312,7 +317,7 @@ const view = function(options = {}) {
         this.root = vroot = el;
 
         // bind events
-        _eachObject(events, uon, setRender(this, render));
+        _eachObject(events, registerEvent, setRender(this, render));
 
         this.connect.apply(this, models);
         // trigger render
@@ -453,7 +458,7 @@ view.prototype = {
           let param = mk.split(':');
 
           if (param.length > 1) {
-            $(this.root).off(param[0], param[1], fn._fn || fn);
+            $(this.root).off(param[0], param[1], fn ? (fn._fn || fn) : fn);
           } else {
             _off(this, mk, fn);
           }
@@ -464,7 +469,7 @@ view.prototype = {
       return this;
     }
 
-    $(this.root).off();
+    $(this.root).off(); _off(this);
 
     return this;
   },
@@ -499,6 +504,7 @@ view.prototype = {
 
   connect: function() {
     let items;
+    let bounder = this._asb(_idt);
 
     if(_isAryL(arguments[0])){
       items = arguments[0];
@@ -509,9 +515,8 @@ view.prototype = {
     if (items.length) {
       _eachArray(items, item => {
         if ((item instanceof cmodel || item instanceof catom) && item._mid != null) {
-          if (!this._bounder[item._mid]) {
-            this._bounder[item._mid] = item;
-
+          if (!bounder[item._mid]) {
+            bounder[item._mid] = item;
             on.call(item, 'change', this.render);
           }
         }
@@ -523,6 +528,7 @@ view.prototype = {
 
   disconnect: function() {
     let items;
+    let bounder = this._asb(_idt);
 
     if(_isAryL(arguments[0])){
       items = arguments[0];
@@ -533,9 +539,8 @@ view.prototype = {
     if (items.length) {
       _eachArray(items, item => {
         if ((item instanceof cmodel || item instanceof catom) && item._mid != null ) {
-          if (this._bounder[item._mid]) {
-            delete this._bounder[item._mid];
-
+          if (bounder[item._mid]) {
+            delete bounder[item._mid];
             off.call(item, 'change', this.render);
           }
         }

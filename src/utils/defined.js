@@ -3,9 +3,9 @@ import struct from '../lib/struct';
 const _each = struct.each('object');
 const _define = struct.define();
 
-function modelDefined(model, props) {
+function Defined(item, props) {
   _each(props, function(t, n) {
-    _define(model, n, {
+    _define(item, n, {
       value: t,
       writable: false,
       enumerable: false,
@@ -13,7 +13,7 @@ function modelDefined(model, props) {
     });
   });
 
-  return model;
+  return item;
 }
 
-export default modelDefined;
+export default Defined;

@@ -1908,16 +1908,20 @@
 
   // define deeping getProp method
   function getProp(obj,prop,dowith){
-    var tmp,i,keygen = toString(prop||'').split('.');
+    var tmp,i,check,keygen = toString(prop||'').split('.'),l=keygen.length-1;
 
     if(keygen.length === 1){
       if(obj.hasOwnProperty(prop))
         tmp = obj[prop];
     }else{
       // [a.b.2]
-      for(i=0,tmp=obj; i<keygen.length; i++)
-        if(isPrimitive(tmp = tmp[keygen[i]]))
+      for(i=0,tmp=obj; i<keygen.length; i++){
+        check = isPrimitive(tmp = tmp[keygen[i]]);
+        if(i !== l && check){
+          tmp = void 0;
           break;
+        }
+      }
     }
 
     if(dowith){
