@@ -110,7 +110,7 @@ const attrSetter = function(elm, attr, values) {
   if (defaultAttr.test(attrName)) {
     // is defaultAttr
     attrName = attrName.slice(7).toLowerCase();
-    var inval = elm.getAttribute(attrName) || elm[attrName];
+    let inval = elm.getAttribute(attrName) || elm[attrName];
 
     if (inval == null || inval === '') attrSetter(elm, attrName, val);
   } else if (attrName[0] === '*')
@@ -145,7 +145,7 @@ const attrEvent = function(key, val, props) {
 };
 
 const patchAttr = function(o, t) {
-  var s = {};
+  let s = {};
   _eachObject(t, function(v, k) {
     if (o[k] === v) s[k] = 1;
   });
@@ -157,7 +157,7 @@ const patchHack = [
   _noop,
   //1 replace
   function(patch) {
-    var t = patch.s;
+    let t = patch.s;
 
     if (t && t.parentNode) t.parentNode.replaceChild(patch.n, t);
     // t.parentNode.insertBefore(patch.n,t);
@@ -165,35 +165,33 @@ const patchHack = [
   },
   //2 append
   function(patch) {
-    var t = patch.s;
+    let t = patch.s;
     if (t) t.appendChild(patch.n);
   },
   //3 remove
   function(patch) {
-    var t = patch.s;
+    let t = patch.s;
     if (t.parentNode) t.parentNode.removeChild(t);
   },
   //4 modifytext
   function(patch) {
-    var t = patch.s;
+    let t = patch.s;
     if (patch.isSlot) {
-      if (t._destory) t._destory();
       return t.parentNode.replaceChild(patch.n, t);
     }
     t.textContent = _decode(patch.c);
   },
   //5 withtext
   function(patch) {
-    var t = patch.s;
+    let t = patch.s;
     if (patch.isSlot) {
-      if (t._destory) t._destory();
       return t.parentNode.replaceChild(patch.n, t);
     }
     t.textContent = _decode(patch.c);
   },
   //6 removetext
   function(patch) {
-    var t = patch.s;
+    let t = patch.s;
     t.innerHTML = patch.n.innerHTML;
   },
   //7 addattr
@@ -204,8 +202,8 @@ const patchHack = [
   },
   //8 modifyattr
   function(patch) {
-    var t = patch.s;
-    var s = patchAttr(patch.o, patch.a);
+    let t = patch.s;
+    let s = patchAttr(patch.o, patch.a);
 
     _eachObject(patch.o, function(value, key) {
       if (!(key in s)) attrClear(t, key, value);
@@ -224,11 +222,11 @@ const patchHack = [
 
 // createSlot
 const patchSlot = function(slot, elm) {
-  var name = _isStr(slot) ? slot : '';
+  let name = _isStr(slot) ? slot : '';
 
   if (name && elm) {
-    var sloter = {};
-    var slotParse = name.trim().split('::');
+    let sloter = {};
+    let slotParse = name.trim().split('::');
 
     sloter.name = slotParse[0];
     sloter.path = slotParse[1];
@@ -273,7 +271,7 @@ const slik = {
 
       // with child diff
       // optimzer patch at child diff
-      var i,
+      let i,
         o = org.child.length,
         t = tag.child.length;
 
@@ -326,7 +324,7 @@ const slik = {
   },
 
   mapTreeNode: function(oDOM, path) {
-    var target,
+    let target,
       i = 0,
       p = oDOM.children;
     for (; i < path.length; i++) {
@@ -339,16 +337,16 @@ const slik = {
   },
 
   createSelector: function(org) {
-    var path = [org.i];
+    let path = [org.i];
     while ((org = org.parent)) if (org.i !== void 0) path.unshift(org.i);
     return path;
   },
 
   createPatch: function(org, tag, type, view) {
-    var node,
+    let node,
       patch,
       sl = this.createSelector(org);
-    var isSlot = tag.isSlot;
+    let isSlot = tag.isSlot;
 
     switch (patchList[type]) {
       case 'replace':
@@ -392,13 +390,13 @@ const slik = {
   },
 
   createTreeFromHTML: function(html, vprops) {
-    var cubecRoot = {
+    let cubecRoot = {
       tagName: '__CUBEC_VIEWROOT__',
       isRoot: true,
       child: [],
     };
 
-    var p = cubecRoot,
+    let p = cubecRoot,
       c = cubecRoot.child,
       n;
 
@@ -431,7 +429,7 @@ const slik = {
   },
 
   createObjElement: function(str, vprops) {
-    var arr = str.split(' '),
+    let arr = str.split(' '),
       props = _isObj(vprops) ? vprops : {},
       tagName = arr.shift(),
       attributes = arr.join(' '),
@@ -440,7 +438,7 @@ const slik = {
     if (tagName === 'slot') elm.isSlot = true;
 
     if (attributes) {
-      var attrs = {},
+      let attrs = {},
         s,
         tg;
       while ((s = attrexec.exec(attributes))) {
@@ -462,7 +460,7 @@ const slik = {
   },
 
   createDOMElement: function(obj, view) {
-    var elm = document.createElement(obj.tagName);
+    let elm = document.createElement(obj.tagName);
 
     // registered view.refs Update
     if (view && obj.attributes && obj.attributes.ref)
@@ -475,7 +473,7 @@ const slik = {
     // parse if it's <slot>
     // slot is significative in [ax.view]
     if (view && obj.isSlot) {
-      var slotComponent = patchSlot(obj.text, elm);
+      let slotComponent = patchSlot(obj.text, elm);
       // parser success
       if (slotComponent){
         view._ass(_idt).push(slotComponent);

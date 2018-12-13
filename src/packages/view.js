@@ -161,16 +161,14 @@ function renderSlotComponent(args, slot, index) {
 
   let _view = this;
   let render = _noop;
+  let slotId = `_cslot-${(_view.name || `v${_view._vid}`)}`;
   let slotOneArg = args[0];
   let slotData = slot.path
     ? _isObj(slotOneArg)
       ? [_get(slotOneArg, slot.path)]
       : args
     : args;
-
-  if(slot.root){
-    slot.root.setAttribute("id",`_cslot-${(_view.name || `v${_view._vid}`)}.${index}`);
-  }
+  slot.root.setAttribute("id",slotId);
 
   if (slotTarget.constructor === view && slotTarget._isExtender) {
     // is extends constructor view
@@ -181,7 +179,8 @@ function renderSlotComponent(args, slot, index) {
   } else if (slotTarget instanceof view && _isNum(slotTarget._vid)) {
     render = function() {
       if (slotTarget.root) {
-        slotTarget.root = slot.root;
+        slotTarget.root.setAttribute("id",slotId);
+        slot.root.parentNode.replaceChild(slotTarget.root, slot.root);
         slotTarget.render.apply(slotTarget, slotData);
       } else {
         slotTarget.mount.apply(slotTarget, [slot.root].concat(slotData));
