@@ -4,7 +4,7 @@ const _type = struct.type();
 const _each = struct.each('array');
 
 function atomAssertMatch(list, match) {
-  var use = [];
+  let use = [];
 
   switch (_type(match)) {
     case 'regexp':

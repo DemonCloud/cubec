@@ -1,5 +1,4 @@
 import atom from './atom';
-import view from './view';
 import model from './model';
 import struct from '../lib/struct';
 
@@ -61,7 +60,6 @@ const verify = {
   isPrimitive: checker(_isPrim, 'primitive'),
   isBool: checker(_isBool, 'boolean'),
   isModel: checker(makeC(model), 'model'),
-  isView: checker(makeC(view), 'view'),
   isAtom: checker(makeC(atom), 'atom'),
 };
 

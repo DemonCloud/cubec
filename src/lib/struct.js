@@ -412,7 +412,7 @@
   }
 
   function al(ary,fn,ts){
-    var i, len = ary.length, cb = createBounder(fn,ts); 
+    var i, len = ary.length, cb = createBounder(fn,ts);
     for(i=0; i<len; i++) cb(ary[i],i,ary);
     return ary;
   }
@@ -1890,7 +1890,7 @@
 
     if(id && _events[id] && type!=='')
       ol(_events[id][type],function(f){ res.push(f.apply(this,args)); },obj);
-    
+
     return res;
   }
 
