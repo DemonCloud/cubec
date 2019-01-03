@@ -104,7 +104,7 @@ function toType( obj ) {
 
 
 var
-	version = "3.3.2-pre -css,-css/addGetHookIf,-css/adjustCSS,-css/curCSS,-css/finalPropName,-css/hiddenVisibleSelectors,-css/showHide,-effects,-effects/Tween,-effects/animatedSelector,-css/support,-css/var/cssExpand,-css/var/getStyles,-css/var/isHiddenWithinTree,-css/var/rboxStyle,-css/var/rnumnonpx,-css/var/swap,-dimensions,-offset,-wrap,-exports/amd,-core/ready,-ajax,-ajax/jsonp,-ajax/load,-ajax/parseXML,-ajax/script,-ajax/var/location,-ajax/var/nonce,-ajax/var/rquery,-ajax/xhr,-manipulation/_evalUrl,-event/ajax,-deprecated",
+	version = "3.3.2 for cubec",
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
@@ -3263,15 +3263,15 @@ var
 	rcleanScript = /^\s*<!(?:\[CDATA\[|--)|(?:\]\]|--)>\s*$/g;
 
 // Prefer a tbody over its parent table for containing new rows
-function manipulationTarget( elem, content ) {
-	if ( nodeName( elem, "table" ) &&
-		nodeName( content.nodeType !== 11 ? content : content.firstChild, "tr" ) ) {
+// function manipulationTarget( elem, content ) {
+// 	if ( nodeName( elem, "table" ) &&
+// 		nodeName( content.nodeType !== 11 ? content : content.firstChild, "tr" ) ) {
 
-		return jQuery( elem ).children( "tbody" )[ 0 ] || elem;
-	}
+// 		return jQuery( elem ).children( "tbody" )[ 0 ] || elem;
+// 	}
 
-	return elem;
-}
+// 	return elem;
+// }
 
 // Replace/restore the type attribute of script elements for safe DOM manipulation
 function disableScript( elem ) {
@@ -4006,11 +4006,10 @@ jQuery.each( [
 
 	// Strip and collapse whitespace according to HTML spec
 	// https://infra.spec.whatwg.org/#strip-and-collapse-ascii-whitespace
-	function stripAndCollapse( value ) {
-		var tokens = value.match( rnothtmlwhite ) || [];
-		return tokens.join( " " );
-	}
-
+	// function stripAndCollapse( value ) {
+	// 	var tokens = value.match( rnothtmlwhite ) || [];
+	// 	return tokens.join( " " );
+	// }
 
 // function getClass( elem ) {
 // 	return elem.getAttribute && elem.getAttribute( "class" ) || "";
@@ -4604,90 +4603,90 @@ if ( !support.focusin ) {
 }
 
 
-var
-	rbracket = /\[\]$/,
-	rCRLF = /\r?\n/g,
-	rsubmitterTypes = /^(?:submit|button|image|reset|file)$/i,
-	rsubmittable = /^(?:input|select|textarea|keygen)/i;
+// var
+// 	rbracket = /\[\]$/,
+// 	rCRLF = /\r?\n/g,
+// 	rsubmitterTypes = /^(?:submit|button|image|reset|file)$/i,
+// 	rsubmittable = /^(?:input|select|textarea|keygen)/i;
 
-function buildParams( prefix, obj, traditional, add ) {
-	var name;
+// function buildParams( prefix, obj, traditional, add ) {
+// 	var name;
 
-	if ( Array.isArray( obj ) ) {
+// 	if ( Array.isArray( obj ) ) {
 
-		// Serialize array item.
-		jQuery.each( obj, function( i, v ) {
-			if ( traditional || rbracket.test( prefix ) ) {
+// 		// Serialize array item.
+// 		jQuery.each( obj, function( i, v ) {
+// 			if ( traditional || rbracket.test( prefix ) ) {
 
-				// Treat each array item as a scalar.
-				add( prefix, v );
+// 				// Treat each array item as a scalar.
+// 				add( prefix, v );
 
-			} else {
+// 			} else {
 
-				// Item is non-scalar (array or object), encode its numeric index.
-				buildParams(
-					prefix + "[" + ( typeof v === "object" && v != null ? i : "" ) + "]",
-					v,
-					traditional,
-					add
-				);
-			}
-		} );
+// 				// Item is non-scalar (array or object), encode its numeric index.
+// 				buildParams(
+// 					prefix + "[" + ( typeof v === "object" && v != null ? i : "" ) + "]",
+// 					v,
+// 					traditional,
+// 					add
+// 				);
+// 			}
+// 		} );
 
-	} else if ( !traditional && toType( obj ) === "object" ) {
+// 	} else if ( !traditional && toType( obj ) === "object" ) {
 
-		// Serialize object item.
-		for ( name in obj ) {
-			buildParams( prefix + "[" + name + "]", obj[ name ], traditional, add );
-		}
+// 		// Serialize object item.
+// 		for ( name in obj ) {
+// 			buildParams( prefix + "[" + name + "]", obj[ name ], traditional, add );
+// 		}
 
-	} else {
+// 	} else {
 
-		// Serialize scalar item.
-		add( prefix, obj );
-	}
-}
+// 		// Serialize scalar item.
+// 		add( prefix, obj );
+// 	}
+// }
 
 // Serialize an array of form elements or a set of
 // key/values into a query string
-jQuery.param = function( a, traditional ) {
-	var prefix,
-		s = [],
-		add = function( key, valueOrFunction ) {
+// jQuery.param = function( a, traditional ) {
+// 	var prefix,
+// 		s = [],
+// 		add = function( key, valueOrFunction ) {
 
-			// If value is a function, invoke it and use its return value
-			var value = isFunction( valueOrFunction ) ?
-				valueOrFunction() :
-				valueOrFunction;
+// 			// If value is a function, invoke it and use its return value
+// 			var value = isFunction( valueOrFunction ) ?
+// 				valueOrFunction() :
+// 				valueOrFunction;
 
-			s[ s.length ] = encodeURIComponent( key ) + "=" +
-				encodeURIComponent( value == null ? "" : value );
-		};
+// 			s[ s.length ] = encodeURIComponent( key ) + "=" +
+// 				encodeURIComponent( value == null ? "" : value );
+// 		};
 
-	if ( a == null ) {
-		return "";
-	}
+// 	if ( a == null ) {
+// 		return "";
+// 	}
 
-	// If an array was passed in, assume that it is an array of form elements.
-	if ( Array.isArray( a ) || ( a.jquery && !jQuery.isPlainObject( a ) ) ) {
+// 	// If an array was passed in, assume that it is an array of form elements.
+// 	if ( Array.isArray( a ) || ( a.jquery && !jQuery.isPlainObject( a ) ) ) {
 
-		// Serialize the form elements
-		jQuery.each( a, function() {
-			add( this.name, this.value );
-		} );
+// 		// Serialize the form elements
+// 		jQuery.each( a, function() {
+// 			add( this.name, this.value );
+// 		} );
 
-	} else {
+// 	} else {
 
-		// If traditional, encode the "old" way (the way 1.3.2 or older
-		// did it), otherwise encode params recursively.
-		for ( prefix in a ) {
-			buildParams( prefix, a[ prefix ], traditional, add );
-		}
-	}
+// 		// If traditional, encode the "old" way (the way 1.3.2 or older
+// 		// did it), otherwise encode params recursively.
+// 		for ( prefix in a ) {
+// 			buildParams( prefix, a[ prefix ], traditional, add );
+// 		}
+// 	}
 
-	// Return the resulting serialization
-	return s.join( "&" );
-};
+// 	// Return the resulting serialization
+// 	return s.join( "&" );
+// };
 
 // Serialize && SerializeArray
 
