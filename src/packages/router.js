@@ -242,10 +242,11 @@ class Router {
 
     this._status = 1;
 
-    if (0 in arguments && path)
-      this.to(path, query, state, true, false);
+    if (path && isStr(path)){
+      return this.to(path, query, state, true, false);
+    }
 
-    return this;
+    return this.to(location.pathname, location.search, {}, true, false);
   }
 
   stop() {

@@ -4,7 +4,7 @@ const mockApp = require('./mock');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
-  entry: './page/index.js',
+  entry: './test/index.js',
   mode: 'development',
   // mode: 'production',
 
@@ -19,7 +19,7 @@ module.exports = {
 
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'cubec.webpack.min.js',
+    filename: 'test.min.js',
   },
 
   plugins: [

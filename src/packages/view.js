@@ -208,35 +208,33 @@ function completeTemplate(stencil, name, vid) {
 }
 
 // extend render methods
-$.fn.extend({
-  render(newhtml, view, props, args) {
-    return this.each(function(i, elm) {
-      let target = slik.createTreeFromHTML(newhtml, props);
+$.fn.render = function(newhtml, view, props, args) {
+  return this.each(function(i,elm) {
+    let target = slik.createTreeFromHTML(newhtml, props);
 
-      if (elm._vid !== view._vid || !view.axml) {
-        elm._destory = () => view.destroy();
+    if (elm._vid !== view._vid || !view.axml) {
+      elm._destory = () => view.destroy();
 
-        let internal = slik.createDOMElement((view.axml = target), view).firstElementChild;
-        updateSlotComponent(view, args);
-
-        elm.appendChild(internal, (elm.innerHTML = ''));
-
-        return view;
-      }
-
-      slik.applyPatch(
-        elm,
-        slik.treeDiff(view.axml, target, [], null, null, view),
-        (view.axml = target),
-      );
-
-      // sync render Slot
+      let internal = slik.createDOMElement((view.axml = target), view).firstElementChild;
       updateSlotComponent(view, args);
 
+      elm.appendChild(internal, (elm.innerHTML = ''));
+
       return view;
-    });
-  },
-});
+    }
+
+    slik.applyPatch(
+      elm,
+      slik.treeDiff(view.axml, target, [], null, null, view),
+      (view.axml = target),
+    );
+
+    // sync render Slot
+    updateSlotComponent(view, args);
+
+    return view;
+  });
+};
 
 // Selector.prototype.render = function(newhtml, view, props, args) {};
 
@@ -565,8 +563,10 @@ view.prototype = {
 
     this.root._vid = void 0;
 
-    let createDestory = ()=>{
-      $(this.root).detach();
+    const createDestory = ()=>{
+      $(this.root).off();
+      this.root.innerHTML = "";
+      if(this.root.parentNode && withRoot) this.root.parentNode.removeChild(this.root);
       this.emit('destroy', delete this.root);
     };
 
