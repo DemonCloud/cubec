@@ -47,8 +47,8 @@ const outAtomList = function(LIST,model,isConnecty,transmit){
 
 const atom = function(option = {}) {
   const config = _extend(_clone(ATOM.DEFAULT_OPTION), option);
-  const _transmit = function(){ this.transmit(); }.bind(this);
   const _isConnectivity = !!config.connect;
+  const _transmit = function(){ this.transmit(); }.bind(this);
   let LIST = [];
 
   defined(this, {

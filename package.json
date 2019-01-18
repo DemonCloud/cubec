@@ -1,6 +1,6 @@
 {
   "name": "cubec",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "micro mvc framework",
   "main": "dist/cubec.min.js",
   "scripts": {
@@ -22,22 +22,18 @@
     "@babel/runtime": "^7.2.0",
     "body-parser": "^1.18.3",
     "css-loader": "^1.0.1",
-    "dot": "^1.1.2",
-    "handlebars": "^4.0.12",
     "html-webpack-plugin": "^3.2.0",
     "mockjs": "^1.0.1-beta3",
     "multer": "^1.4.1",
-    "mustache": "^3.0.1",
-    "pug": "^2.0.3",
     "rollup": "^0.65.2",
-    "rollup-plugin-babel": "^4.2.0",
+    "rollup-plugin-babel": "^4.3.0",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^3.4.0",
     "rollup-plugin-optimize-js": "^0.0.4",
     "rollup-plugin-uglify": "^5.0.2",
     "style-loader": "^0.23.1",
-    "webpack": "^4.28.3",
-    "webpack-cli": "^3.1.2",
+    "webpack": "^4.28.4",
+    "webpack-cli": "^3.2.1",
     "webpack-dev-server": "^3.1.14"
   }
 }

@@ -242,13 +242,8 @@ class Router {
 
     this._status = 1;
 
-    if (0 in arguments && path){
-      if(path === location.pathname){
-        this.resolve(state);
-      }else{
-        this.to(path, query, state);
-      }
-    }
+    if (0 in arguments && path)
+      this.to(path, query, state, true, false);
 
     return this;
   }
@@ -259,7 +254,8 @@ class Router {
   }
 
   resolve(state) {
-    if (!this._status) return;
+    if (!this._status) return this;
+
     H.replaceState(is(state, 'Object') ? state : { _resolveTimeStamp: Date.now() }, null, location.href);
     return this;
   }

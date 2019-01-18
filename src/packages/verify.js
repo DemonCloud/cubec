@@ -13,32 +13,12 @@ const _isNumber = struct.type('number');
 const _isPrim = struct.type('primitive');
 const _isArrayLike = struct.type('arraylike');
 const _isBool = struct.type('boolean');
-const _toString = struct.convert('string');
 const _v8 = struct.v8();
 
 const checker = function(check, type) {
-  return function(value, warnStatic) {
-    let res = check(value);
-
-    return !warnStatic
-      ? res ||
-          warnning(value, '[ validation -> verify.' + _toString(type) + ' ]')
-      : res;
+  return function(value) {
+    return check(value);
   };
-};
-
-const warnning = function(value, message) {
-  // @target warning msg
-  // console.warn(
-  //   'The value Of *( ' +
-  //     value +
-  //     ' ) with type [ ' +
-  //     _type(value) +
-  //     ' ] not pass validate! ' +
-  //     _toString(message),
-  // );
-
-  return false;
 };
 
 const makeC = function(compare) {
