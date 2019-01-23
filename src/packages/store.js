@@ -18,11 +18,11 @@ const store = {
 
   ram: {},
 
-  kAt: function(key, i) {
+  kAt(key, i) {
     return key.charCodeAt(~~(i % key.length));
   },
 
-  ecd: function(data) {
+  ecd(data) {
     var o1,
       o2,
       o3,
@@ -56,7 +56,7 @@ const store = {
     return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3);
   },
 
-  dcd: function(data) {
+  dcd(data) {
     var o1,
       o2,
       o3,
@@ -89,7 +89,7 @@ const store = {
     return result;
   },
 
-  incry: function(s, key) {
+  incry(s, key) {
     var i = 0,
       l = s.length,
       res = [];
@@ -97,7 +97,7 @@ const store = {
     return this.ecd(res);
   },
 
-  decyt: function(s, key) {
+  decyt(s, key) {
     s = this.dcd(s);
     var i = 0,
       l = s.length;
@@ -105,19 +105,19 @@ const store = {
     return s.join('');
   },
 
-  set: function(name, data) {
+  set(name, data) {
     LS.setItem(
       SN + this.incry(name, revs(name)),
       this.incry(encodeURIComponent(JSON.stringify(data)), name),
     );
   },
 
-  get: function(name) {
+  get(name) {
     var str = LS.getItem(SN + this.incry(name, revs(name)));
     return str ? JSON.parse(decodeURIComponent(this.decyt(str, name))) : 0;
   },
 
-  rm: function(name) {
+  rm(name) {
     LS.removeItem(SN + this.incry(name, revs(name)));
   },
 };

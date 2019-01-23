@@ -120,10 +120,10 @@ function setRender(view, render) {
     let bounder = view._asb(_idt);
 
     _define(view, 'render', {
-      get: function() {
+      get() {
         return renderFn;
       },
-      set: function(newRender) {
+      set(newRender) {
         if (_isFn(newRender)) {
           let prevFn = view.render;
           renderFn = packRender(view, compactRender(view, newRender.bind(view)));
@@ -404,7 +404,7 @@ view.prototype = {
     return this;
   },
 
-  on: function(type, fn) {
+  on(type, fn) {
     if (_isFn(fn)) {
       _eachArray(
         _toStr(type).split('|'),
@@ -458,7 +458,7 @@ view.prototype = {
     return this;
   },
 
-  off: function(type, fn) {
+  off(type, fn) {
     if (type && _isStr(type)) {
       _eachArray(
         type.split('|'),
@@ -482,7 +482,7 @@ view.prototype = {
     return this;
   },
 
-  emit: function(type, args) {
+  emit(type, args) {
     let t = _toStr(type),
       k = t.split(':');
 
@@ -510,7 +510,7 @@ view.prototype = {
     return _emit(this, type, args);
   },
 
-  connect: function() {
+  connect() {
     let items;
     let bounder = this._asb(_idt);
 
@@ -534,7 +534,7 @@ view.prototype = {
     return this;
   },
 
-  disconnect: function() {
+  disconnect() {
     let items;
     let bounder = this._asb(_idt);
 
@@ -558,7 +558,7 @@ view.prototype = {
     return this;
   },
 
-  destroy: function(withRoot) {
+  destroy(withRoot) {
     this.emit('beforeDestroy');
 
     this.root._vid = void 0;

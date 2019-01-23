@@ -12,7 +12,7 @@
  *  FireFox 4+
  *  IE 9+
  *  Android 4.4+
- *  Safari 5+
+ *  Safari 6+
  *
  * Server Version With
  *  Node 6.0+ (Full support with ES6)
@@ -28,7 +28,7 @@
     return self || window || this;
   }
 
-  struct.VERSION = '4.2.6';
+  // struct.VERSION = '4.2.6';
 
   // base method
   var or = {},

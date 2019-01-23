@@ -1,6 +1,9 @@
 docs/
 docs/*
 docs
+test/
+test/*
+test
 rollup.config.js
 webpack.config.js
 text.html

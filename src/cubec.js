@@ -11,7 +11,7 @@ import createExtend from './utils/createExtend';
 const cubec = Object.create(null);
 
 // information
-cubec.version = "1.4.5";
+cubec.version = "1.4.6";
 
 // utils
 cubec.struct = _struct;

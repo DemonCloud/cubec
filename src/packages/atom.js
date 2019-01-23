@@ -71,11 +71,11 @@ const stom = function(prevatom, list = [], connect) {
 atom.prototype = {
   constructor: atom,
 
-  all: function() {
+  all() {
     return this._assert(_slice, _identify);
   },
 
-  use: function(list, isStatic) {
+  use(list, isStatic) {
     const cLIST = this._assert(_cool,_identify);
     const transmit = this._transmit(_identify);
     const isConnecty = this._connecty(_identify);
@@ -112,7 +112,7 @@ atom.prototype = {
     return this;
   },
 
-  transmit: function(args=[]){
+  transmit(args=[]){
     let transData = this.toChunk();
 
     if(_isString(this.preset) && this.preset){
@@ -122,7 +122,7 @@ atom.prototype = {
     return emit.call(this,"change",[transData,...args]);
   },
 
-  out: function(list,isStatic) {
+  out(list,isStatic) {
     const cLIST = this._assert(_cool,_identify);
     const isConnecty = this._connecty(_identify);
     const transmit = this._transmit(_identify);
@@ -152,7 +152,7 @@ atom.prototype = {
     return this;
   },
 
-  getModelByNames: function(name) {
+  getModelByNames(name) {
     let res;
 
     if (name == null) res = this.all();
@@ -165,13 +165,13 @@ atom.prototype = {
     return res;
   },
 
-  of: function(func, args) {
+  of(func, args) {
     _each(this.all(), _isFn(func) ? func : atomTargetWith(func, args));
 
     return this;
   },
 
-  swap: function(a, b, swapStatic) {
+  swap(a, b, swapStatic) {
     if (!a || !b || !_isString(a) || !_isString(b))
       throw new Error(ERRORS.ATOM_UNDEFINED_MODELNAME);
 
@@ -189,17 +189,17 @@ atom.prototype = {
     return this;
   },
 
-  select: function(match, connect=false) {
+  select(match, connect=false) {
     return stom(this, atomAssertMatch(this.all(), match), connect);
   },
 
-  subscribe: function(fn){
+  subscribe(fn){
     if(_isFn(fn))
       on.call(this,"change",fn);
     return this;
   },
 
-  unsubscribe: function(fn){
+  unsubscribe(fn){
     if(_isBool(fn) && fn){
       off.call(this,"change");
     }else if(_isFn(fn)){
@@ -209,17 +209,17 @@ atom.prototype = {
     return this;
   },
 
-  reset: function(isStatic=true){
+  reset(isStatic=true){
     this.unsubscribe(true);
     this.out(this.all(), isStatic);
     return this;
   },
 
-  toData: function() {
+  toData() {
     return _map(this._assert(_cool, _identify), m => m.get());
   },
 
-  toChunk: function() {
+  toChunk() {
     let res = {};
 
     this.of(m => {

@@ -173,7 +173,7 @@ model.prototype = {
 
   emit: emit,
 
-  on: function(type){
+  on(type){
     if(type && _isString(type)){
       if(changeReg.test(type)){
         let changeDetect = this._asc(_identify);
@@ -185,7 +185,7 @@ model.prototype = {
     }
   },
 
-  off: function(type,callback){
+  off(type,callback){
     off.apply(this,arguments);
     let changeDetect = this._asc(_identify);
 
@@ -202,23 +202,23 @@ model.prototype = {
     return this;
   },
 
-  lock: function() {
+  lock() {
     this._l(true, _identify);
     return this.emit('lock');
   },
 
-  unlock: function() {
+  unlock() {
     this._l(false, _identify);
     return this.emit('unlock');
   },
 
-  get: function(key, by) {
+  get(key, by) {
     let data = this._ast(_cool, _identify);
 
     return _clone(key || key === 0 ? _get(data, key, by) : data);
   },
 
-  set: function(key, val, isStatic) {
+  set(key, val, isStatic) {
     if (modelLockStatus(this)) return this;
 
     let ref;
@@ -273,7 +273,7 @@ model.prototype = {
     return this;
   },
 
-  remove: function(prop, rmStatic) {
+  remove(prop, rmStatic) {
     if (modelLockStatus(this)) return this;
 
     let assert = this._ast(_cool, _identify),
@@ -297,7 +297,7 @@ model.prototype = {
     return this;
   },
 
-  clear: function(clearStatic) {
+  clear(clearStatic) {
     let empty = {};
 
     this.set(empty, clearStatic);
@@ -308,7 +308,7 @@ model.prototype = {
     return this;
   },
 
-  back: function(isStatic) {
+  back(isStatic) {
     if (modelLockStatus(this) || !this.history) return this;
 
     let ram = this._ash(_identify),
@@ -329,11 +329,11 @@ model.prototype = {
     return this;
   },
 
-  toJSON: function() {
+  toJSON() {
     return JSON.stringify(this.get());
   },
 
-  ajax: function(config = {}) {
+  ajax(config = {}) {
     let conf = _merge(
       {
         type: 'get',
@@ -355,7 +355,7 @@ model.prototype = {
     );
   },
 
-  fetch: function(param, header) {
+  fetch(param, header) {
     param = param || this.param;
 
     let actions = [];
@@ -418,7 +418,7 @@ model.prototype = {
     return this;
   },
 
-  sync: function(url, header) {
+  sync(url, header) {
     if (_isString(url)) {
       return modelPipe.call(
         this,
@@ -434,7 +434,7 @@ model.prototype = {
     return this;
   },
 
-  merge: function(data, isStatic) {
+  merge(data, isStatic) {
     if (data instanceof model) {
       data = data.get();
     }
@@ -446,7 +446,7 @@ model.prototype = {
     return this;
   },
 
-  transTo: function(md, isStatic, ft) {
+  transTo(md, isStatic, ft) {
     if (_isFn(isStatic)) {
       ft = isStatic;
       isStatic = false;
@@ -461,7 +461,7 @@ model.prototype = {
     return this;
   },
 
-  seek: function(keys, needCombined){
+  seek(keys, needCombined){
 
     if(keys){
 

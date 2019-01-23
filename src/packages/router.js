@@ -69,7 +69,15 @@ function returnT() {
   return true;
 }
 
-function toActive(source, path, query, state, notpush, isLink=true, isPopState) {
+function toActive(
+  source,
+  path,
+  query,
+  state,
+  notpush,
+  isLink = true,
+  isPopState,
+) {
   let cpath = checkPath(path);
 
   if (!(isLink && !cpath) && this._status) {
@@ -80,7 +88,7 @@ function toActive(source, path, query, state, notpush, isLink=true, isPopState) 
       key = keys(source.mapping),
       route,
       param;
-    state = is(state, 'Object') ? state : (isStr(state) ? JSON.parse(state) : {} );
+    state = is(state, 'Object') ? state : isStr(state) ? JSON.parse(state) : {};
 
     for (i = 0, l = key.length, checker; i < l; i++)
       if ((checker = source.mapping[key[i]]).test(path)) {
@@ -208,7 +216,7 @@ class Router {
           event.state,
           true,
           false,
-          true
+          true,
         );
       }.bind(this),
     );
@@ -242,11 +250,13 @@ class Router {
 
     this._status = 1;
 
-    if (path && isStr(path)){
+    if (path && isStr(path)) {
       return this.to(path, query, state, true, false);
     }
 
-    return this.to(location.pathname, location.search, {}, true, false);
+    return path === false
+      ? this
+      : this.to(location.pathname, location.search, {}, true, false);
   }
 
   stop() {
@@ -257,7 +267,11 @@ class Router {
   resolve(state) {
     if (!this._status) return this;
 
-    H.replaceState(is(state, 'Object') ? state : { _resolveTimeStamp: Date.now() }, null, location.href);
+    H.replaceState(
+      is(state, 'Object') ? state : {_resolveTimeStamp: Date.now()},
+      null,
+      location.href,
+    );
     return this;
   }
 }
