@@ -23,6 +23,7 @@
  * @Document: https://yj1028.me/Ax/v3/#introduce
  */
 
+  "use strict";
 
   function struct(){
     return self || window || this;
@@ -47,6 +48,8 @@
   // var root = this
   // var root = (function(){ return this || ev("this"); }());
   var root = struct();
+
+  //alert(root === window);
 
   // Sub struct return pointer
   // Zub struct with custom method in function
@@ -1617,10 +1620,13 @@
     return param;
   }
 
+
+  var cacheName = 'CUBEC@AIXCACHE';
+
   // base ajax aix [ method ]
   function aix(option){
+
     var config = extend({
-      // default param
       url       : '',
       type      : 'GET',
       param     : broken,
@@ -1640,25 +1646,37 @@
       contentType : true
     } , option || {} );
 
-    var ls = root.localStorage;
-
     if(isFn(config.param)){
       config.param = config.param();
     }
 
-    if(config.cache){
+    var cacheParam = config.param ? (isObj(config.param) ? paramStringify(config.param) : config.param) : "";
+    var cacheUrl = config.url || '';
+
+    if(config.cache && config.url){
+      var ls = root.localStorage;
+      var item = ls.getItem(cacheName);
+
       // *Init set localStorage
-      if(!ls.getItem('_'))
-        ls.setItem('_','{}');
+      if(!item){
+        item = '{}';
+        ls.setItem(cacheName,item);
+      }
 
-      var cache = JSON.parse(ls.getItem('_'));
-      var data = cache[config.url || root.location.href.split('#').shift()];
+      var cache = JSON.parse(item);
+      var data = cache[cacheUrl+"@"+cacheParam];
 
-      if(data!==void 0)
+      if(data !== void 0){
+        try{
+          data = config.emulateJSON ? JSON.parse(data) : data;
+        }catch(e){ }
+
         return config.sucess.call(root,data);
+      }
     }
 
-    var xhr = new XMLHttpRequest(), cType;
+    var xhr = new XMLHttpRequest();
+
     // with GET method
     if(config.type.toUpperCase() === 'GET' && config.param){
       config.url += (~config.url.search(/\?/g) ?
@@ -1668,8 +1686,10 @@
     }
 
     //set Loading
-    xhr.addEventListener('loadstart',config.loading);
-    xhr.addEventListener('loadend',config.loadend);
+    if(xhr.addEventListener){
+      xhr.addEventListener('loadstart',config.loading);
+      xhr.addEventListener('loadend',config.loadend);
+    }
 
     xhr.open(
       config.type,
@@ -1680,9 +1700,16 @@
     );
 
     // with POST method
-    cType = isObj(config.header) ?
+    var cType = isObj(config.header) ?
       (config.header['Content-Type'] || 'application/x-www-form-urlencoded' ) :
       'application/x-www-form-urlencoded';
+
+    // FormData support
+    if(window.FormData !== void 0 && config.param instanceof FormData){
+      cType = '';
+      config.contentType = false;
+      delete config.header['Content-Type'];
+    }
 
     if(config.header !== broken && isObj(config.header))
       ol(config.header,function(val,key){ xhr.setRequestHeader(key,val); });
@@ -1706,22 +1733,24 @@
           try{
             result = config.emulateJSON ? JSON.parse(xhr.responseText) : xhr.responseText;
           }catch(e){
+            console.error(e);
             return config.error.call(root,xhr.responseText,xhr,event);
           }
 
           config.success.call(root,result,xhr,event);
 
           // if cache been set writeJSON in chache
-          if(config.cache){
-            var cache = JSON.parse(ls.getItem('_'));
-            cache[config.url||root.location.href.split('#')[0]] = xhr.responseText;
-            ls.setItem('_',JSON.stringify(cache));
+          if(config.cache && config.url){
+            var ls = root.localStorage;
+            var cache = JSON.parse(ls.getItem(cacheName));
+            cache[cacheUrl+"@"+cacheParam] = xhr.responseText;
+            ls.setItem(cacheName,JSON.stringify(cache));
           }
         } else {
           var errData = {};
 
           try{
-            errData = JSON.parse(xhr.response);
+            errData = JSON.parse(xhr.responseText);
           }catch(e){
             console.error(e);
           }
@@ -1733,18 +1762,21 @@
 
     // setTimeout data of ajax
     if(toNumber(config.timeout)){
-      xhr.timeout = toNumber(config.timeout)*1000;
+      xhr.timeout = toNumber(config.timeout);
       xhr.ontimeout = function(){
         if(xhr.readyState !== 4 || !xhr.responseText)
-          config.error.call(root,xhr); xhr.abort();
+          config.error.call(root,{},xhr);
+        xhr.abort();
       };
     }
 
     // send request
-    return xhr.send(config.param ?
+    xhr.send(config.param ?
       (isObj(config.param) ?
         dataMIME(config.contentType,MIME[cType],config.param) :
-        config.param ) : null),xhr;
+        config.param) : null);
+
+    return xhr;
   }
 
   function JSONP(option){
@@ -1752,7 +1784,7 @@
       url : '',
       key : 'callback',
       param : broken,
-      timeout: 5,
+      timeout: 5000,
       error : noop,
       success : noop,
       callback : ('structJSTP'+Math.random()).replace('.','')
@@ -1771,23 +1803,23 @@
 
     // define callback
     root[config.callback] = function(res){
-      document.body.removeChild(tag,cyc(config.timesetup));
+      document.head.removeChild(tag,cyc(config.timesetup));
       root[config.callback] = null;
       config.success(res);
     };
 
     // append elm
     // send request
-    document.body.append(tag);
+    document.head.append(tag);
 
     // if timeout will trigger fail call
     if(toNumber(config.timeout)){
       config.timesetup = ayc(function(){
-        document.body.removeChild(tag);
+        document.head.removeChild(tag);
         root[config.callback] = null;
 
         config.error();
-      },config.timeout * 1000);
+      },config.timeout);
     }
   }
 

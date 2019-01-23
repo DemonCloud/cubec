@@ -245,8 +245,8 @@ const view = function(options = {}) {
 
   defined(this, {
     _vid : vid++,
-    _asb : (v)=>(v===_idt ? bounder : {}),
-    _ass : (v)=>(v===_idt ? slotQueue : [])
+    _asb : v => v===_idt ? bounder : {},
+    _ass : v => v===_idt ? slotQueue : []
   });
 
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options || {});

@@ -103,20 +103,20 @@ const model = function(option = {}) {
 
       _mid: mid++,
 
-      _asl: v => (v === _identify ? identify_lock : null),
+      _asl: v => v === _identify ? identify_lock : null,
 
-      _asv: v => (v === _identify ? verify : {}),
+      _asv: v => v === _identify ? verify : {},
 
-      _ash: v => (v === _identify ? ram : []),
+      _ash: v => v === _identify ? ram : [],
 
-      _asc: v => (v === _identify ? changeDetect : []),
+      _asc: v => v === _identify ? changeDetect : [],
 
       _v: !!_size(verify),
 
       _l: (state, v) =>
         v === _identify ? (this.isLock = identify_lock = !!state) : void 0,
 
-      _c: (newdata, v) => (v === _identify ? (cdata = newdata) : {}),
+      _c: (newdata, v) => v === _identify ? (cdata = newdata) : {},
 
       _s: identify_usestore,
     }),

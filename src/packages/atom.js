@@ -53,9 +53,9 @@ const atom = function(option = {}) {
 
   defined(this, {
     _mid: "_at"+atid++,
-    _assert : (todo, v) => (v === _identify ? todo(LIST) : []),
-    _transmit : (v) => (v === _identify ? _transmit : _noop),
-    _connecty : (v) => (v === _identify ? _isConnectivity : null)
+    _assert : (todo, v) => v === _identify ? todo(LIST) : [],
+    _transmit : v => v === _identify ? _transmit : _noop,
+    _connecty : v => v === _identify ? _isConnectivity : null
   });
 
   _extend(this.use(config.use,true), config, ATOM.IGNORE_KEYWORDS);

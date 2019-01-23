@@ -14,6 +14,7 @@ function modelFetch(type, url, param, header) {
       url: url || this.url || '',
       type: MODEL.EMULATEHTTP[type],
       async: true,
+      cache: this.cache || false,
       emulateJSON: this.emulateJSON,
       param: param || this.param || {},
       header: header || this.header || {},
