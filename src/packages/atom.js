@@ -2,7 +2,7 @@ import ATOM from '../constant/atom.define';
 import ERRORS from '../constant/errors.define';
 
 import struct from '../lib/struct';
-import store from './store';
+import store from '../lib/store';
 import model from './model';
 import {on, off, emit} from '../utils/universalEvent';
 import defined from '../utils/defined';

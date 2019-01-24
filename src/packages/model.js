@@ -2,7 +2,7 @@ import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
 
 import struct from '../lib/struct';
-import store from './store';
+import store from '../lib/store';
 import registerEvent from '../utils/registerEvent';
 import defined from '../utils/defined';
 import modelMultipleVerify from '../utils/modelMultipleVerify';
@@ -171,7 +171,7 @@ function modelChangeDetecter(model,currentData,prevData,preset){
 model.prototype = {
   constructor: model,
 
-  emit: emit,
+  emit,
 
   on(type){
     if(type && _isString(type)){
@@ -304,6 +304,18 @@ model.prototype = {
 
     if (this._ast(_cool, _identify) === empty && !clearStatic)
       this.emit('clear');
+
+    return this;
+  },
+
+  push(events){
+    if(_isString(events)){
+      events = events.split(",");
+    }
+
+    if(_isArray(events)){
+      this.emit(events.join(","),[this.get()]);
+    }
 
     return this;
   },

@@ -25,6 +25,8 @@
 
   "use strict";
 
+  import store from './store';
+
   function struct(){
     return self || window || this;
   }
@@ -1610,18 +1612,18 @@
   function dataMIME(enable,header,param){
     if(enable)
       switch(header){
-      case 0:
-        return paramStringify(param||{});
-      case 1:
-        return JSON.stringify(param||{});
-      default:
-        return paramStringify(param||{});
+        case 0:
+          return paramStringify(param||{});
+        case 1:
+          return JSON.stringify(param||{});
+        default:
+          return paramStringify(param||{});
       }
     return param;
   }
 
 
-  var cacheName = 'CUBEC@AIXCACHE';
+  var cacheName = '$$_STRUCT_AJAX_CACHE';
 
   // base ajax aix [ method ]
   function aix(option){
@@ -1654,22 +1656,24 @@
     var cacheUrl = config.url || '';
 
     if(config.cache && config.url){
-      var ls = root.localStorage;
-      var item = ls.getItem(cacheName);
+      var item = store.get(cacheName);
 
       // *Init set localStorage
       if(!item){
         item = '{}';
-        ls.setItem(cacheName,item);
+        store.set(cacheName,item);
       }
 
       var cache = JSON.parse(item);
-      var data = cache[cacheUrl+"@"+cacheParam];
+      var data = cache[cacheUrl+"#"+cacheParam];
 
       if(data !== void 0){
         try{
           data = config.emulateJSON ? JSON.parse(data) : data;
-        }catch(e){ }
+        }catch(e){
+          console.error("[cubec.struct] parse error with cache data under emulateJSON");
+          return config.error.call(root,data);
+        }
 
         return config.sucess.call(root,data);
       }
@@ -1741,10 +1745,9 @@
 
           // if cache been set writeJSON in chache
           if(config.cache && config.url){
-            var ls = root.localStorage;
-            var cache = JSON.parse(ls.getItem(cacheName));
+            var cache = JSON.parse(store.get(cacheName));
             cache[cacheUrl+"@"+cacheParam] = xhr.responseText;
-            ls.setItem(cacheName,JSON.stringify(cache));
+            store.set(cacheName,JSON.stringify(cache));
           }
         } else {
           var errData = {};

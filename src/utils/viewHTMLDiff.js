@@ -123,15 +123,12 @@ const attrSetter = function(elm, attr, values) {
 const attrClear = function(elm, key, val) {
   if (key[0] === ':' && _isFn(val)) $(elm).off(key.slice(1), val);
   else if (elm[key] && !delete elm[key])
-    try {
-      elm[key] = null;
-    } catch (e) { }
+    try { elm[key] = null; } catch (e) { }
   else elm.removeAttribute(key);
 };
 
 const attrEvent = function(key, val, props) {
-  let res = val,
-    fn;
+  let res = val, fn;
 
   // parse props
   if (attrprops.test(val)) {

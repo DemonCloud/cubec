@@ -7,10 +7,7 @@
 const LS = window.localStorage;
 const SN = 'CUBEC@';
 const revs = function(str) {
-  return str
-    .split('')
-    .reverse()
-    .join('');
+  return str.split('').reverse().join('');
 };
 
 const store = {
@@ -108,7 +105,7 @@ const store = {
   set(name, data) {
     LS.setItem(
       SN + this.incry(name, revs(name)),
-      this.incry(encodeURIComponent(JSON.stringify(data)), name),
+      this.incry(encodeURIComponent((data && typeof data === 'object') ? JSON.stringify(data) : data+""), name),
     );
   },
 

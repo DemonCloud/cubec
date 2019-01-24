@@ -6,7 +6,7 @@ const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
 const uglify = require('rollup-plugin-uglify');
 const babel = require('rollup-plugin-babel');
-const optimizeJs = require('rollup-plugin-optimize-js')
+const optimizeJs = require('rollup-plugin-optimize-js');
 
 // const { minify } = require('uglify-es');
 
@@ -29,7 +29,7 @@ const plugins = [
 
   // babel 打包
   babel({
-    exclude: ['node_modules/**','src/lib/**'], // only transpile our source code,
+    exclude: ['node_modules/**','src/lib/jquery.js'], // only transpile our source code,
     runtimeHelpers: true,
     externalHelpers: true,
     presets: [
