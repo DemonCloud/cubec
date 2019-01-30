@@ -566,6 +566,7 @@ view.prototype = {
     const createDestory = ()=>{
       $(this.root).off();
       this.root.innerHTML = "";
+      _eachObject(this._asb(_idt), (item)=>this.disconnect(item));
       if(this.root.parentNode && withRoot) this.root.parentNode.removeChild(this.root);
       this.emit('destroy', delete this.root);
     };

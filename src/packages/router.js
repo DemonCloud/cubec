@@ -193,10 +193,10 @@ class Router {
 
     each(source.routes, function(action, path) {
       let routeParam = [],
-        pathMatcher = trim(path).replace(pathReg, function(match, param) {
-          routeParam.push(param);
-          return mappingReg;
-        });
+          pathMatcher = trim(path).replace(pathReg, function(match, param) {
+            routeParam.push(param);
+            return mappingReg;
+          });
       source.params[path] = routeParam;
       source.mapping[path] = RegExp('^' + pathMatcher + '[/]?$');
     });

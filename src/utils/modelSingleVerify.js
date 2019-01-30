@@ -1,5 +1,4 @@
 import struct from '../lib/struct';
-import modelMutipleVerify from './modelMultipleVerify';
 
 const _identify = struct.broken;
 const _set = struct.prop('set');
