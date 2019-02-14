@@ -1,4 +1,5 @@
 import VIEW from '../constant/view.define';
+import ERRORS from '../constant/errors.define';
 
 import struct from '../lib/struct';
 import catom from './atom';
@@ -107,7 +108,7 @@ function compactRender(view,render){
     try{
       return render.apply(view, arguments);
     }catch(e){
-      console.error("view {custom} render static throw error with using illegality arguments",e,arguments);
+      console.error(ERRORS.VIEW_CUSTOM_RENDER, e, arguments);
       if (!_hasEvent(view, "catch")) throw e;
       return _idt;
     }
@@ -295,7 +296,7 @@ const view = function(options = {}) {
 
             return arguments;
           }catch(e){
-            console.error("view render static throw error with using illegality arguments",e,arguments);
+            console.error(ERRORS.VIEW_RENDER,e,arguments);
             if(!_hasEvent(this,"catch")) throw e;
             return _idt;
           }
@@ -334,7 +335,7 @@ const view = function(options = {}) {
         // delete mount
         delete this.mount;
       } else {
-        console.error("mount position is not a pure HTMLElement or Node");
+        console.error(ERRORS.VIEW_MOUNT);
       }
 
       return this;

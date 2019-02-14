@@ -55,9 +55,7 @@ function defaultParse() {
     if (args.length > 1) _eachArray(args, data => (res = _merge(res, data)));
     else res = args[0];
   } catch (error) {
-    console.error(
-      '[cubec model] the fetch data with parse error, please check server response data format with model-{ catch } event!',
-    );
+    console.error(ERRORS.MODEL_DEFAULT_PARSE);
     this.emit('catch', [error]);
     return false;
   }

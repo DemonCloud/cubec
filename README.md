@@ -2,6 +2,19 @@
 
 Cubec, micro mvc framework
 
+# Version Control
+
+[1.5.0]
+
+1. 重构router模块，使用类前缀树算法
+2. 精简代码，收拢错误提示
+
+[2.0.0]
+
+1. 独立DOM事件系统
+2. 优化的模板引擎，slot规范化
+3. 对模型进行优化
+4. 强化原子的功能
 
 # Module
 

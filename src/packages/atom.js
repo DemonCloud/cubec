@@ -62,7 +62,12 @@ const atom = function(option = {}) {
 };
 
 const stom = function(prevatom, list = [], connect) {
-  let c = new atom({ use: list, connect });
+  let c = new atom(
+    prevatom.preset ? 
+    { use: list, connect } :
+    { use: list, connect, perset: prevatom.perset }
+  );
+
   c.back = () => prevatom;
 
   return c;
@@ -112,7 +117,7 @@ atom.prototype = {
     return this;
   },
 
-  transmit(args=[]){
+  transmit(args=[]) {
     let transData = this.toChunk();
 
     if(_isString(this.preset) && this.preset){
@@ -129,7 +134,7 @@ atom.prototype = {
     const prevLen = cLIST.length;
 
     // single model out
-    if(_isModel(list) && !_has(cLIST,list)){
+    if(_isModel(list) && _has(cLIST,list)){
       outAtomList(cLIST, list, isConnecty, transmit);
 
     // mutilp models out
@@ -190,16 +195,16 @@ atom.prototype = {
   },
 
   select(match, connect=false) {
-    return stom(this, atomAssertMatch(this.all(), match), connect);
+    return stom(this, atomAssertMatch(this.all(), match), connect, this);
   },
 
-  subscribe(fn){
+  subscribe(fn) {
     if(_isFn(fn))
       on.call(this,"change",fn);
     return this;
   },
 
-  unsubscribe(fn){
+  unsubscribe(fn) {
     if(_isBool(fn) && fn){
       off.call(this,"change");
     }else if(_isFn(fn)){
@@ -209,7 +214,7 @@ atom.prototype = {
     return this;
   },
 
-  reset(isStatic=true){
+  reset(isStatic=true) {
     this.unsubscribe(true);
     this.out(this.all(), isStatic);
     return this;
@@ -221,10 +226,7 @@ atom.prototype = {
 
   toChunk() {
     let res = {};
-
-    this.of(m => {
-      if(m.name) res[m.name] = m.get();
-    });
+    this.of(m => res[m.name || m._mid] = m.get());
 
     return res;
   },
