@@ -1,5 +1,3 @@
-function registerEvent(fn, type) {
+export default function(fn, type) {
   return this.on(type, fn);
 }
-
-export default registerEvent;

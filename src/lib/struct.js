@@ -25,13 +25,11 @@
 
   "use strict";
 
-  import store from './store';
-
   function struct(){
     return self || window || this;
   }
 
-  // struct.VERSION = '4.2.6';
+  struct.VERSION = 'cubec external';
 
   // base method
   var or = {},
@@ -1125,7 +1123,7 @@
         var xkeys = keys(x), ykeys = keys(y), j=xkeys.length;
 
         if(xkeys.length === ykeys.length){
-          for( ;j--; ) if(!eq(x[xkeys[j]],y[xkeys[j]])) return false;
+          for(; j--; ) if(!eq(x[xkeys[j]],y[xkeys[j]])) return false;
           return true;
         }
       }
@@ -1622,8 +1620,7 @@
     return param;
   }
 
-
-  var cacheName = '$$_STRUCT_AJAX_CACHE';
+  var cacheaix = {};
 
   // base ajax aix [ method ]
   function aix(option){
@@ -1646,32 +1643,31 @@
       aysnc     : true,
       emulateJSON : true,
       contentType : true
-    } , option || {} );
+    } , option || {});
 
     if(isFn(config.param)){
       config.param = config.param();
     }
 
     var cacheParam = config.param ? (isObj(config.param) ? paramStringify(config.param) : config.param) : "";
-    var cacheUrl = config.url || '';
+    var cacheUrl = config.url + "$$" + cacheParam;
 
+    // check if has ajax cache
     if(config.cache && config.url){
-      var item = store.get(cacheName);
+      var data;
+      var item = cacheaix[cacheUrl];
 
       // *Init set localStorage
       if(!item){
         item = '{}';
-        store.set(cacheName,item);
+        cacheaix[cacheUrl] = item;
       }
 
-      var cache = JSON.parse(item);
-      var data = cache[cacheUrl+"#"+cacheParam];
-
-      if(data !== void 0){
+      if((data = item) != null){
         try{
           data = config.emulateJSON ? JSON.parse(data) : data;
         }catch(e){
-          console.error("[cubec.struct] parse error with cache data under emulateJSON");
+          console.error("[cubec.struct] parse error with ajax cache data under emulateJSON");
           return config.error.call(root,data);
         }
 
@@ -1745,9 +1741,7 @@
 
           // if cache been set writeJSON in chache
           if(config.cache && config.url){
-            var cache = JSON.parse(store.get(cacheName));
-            cache[cacheUrl+"@"+cacheParam] = xhr.responseText;
-            store.set(cacheName,JSON.stringify(cache));
+            cacheaix[cacheUrl] = xhr.responseText;
           }
         } else {
           var errData = {};

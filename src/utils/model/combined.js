@@ -1,4 +1,4 @@
-import struct from '../lib/struct';
+import struct from '../../lib/struct';
 
 const _each = struct.each("object");
 const _eachAry = struct.each("array");

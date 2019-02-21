@@ -1,9 +1,9 @@
-import struct from '../lib/struct';
+import struct from '../../lib/struct';
 
 const _type = struct.type();
 const _each = struct.each('array');
 
-function atomAssertMatch(list, match) {
+export default function(list, match) {
   let use = [];
 
   switch (_type(match)) {
@@ -25,5 +25,3 @@ function atomAssertMatch(list, match) {
 
   return use;
 }
-
-export default atomAssertMatch;

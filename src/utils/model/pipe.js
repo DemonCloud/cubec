@@ -1,6 +1,6 @@
-import MODEL from '../constant/model.define';
-import struct from '../lib/struct';
-import modelLockStatus from './modelLockStatus';
+import MODEL from '../../constant/model.define';
+import struct from '../../lib/struct';
+import modelLockStatus from './lockstatus';
 
 const _ajax = struct.ajax();
 

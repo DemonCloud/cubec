@@ -1,22 +1,50 @@
 import cubec from '../src/cubec';
 
-const root = window.rt = document.createElement("div");
-document.body.appendChild(root);
+const r = window.router = cubec.router({
+  targets: ".router",
 
-const view = cubec.view({
-  root: root,
-  template: `
-    <h1>Hello World</h1>
-    <div>
-      <b>123</b>
-    </div>
-  `,
+  routes: {
+    '/': ['root'],
+    '/home': ['home'],
+    '/home/better/': ['better'],
+    '/:id/tree': ['custom'],
+    '/today/:id': ['today'],
+    '/today/:id/subs': ['custom'],
+    '/custom/:id/event/:marked': ['custom']
+  },
+
+  actions: {
+    'root': function(){
+      console.log("root");
+    },
+    'home': function(){},
+    'better': function(){},
+    'today': function(){},
+    'custom': function(param,query,state){
+      console.log(param, query);
+    },
+  },
 
   events: {
-    "click:div": function(e){
-      this.destroy();
-    }
+    catch(){
+      console.log("catch");
+    },
+
+    'catch:notmatch': function(path){
+      console.log("notmatch", path);
+    },
+
+    'completeActions': function(path){}
   }
+});
+
+r.start('/custom/213/event/1');
+
+const view = cubec.view({
+  root: document.body,
+  template: `
+    <a class="router" href="/today/abc/subs">/toady/abc/subs</a>
+  `
 });
 
 view.render();

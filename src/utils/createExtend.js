@@ -2,7 +2,7 @@ import struct from '../lib/struct';
 
 const _merge = struct.merge();
 
-function createExtend(module) {
+export default function(module) {
   return function(malloc) {
     const extender = function(o) {
       return new module(_merge(malloc, o || {}));
@@ -14,5 +14,3 @@ function createExtend(module) {
     return extender;
   };
 }
-
-export default createExtend;

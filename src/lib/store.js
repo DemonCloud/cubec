@@ -2,7 +2,7 @@
 // github: https://github.com/DemonCloud
 // date: 2017/12/28
 // localStorage with micro encryption
-// storage.js
+// store.js
 
 const LS = window.localStorage;
 const SN = 'CUBEC@';

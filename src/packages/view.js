@@ -5,7 +5,7 @@ import struct from '../lib/struct';
 import catom from './atom';
 import cmodel from './model';
 import $ from '../lib/jquery';
-import slik from '../utils/viewHTMLDiff';
+import htmlDiff from '../utils/view/htmlDiff';
 import defined from '../utils/defined';
 import {on, off} from '../utils/universalEvent';
 import registerEvent from '../utils/registerEvent';
@@ -211,12 +211,12 @@ function completeTemplate(stencil, name, vid) {
 // extend render methods
 $.fn.render = function(newhtml, view, props, args) {
   return this.each(function(i,elm) {
-    let target = slik.createTreeFromHTML(newhtml, props);
+    let target = htmlDiff.createTreeFromHTML(newhtml, props);
 
     if (elm._vid !== view._vid || !view.axml) {
       elm._destory = () => view.destroy();
 
-      let internal = slik.createDOMElement((view.axml = target), view).firstElementChild;
+      let internal = htmlDiff.createDOMElement((view.axml = target), view).firstElementChild;
       updateSlotComponent(view, args);
 
       elm.appendChild(internal, (elm.innerHTML = ''));
@@ -224,9 +224,9 @@ $.fn.render = function(newhtml, view, props, args) {
       return view;
     }
 
-    slik.applyPatch(
+    htmlDiff.applyPatch(
       elm,
-      slik.treeDiff(view.axml, target, [], null, null, view),
+      htmlDiff.treeDiff(view.axml, target, [], null, null, view),
       (view.axml = target),
     );
 
@@ -240,9 +240,10 @@ $.fn.render = function(newhtml, view, props, args) {
 // Selector.prototype.render = function(newhtml, view, props, args) {};
 
 const view = function(options = {}) {
-  this.refs = {};
   let bounder = {};
   let slotQueue = [];
+
+  this.refs = {};
 
   defined(this, {
     _vid : vid++,
@@ -400,7 +401,7 @@ view.prototype = {
 
     r._vid = view._vid;
 
-    this.axml = slik.createTreeFromHTML(r.innerHTML);
+    this.axml = htmlDiff.createTreeFromHTML(r.innerHTML);
 
     return this;
   },

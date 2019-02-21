@@ -1,4 +1,4 @@
-import struct from '../lib/struct';
+import struct from '../../lib/struct';
 
 const _identify = struct.broken;
 const _set = struct.prop('set');

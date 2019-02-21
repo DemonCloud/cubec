@@ -13,6 +13,16 @@ const MODEL = {
     'verify',
     'filter',
     'lock',
+
+    '_ast',
+    '_mid',
+    '_asl',
+    '_asv',
+    '_asc',
+    '_v',
+    '_l',
+    '_c',
+    '_s'
   ],
   EMULATEHTTP: {
     get: 'GET',

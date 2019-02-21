@@ -1,277 +1,341 @@
-import struct from '../lib/struct';
-import view from './view';
-
-// Router use HTML5 History API
-
-// author: YiJun
-
-// * use pushState or replaceState
-// * onpopstate event only trigger when the History go(+-1) (user trigger)
-// * historyStates as a stack [ - - - = - - ]
-
-// *define assert;
-// *define history [H]
-// *define pathReg to exec
-
-// Default Options
-// for merge the keywords
-// * example :
+// cubec router next
 //
-// new Router({
-//   elements: [".router"],
-
-//   routes:{
-//     "/": ["home"],
-//     "/hifi" : ["hifi"],
-//     "/article/:name" : ["article"],
+// Author: YiJun
+// Date: 2019/2/15
+//
+// use prefix tree algorithm to path macther
+//
+// API:
+//   to(path, query, state),
+//   resolve(state),
+//   add(path, actions{}, useaction[]),
+//   remove(path)
+//   start(),
+//   stop(),
+//
+// example:
+//
+// cubec.router({
+//   target: ".elmclass",
+//
+//   routes: {
+//     '/home': ['home'],
+//     '/home/better/': ['better'],
+//     '/today/:id/subs: ['today'],
+//     '/custom/:id/event/:marked : ['custom']
 //   },
-
-//   actions:{
-//     home: act_home,
-//     hifi: act_hifi,
-//     article: act_post
+//
+//   actions: {
+//     'home': function,
+//     'better': function,
+//     'today': function,
+//     'custom': function,
+//   }
+//
+//   beforeActions: function,
+//
+//   events: {
+//     completeActions: function,
+//     preventActions: function,
+//     catch:notmatch: function,
+//     catch: function
 //   }
 // });
 
-const _ = [],
-  H = window.history,
-  pathReg = /\/:([^\s/]+)/g,
-  mappingReg = '/([^\\s\\/]+)';
+import struct from '../lib/struct';
+import ROUTER from '../constant/router.define';
+import defined from '../utils/defined';
+import view from './view';
 
-// Define Utils [ struct ]
-const merge = struct.merge(),
-  is = struct.type('def'),
-  each = struct.each(),
-  map = struct.map(),
-  trim = struct.string('trim'),
-  keys = struct.keys(),
-  slice = struct.slice(),
-  cmb = struct.combined(),
-  isStr = struct.type('string'),
-  isArr = struct.type('array'),
-  noop = struct.noop(),
-  qstr = struct.param('stringify'),
-  toNum = struct.convert('number'),
-  clone = struct.cloneDeep(),
-  qpars = struct.param('parse');
+import pathfixer from '../utils/router/pathfixer';
+import pathpatch from '../utils/router/pathpatch';
+import generatorEvents from '../utils/router/generatorEvents';
+import generatorRouteTree from '../utils/router/generatorRouteTree';
+import historyActive from '../utils/router/historyActiveAction';
 
-// About trigger
-//  - when refresh browser at router init
-//  - when the click binder router-link
-//  - when the history go or back (popstate)
+const _idt = struct.broken;
+const _eachObject = struct.each('object');
+const _eachArray = struct.each('array');
+const _merge = struct.merge();
+const _isString = struct.type('string');
+const _isObject = struct.type('object');
+const _isArray = struct.type('array');
+const _isFn = struct.type('func');
+const _paramParse = struct.param('parse');
+const _size = struct.size();
+const _combined = struct.combined();
+const _every = struct.every();
+const _noop = struct.noop();
+const _extend = struct.extend();
+const _eq = struct.eq();
+const _on = struct.event('on');
+const _off = struct.event('off');
+const _emit = struct.event('emit');
 
-// Active the routers
-function checkPath(path) {
-  return path && path !== location.pathname && path !== location.pathname + '/';
-}
+let rid = 0;
 
-function returnT() {
-  return true;
-}
+const leafSign = '###';
+const paramSign = ':';
+const rootSign = '/';
 
-function toActive(
-  source,
-  path,
-  query,
-  state,
-  notpush,
-  isLink = true,
-  isPopState,
-) {
-  let cpath = checkPath(path);
+const returnTrue = function(){ return true; };
 
-  if (!(isLink && !cpath) && this._status) {
-    let _this = this,
-      i,
-      l,
-      checker,
-      key = keys(source.mapping),
-      route,
-      param;
-    state = is(state, 'Object') ? state : isStr(state) ? JSON.parse(state) : {};
-
-    for (i = 0, l = key.length, checker; i < l; i++)
-      if ((checker = source.mapping[key[i]]).test(path)) {
-        route = key[i];
-        param = cmb(source.params[route], slice(checker.exec(path), 1));
-        break;
-      }
-
-    // if exist router
-    if (route) {
-      let queryString = isStr(query)
-        ? (query.charAt(0) !== '?' ? '?' : '') + query
-        : is(query, 'Object')
-          ? '?' + qstr(query)
-          : '';
-
-      query = is(query, 'Object') ? query : qpars(query);
-
-      if (source.beforeActions(path, param, query, state)) {
-        let names = source.routes[route];
-
-        each(
-          map(names, function(name) {
-            // setup funtion call
-            return source.actions[name] || noop;
-          }),
-          function(fn) {
-            return fn.call(_this, param, query, state);
-          },
-        );
-
-        if (!notpush)
-          H[cpath ? 'pushState' : 'replaceState'](
-            state,
-            null,
-            path + queryString,
-          );
-
-        source.completedActions(path, param, query, state);
-      }
-    }
-  }
-
-  return this;
-}
-
-const DEFAULT_ROUTER_OPTION = {
-  routes: {},
-  actions: {},
-  beforeActions: returnT,
-  completedActions: noop,
-};
-
-// Router
+// Router Class
 class Router {
-  constructor(option = {}) {
-    const _this = this;
-    let source = merge(clone(DEFAULT_ROUTER_OPTION), option);
+  constructor(config={}){
+    config = _merge(ROUTER.DEFAULT_OPTION, config);
 
-    // create Assert method
-    this._status = 0;
-    this._assert = function(idf) {
-      if (idf === _) return source;
+    let cache = {};
+    let status = false;
+
+    const idmap = {};
+    const targets = _isArray(config.targets) ? targets.join(",") : config.targets;
+    const beforeActions = _isFn(config.beforeActions) ? config.beforeActions : returnTrue;
+    const source = {
+      idmap,
+      tree: generatorRouteTree(config.routes, idmap),
+      actions: config.actions
     };
 
-    let delegatorEvents = {},
-      events;
+    _eachObject(
+      config.events,
+      function(event, eventName){ _on(this, eventName, event); },
+      defined(this, {
+        _rid: rid++,
+        _assert: idt => (_idt === idt ? source : {}),
+        _status: (idt, change) => ( _idt === idt ? (status=change) : null),
+        _idmap: idt => (_idt === idt ? idmap: {}),
+        _clear: idt => (_idt === idt ? (cache = {}) : null),
+        _b: idt => (_idt === idt ? beforeActions : null),
+        _s: idt => (_idt === idt ? status : null),
+        _c: idt => (_idt === idt ? cache : {})
+      })
+    );
 
-    if (
-      (events = map(source.elements, function(elm) {
-        return 'click:' + elm;
-      }).join('|'))
-    ) {
-      delegatorEvents[events] = function(e) {
-        e.preventDefault();
+    // 增加全局监听事件
+    let gfn;
+    let gview;
 
-        const elm = e.currentTarget;
+    window.addEventListener("popstate", gfn = (event)=>{
+      this.__match(
+        pathfixer(location.pathname),
+        _paramParse(location.search),
+        event.state,
+        false,  // isResolve
+        true,   // isPopState
+        false
+      );
+    });
 
-        // click event trigger
-        return _this.to(
-          elm.to || elm.getAttribute('to') || elm.getAttribute('href'), //path variable
-          elm.query || elm.getAttribute('query'), //queryString
-          elm.state || elm.getAttribute('state'), //state
-          0, //needpush
-          1, //isLink
-        );
-      };
-
-      // create delegatorView on root
-      this._delegator = new view({
+    // 绑定dom事件
+    if(config.targets && targets){
+      gview = new view({
         root: document.documentElement,
-        render: noop,
-        events: delegatorEvents,
+        render: _noop,
+        events: generatorEvents(this, targets)
       });
     }
 
-    source.mapping = {};
-    source.params = {};
-    source.routes = map(source.routes, function(action) {
-      return isArr(action) ? action : [action];
-    });
+    // 结束router的生命周期
+    this.destory = function(){
+      status = false;
+      _off.call(this);
+      window.removeEventListener('popstate', gfn);
+      if(gview) gview.off(`click:${targets}`);
+    };
 
-    each(source.routes, function(action, path) {
-      let routeParam = [],
-          pathMatcher = trim(path).replace(pathReg, function(match, param) {
-            routeParam.push(param);
-            return mappingReg;
-          });
-      source.params[path] = routeParam;
-      source.mapping[path] = RegExp('^' + pathMatcher + '[/]?$');
-    });
-
-    // use location API
-    // path : location.pathname
-    // query : location.search
-    // state : event.state
-    window.addEventListener(
-      'popstate',
-      function(event) {
-        return toActive.call(
-          this,
-          source,
-          location.pathname,
-          location.search,
-          event.state,
-          true,
-          false,
-          true,
-        );
-      }.bind(this),
-    );
+    _extend(this, config, ROUTER.IGNORE_KEYWORDS);
   }
 
-  to(path, query, state, notpush, isLink) {
-    return toActive.call(
-      this,
-      this._assert(_),
-      path,
-      query,
-      state,
-      notpush,
-      isLink,
-    );
-  }
+  // self method match route
+  __match(path, query, state, isResolve=false, isPopState=false, isStart=false){
+    if(!isStart && (
+         !path
+      || !this._s(_idt)
+      || ((!isPopState && !isResolve) &&
+           (rootSign+path) === location.pathname &&
+             _eq(query, _paramParse(location.search)))
+      || (isResolve && path !== pathfixer(location.pathname))
+    )) return this;
 
-  back() {
-    H.back();
-    return this;
-  }
+    let matchId = false;
+    let activepath = pathpatch(path, query);
+    let paramValue = [];
 
-  go(current) {
-    let c = toNum(current);
-    if (c) H.go(c);
-    return this;
-  }
+    const _cache = this._c(_idt);
+    const _source = this._assert(_idt);
+    const _tree = _source.tree;
+    const _idmap = _source.idmap;
+    const _actions = _source.actions;
 
-  start(path, query, state) {
-    if (this._status) return this;
+    // tap cache
+    if(_cache[activepath]){
+      const args = _cache[activepath];
 
-    this._status = 1;
+      historyActive(this,
+        activepath,
+        args.actions,
+        [args.param, args.query, state],
+        isResolve,
+        isPopState,
+        isStart
+      );
 
-    if (path && isStr(path)) {
-      return this.to(path, query, state, true, false);
+      return this;
     }
 
-    return path === false
-      ? this
-      : this.to(location.pathname, location.search, {}, true, false);
-  }
+    // isRoot
+    if(path === _idt){
+      matchId = _tree[rootSign][leafSign];
+    }else{
+      const pointer = path.split(rootSign);
+      const indexEnd = pointer.length - 1;
 
-  stop() {
-    this._status = 0;
+      if(_size(pointer)){
+        let i = 0;
+        let l = pointer.length;
+        let p = _tree;
+        let part;
+
+        for(; i<l; i++){
+          part = pointer[i];
+
+          if(p[part]){
+            p = p[part];
+          }else if(p[paramSign]){
+            p = p[paramSign];
+            paramValue.push(part);
+          }else{
+            break;
+          }
+
+          if(i === indexEnd){
+            matchId = p[leafSign];
+          }
+        }
+      }
+    }
+
+    if(matchId = _idmap[matchId]){
+      let tapactions = matchId.actions.map(key=>_actions[key]);
+      let tapparams = _combined(matchId.param, paramValue);
+      let tapargs = [tapparams, query, state];
+
+      historyActive(this,
+        activepath,
+        tapactions,
+        tapargs,
+        isResolve,
+        isPopState,
+        isStart
+      );
+
+      _cache[activepath] = { actions: tapactions, param: tapparams, query };
+    }else{
+      _emit(this,"catch:notmatch",[activepath,query,state]);
+    }
+
     return this;
   }
 
-  resolve(state) {
-    if (!this._status) return this;
+  // trigger route
+  to(path=rootSign, query={}, state={}){
+    query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};
+    query = _merge(_paramParse(path), query);
+    state = _isObject(state) ? state : {};
 
-    H.replaceState(
-      is(state, 'Object') ? state : {_resolveTimeStamp: Date.now()},
-      null,
-      location.href,
+    return this.__match(pathfixer(path), query, state);
+  }
+
+  // add route
+  add(route, actions, newAction){
+    if(!route || !actions) return this;
+
+    const _source = this._assert(_idt);
+
+    if(newAction && _isObject(newAction) && _every(newAction,a=>_isFn(a)))
+      _extend(_source.actions, newAction);
+
+    generatorRouteTree(
+      { [route]: actions },
+      _source.idmap,
+      _source.tree
     );
+
+    this._clear(_idt);
+
+    return this;
+  }
+
+  // remove route
+  remove(route){
+    if(!route) return this;
+
+    const _source = this._assert(_idt);
+    const _idmap = _source.idmap;
+    const _tree = _source.tree;
+
+    let path = pathfixer(route);
+
+    if(path === _idt){
+      if(_tree[rootSign]){
+        delete _idmap[_tree[rootSign][leafSign]];
+        delete _tree[rootSign][leafSign];
+      }
+    }else{
+      path = path.split(rootSign).map(function(part){
+        return part[0] === paramSign ? paramSign : part;
+      });
+      const pathEnd = path.length - 1;
+
+      let p = _tree;
+      _eachArray(path, function(part, index){
+        if((p = p[part]) && index === pathEnd){
+          if(p[leafSign]){
+            delete _idmap[p[leafSign]];
+            delete p[leafSign];
+          }
+        }
+      });
+    }
+
+    this._clear(_idt);
+
+    return this;
+  }
+
+  resolve(state={}){
+    return this.__match(
+      pathfixer(location.pathname),
+      _paramParse(location.search),
+      (state && _isObject(state)) ? state : {},
+      true,  // isResolve
+      false
+    );
+  }
+
+  start(path, query, state){
+    this._status(_idt, true);
+
+    if(path == null) return this;
+
+    query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};
+    query = _merge(_paramParse(path), query);
+    state = _isObject(state) ? state : {};
+
+    if(path && _isString(path)){
+      const usePath = pathfixer(path);
+      this.__match(usePath, query, state, usePath === pathfixer(location.pathname), false);
+    }else if(path === false){
+      this.__match(pathfixer(location.pathname), _paramParse(location.search), state, false, false, true);
+    }
+
+    return this;
+  }
+
+  stop(){
+    this._status(_idt, false);
+
     return this;
   }
 }

@@ -1,5 +1,5 @@
-import struct from '../lib/struct';
-import $ from '../lib/jquery';
+import struct from '../../lib/struct';
+import $ from '../../lib/jquery';
 
 const _set = struct.prop("set");
 const _isStr = struct.type("string");
@@ -63,7 +63,7 @@ const patchList = [
 ];
 
 const slikReg = new RegExp(
-  '</([^><]+?)>|' + '<([^><]+?)/>|' + '<([^><]+?)>|' + '([^><]+)|$',
+  '</([^><]+?)>|<([^><]+?)/>|<([^><]+?)>|([^><]+)|$',
   'g',
 );
 
@@ -121,7 +121,8 @@ const attrSetter = function(elm, attr, values) {
 };
 
 const attrClear = function(elm, key, val) {
-  if (key[0] === ':' && _isFn(val)) $(elm).off(key.slice(1), val);
+  if (key[0] === ':' && _isFn(val))
+    $(elm).off(key.slice(1), val);
   else if (elm[key] && !delete elm[key])
     try { elm[key] = null; } catch (e) { }
   else elm.removeAttribute(key);
@@ -233,8 +234,9 @@ const patchSlot = function(slot, elm) {
   }
 };
 
-// SLIK singe html parse and diff
-const slik = {
+// singe html parse and diff
+// with virtual dom algorithm
+const htmlDiff = {
   treeDiff: function(org, tag, patch, orgParent, tagParent, view) {
     if (org === void 0)
       // new node
@@ -498,4 +500,4 @@ const slik = {
   }
 };
 
-export default Object.freeze(_v8(slik));
+export default Object.freeze(_v8(htmlDiff));

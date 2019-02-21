@@ -1,7 +1,5 @@
-function createC(module) {
+export default function(module) {
   return function(o) {
     return new module(o || {});
   };
 }
-
-export default createC;

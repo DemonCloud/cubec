@@ -4,12 +4,12 @@ import ERRORS from '../constant/errors.define';
 import struct from '../lib/struct';
 import store from '../lib/store';
 import model from './model';
-import {on, off, emit} from '../utils/universalEvent';
 import defined from '../utils/defined';
-import atomAssertMake from '../utils/atomAssertMake';
-import atomAssertModel from '../utils/atomAssertModel';
-import atomAssertMatch from '../utils/atomAssertMatch';
-import atomTargetWith from '../utils/atomTargetWith';
+import {on, off, emit} from '../utils/universalEvent';
+import atomAssertMake from '../utils/atom/assertMake';
+import atomAssertModel from '../utils/atom/assertModel';
+import atomAssertMatch from '../utils/atom/assertMatch';
+import atomTargetWith from '../utils/atom/targetWith';
 
 const _extend = struct.extend();
 const _clone = struct.clone();
