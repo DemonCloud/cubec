@@ -6,6 +6,8 @@ export default function(router, targets){
       event.preventDefault();
 
       const routeElm = event.currentTarget;
+      const query = routeElm.query || routeElm.getAttribute("query") || {};
+      const path = urlpatch(routeElm.to || routeElm.href || routeElm.getAttribute("href") || routeElm.getAttribute("to"));
 
       // safe parse state
       let state = routeElm.state || routeElm.getAttribute("state") || "{}";
@@ -18,8 +20,8 @@ export default function(router, targets){
       }
 
       return router.to(
-        urlpatch(routeElm.to || routeElm.href || routeElm.getAttribute("href") || routeElm.getAttribute("to")),
-        routeElm.query || routeElm.getAttribute("query") || {},
+        path,
+        query,
         state
       );
     }
