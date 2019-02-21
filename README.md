@@ -19,6 +19,17 @@ Cubec, micro mvc framework
 
 in development...
 
+run development after ``npm install``
+
+```sh
+npm run dev
+```
+
+build source
+
+```sh
+npm run build
+```
 
 # The old documentation
 

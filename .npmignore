@@ -8,6 +8,7 @@ rollup.config.js
 webpack.config.js
 text.html
 yarn.lock
+package-lock.json
 src/*
 src
 page
