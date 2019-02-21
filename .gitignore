@@ -6,6 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 .tern-port*
 .npm-log
+dist
+dist/*
 
 # Runtime data
 pids
