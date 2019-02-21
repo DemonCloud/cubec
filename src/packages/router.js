@@ -89,7 +89,7 @@ class Router {
     let status = false;
 
     const idmap = {};
-    const targets = _isArray(config.targets) ? targets.join(",") : config.targets;
+    const targets = _isArray(config.targets) ? config.targets.join(",") : config.targets;
     const beforeActions = _isFn(config.beforeActions) ? config.beforeActions : returnTrue;
     const source = {
       idmap,
