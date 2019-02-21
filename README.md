@@ -17,7 +17,9 @@ Cubec, micro mvc framework
 
 # Documentation [v1]
 
-in development...
+[doc/v1] in development...
+
+----------
 
 run development after ``npm install``
 
