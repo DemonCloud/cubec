@@ -23,6 +23,7 @@ in development...
 # The old documentation
 
 > Replace [ax] with [cubec]
+
 > For example: ax.model() -> cubec.model()
 
 [Ax Github Project](https://github.com/DemonCloud/Ax)

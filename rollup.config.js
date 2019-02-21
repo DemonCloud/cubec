@@ -1,5 +1,3 @@
-'use strict';
-
 const rollup = require('rollup');
 
 const commonjs = require('rollup-plugin-commonjs');
@@ -8,8 +6,6 @@ const uglify = require('rollup-plugin-uglify');
 const babel = require('rollup-plugin-babel');
 const optimizeJs = require('rollup-plugin-optimize-js');
 
-// const { minify } = require('uglify-es');
-
 const path = require('path');
 const inputfile = path.resolve('./') + '/src/cubec.js';
 const outputfile = path.resolve('./') + '/dist/cubec.min.js';
@@ -17,9 +13,8 @@ const outputfile = path.resolve('./') + '/dist/cubec.min.js';
 
 // 定义plugin
 const plugins = [
-  // 寻找node_modules中的模块
   resolve(),
-  // CommonJS 转化成 ES6 module
+
   commonjs({
     include: 'node_modules/**',
     // namedExports: {
@@ -27,7 +22,6 @@ const plugins = [
     // }
   }),
 
-  // babel 打包
   babel({
     exclude: ['node_modules/**','src/lib/jquery.js'], // only transpile our source code,
     runtimeHelpers: true,
