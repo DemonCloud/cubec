@@ -1,5 +1,5 @@
-const paramSign = ':';
-const rootSign = '/';
+import { rootSign, paramSign } from '../usestruct';
+
 const rootfixer = /^\/+|\/+$/g;
 
 export default function(route, actions=[], id){

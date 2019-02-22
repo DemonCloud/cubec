@@ -1,9 +1,9 @@
-import struct from '../../lib/struct';
+import {
+  _idt,
+  _trim,
+  rootSign
+} from '../usestruct';
 
-const _idt = struct.broken;
-const _trim = struct.string('trim');
-
-const rootSign = '/';
 const rootfixer = /^\/+|\/+$/g;
 
 export default function(path){

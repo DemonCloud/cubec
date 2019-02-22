@@ -1,10 +1,8 @@
 import MODEL from '../../constant/model.define';
-import struct from '../../lib/struct';
 import modelLockStatus from './lockstatus';
+import { _ajax } from '../usestruct';
 
-const _ajax = struct.ajax();
-
-function modelFetch(type, url, param, header) {
+export default function(type, url, param, header) {
   if (modelLockStatus(this)) return this;
 
   let promiseObj = new Promise((resolve, reject)=> {
@@ -39,5 +37,3 @@ function modelFetch(type, url, param, header) {
 
   return promiseObj;
 }
-
-export default modelFetch;

@@ -1,10 +1,9 @@
 import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
 
-import struct from '../lib/struct';
 import store from '../lib/store';
-import registerEvent from '../utils/registerEvent';
 import defined from '../utils/defined';
+import registerEvent from '../utils/registerEvent';
 import modelMultipleVerify from '../utils/model/multipleVerify';
 import modelSingleVerify from '../utils/model/singleVerify';
 import modelPipe from '../utils/model/pipe';
@@ -13,33 +12,34 @@ import modelLockStatus from '../utils/model/lockstatus';
 import modelSeek from '../utils/model/seek';
 import modelCombined from '../utils/model/combined';
 import {on, off, emit} from '../utils/universalEvent';
+import {
+  _extend,
+  _idt,
+  _clone,
+  _isString,
+  _isBool,
+  _isObject,
+  _isArray,
+  _isFn,
+  _eachObject,
+  _eachArray,
+  _cool,
+  _size,
+  _get,
+  _set,
+  _rm,
+  _merge,
+  _noop,
+  _slice,
+  _not,
+  _hasEvent,
+  _isPrim,
+  _eq,
+} from '../utils/usestruct';
 
 let mid = 0;
 const changeReg = /^change:([a-zA-Z0-9_$.]+)$/;
 const replaceChangeReg = /^change:/;
-
-const _identify = struct.broken;
-const _extend = struct.extend();
-const _clone = struct.clone();
-const _isString = struct.type('string');
-const _isBool = struct.type('bool');
-const _isObject = struct.type('object');
-const _isArray = struct.type('array');
-const _isPrim = struct.type('prim');
-const _isFn = struct.type('func');
-const _each = struct.each('object');
-const _eachArray = struct.each('array');
-const _cool = struct.cool();
-const _size = struct.size();
-const _get = struct.prop('get');
-const _set = struct.prop('set');
-const _rm = struct.prop('rm');
-const _merge = struct.merge();
-const _noop = struct.noop();
-const _slice = struct.slice();
-const _not = struct.not();
-const _eq = struct.eq();
-const _hasEvent = struct.event("has");
 
 // C.Model
 // A tool for storing data that uses a model to efficiently manage data structures while keeping the code clear and concise.
@@ -88,7 +88,7 @@ const model = function(option = {}) {
 
   cdata = _clone(initlize_data);
 
-  _each(
+  _eachObject(
     events,
     registerEvent,
     defined(this, {
@@ -96,25 +96,25 @@ const model = function(option = {}) {
 
       _ast: (todo, v) => {
         const pass = _isFn(todo) ? todo : _cool;
-        return v === _identify ? pass(cdata) : {};
+        return v === _idt ? pass(cdata) : {};
       },
 
       _mid: mid++,
 
-      _asl: v => v === _identify ? identify_lock : null,
+      _asl: v => v === _idt ? identify_lock : null,
 
-      _asv: v => v === _identify ? verify : {},
+      _asv: v => v === _idt ? verify : {},
 
-      _ash: v => v === _identify ? ram : [],
+      _ash: v => v === _idt ? ram : [],
 
-      _asc: v => v === _identify ? changeDetect : [],
+      _asc: v => v === _idt ? changeDetect : [],
 
       _v: !!_size(verify),
 
       _l: (state, v) =>
-        v === _identify ? (this.isLock = identify_lock = !!state) : void 0,
+        v === _idt ? (this.isLock = identify_lock = !!state) : void 0,
 
-      _c: (newdata, v) => v === _identify ? (cdata = newdata) : {},
+      _c: (newdata, v) => v === _idt ? (cdata = newdata) : {},
 
       _s: identify_usestore,
     }),
@@ -131,7 +131,7 @@ const model = function(option = {}) {
 
 function modelChangeDetecter(model,currentData,prevData,preset){
   const res = [];
-  const detectList = model._asc(_identify);
+  const detectList = model._asc(_idt);
   model.emit("change", [currentData,prevData]);
 
   if(detectList.length){
@@ -174,7 +174,7 @@ model.prototype = {
   on(type){
     if(type && _isString(type)){
       if(changeReg.test(type)){
-        let changeDetect = this._asc(_identify);
+        let changeDetect = this._asc(_idt);
         if(changeDetect.indexOf(type) === -1){
           changeDetect.push(type);
         }
@@ -185,7 +185,7 @@ model.prototype = {
 
   off(type,callback){
     off.apply(this,arguments);
-    let changeDetect = this._asc(_identify);
+    let changeDetect = this._asc(_idt);
 
     if(type &&
       _isString(type) &&
@@ -201,17 +201,17 @@ model.prototype = {
   },
 
   lock() {
-    this._l(true, _identify);
+    this._l(true, _idt);
     return this.emit('lock');
   },
 
   unlock() {
-    this._l(false, _identify);
+    this._l(false, _idt);
     return this.emit('unlock');
   },
 
   get(key, by) {
-    let data = this._ast(_cool, _identify);
+    let data = this._ast(_cool, _idt);
 
     return _clone(key || key === 0 ? _get(data, key, by) : data);
   },
@@ -220,8 +220,8 @@ model.prototype = {
     if (modelLockStatus(this)) return this;
 
     let ref;
-    let assert = this._ast(_cool, _identify);
-    let assertram = this._ash(_identify);
+    let assert = this._ast(_cool, _idt);
+    let assertram = this._ash(_idt);
     let argslength = arguments.length;
     let single = !_isPrim(key) && _isObject(key);
 
@@ -240,7 +240,7 @@ model.prototype = {
 
           if (this.history) assertram.push(_clone(assert));
           // change data
-          this._c(ref, _identify, (this.change = true));
+          this._c(ref, _idt, (this.change = true));
           if (this._s) store.set(this.name, ref);
 
           if (!isStatic){
@@ -274,8 +274,8 @@ model.prototype = {
   remove(prop, rmStatic) {
     if (modelLockStatus(this)) return this;
 
-    let assert = this._ast(_cool, _identify),
-      assertram = this._ash(_identify);
+    let assert = this._ast(_cool, _idt),
+      assertram = this._ash(_idt);
 
     if (_isPrim(prop) && prop != null) {
       // create history
@@ -300,7 +300,7 @@ model.prototype = {
 
     this.set(empty, clearStatic);
 
-    if (this._ast(_cool, _identify) === empty && !clearStatic)
+    if (this._ast(_cool, _idt) === empty && !clearStatic)
       this.emit('clear');
 
     return this;
@@ -321,13 +321,13 @@ model.prototype = {
   back(isStatic) {
     if (modelLockStatus(this) || !this.history) return this;
 
-    let ram = this._ash(_identify),
+    let ram = this._ash(_idt),
       source;
 
     if (ram.length && (source = ram.pop())) {
       let prevData = this.get();
 
-      this._c(source, _identify, (this.change = true));
+      this._c(source, _idt, (this.change = true));
 
       if (!isStatic){
         let currentData = _clone(source);

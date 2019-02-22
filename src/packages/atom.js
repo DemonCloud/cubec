@@ -1,7 +1,6 @@
 import ATOM from '../constant/atom.define';
 import ERRORS from '../constant/errors.define';
 
-import struct from '../lib/struct';
 import store from '../lib/store';
 import model from './model';
 import defined from '../utils/defined';
@@ -10,26 +9,28 @@ import atomAssertMake from '../utils/atom/assertMake';
 import atomAssertModel from '../utils/atom/assertModel';
 import atomAssertMatch from '../utils/atom/assertMatch';
 import atomTargetWith from '../utils/atom/targetWith';
+import {
+  _extend,
+  _clone,
+  _slice,
+  _has,
+  _index,
+  _one,
+  _isArrayLike,
+  _isString,
+  _isNumber,
+  _isArray,
+  _isBool,
+  _isFn,
+  _cool,
+  _every,
+  _eachArray,
+  _map,
+  _size,
+  _idt,
+  _noop
+} from '../utils/usestruct';
 
-const _extend = struct.extend();
-const _clone = struct.clone();
-const _slice = struct.slice();
-const _has = struct.has();
-const _index = struct.index();
-const _one = struct.index('one');
-const _isNumber = struct.type('number');
-const _isFn = struct.type('function');
-const _isString = struct.type('string');
-const _isBool = struct.type('boolean');
-const _isArray = struct.type('array');
-const _isArrayLike = struct.type("arraylike");
-const _cool = struct.cool();
-const _every = struct.every();
-const _each = struct.each('array');
-const _map = struct.map();
-const _size = struct.size();
-const _identify = struct.broken;
-const _noop = struct.noop();
 const _isModel = function(m){ return m instanceof model; };
 
 let atid = 0;
@@ -53,9 +54,9 @@ const atom = function(option = {}) {
 
   defined(this, {
     _mid: "_at"+atid++,
-    _assert : (todo, v) => v === _identify ? todo(LIST) : [],
-    _transmit : v => v === _identify ? _transmit : _noop,
-    _connecty : v => v === _identify ? _isConnectivity : null
+    _assert : (todo, v) => v === _idt ? todo(LIST) : [],
+    _transmit : v => v === _idt ? _transmit : _noop,
+    _connecty : v => v === _idt ? _isConnectivity : null
   });
 
   _extend(this.use(config.use,true), config, ATOM.IGNORE_KEYWORDS);
@@ -63,7 +64,7 @@ const atom = function(option = {}) {
 
 const stom = function(prevatom, list = [], connect) {
   let c = new atom(
-    prevatom.preset ? 
+    prevatom.preset ?
     { use: list, connect } :
     { use: list, connect, perset: prevatom.perset }
   );
@@ -77,13 +78,13 @@ atom.prototype = {
   constructor: atom,
 
   all() {
-    return this._assert(_slice, _identify);
+    return this._assert(_slice, _idt);
   },
 
   use(list, isStatic) {
-    const cLIST = this._assert(_cool,_identify);
-    const transmit = this._transmit(_identify);
-    const isConnecty = this._connecty(_identify);
+    const cLIST = this._assert(_cool,_idt);
+    const transmit = this._transmit(_idt);
+    const isConnecty = this._connecty(_idt);
     const prevLen = cLIST.length;
 
     // single model use
@@ -93,7 +94,7 @@ atom.prototype = {
 
     // mutilp models use
     }else if(_isArrayLike(list) && _every(list,_isModel)){
-      _each(list, function(M){
+      _eachArray(list, function(M){
         if(!_has(cLIST,M)){
           cLIST.push(M);
           if(isConnecty) M.on("change",transmit);
@@ -128,9 +129,9 @@ atom.prototype = {
   },
 
   out(list,isStatic) {
-    const cLIST = this._assert(_cool,_identify);
-    const isConnecty = this._connecty(_identify);
-    const transmit = this._transmit(_identify);
+    const cLIST = this._assert(_cool,_idt);
+    const isConnecty = this._connecty(_idt);
+    const transmit = this._transmit(_idt);
     const prevLen = cLIST.length;
 
     // single model out
@@ -139,7 +140,7 @@ atom.prototype = {
 
     // mutilp models out
     }else if(_isArrayLike(list) && _every(list,_isModel)){
-      _each(list, function(M){
+      _eachArray(list, function(M){
         outAtomList(cLIST, M, isConnecty, transmit);
       });
 
@@ -171,7 +172,7 @@ atom.prototype = {
   },
 
   of(func, args) {
-    _each(this.all(), _isFn(func) ? func : atomTargetWith(func, args));
+    _eachArray(this.all(), _isFn(func) ? func : atomTargetWith(func, args));
 
     return this;
   },
@@ -221,7 +222,7 @@ atom.prototype = {
   },
 
   toData() {
-    return _map(this._assert(_cool, _identify), m => m.get());
+    return _map(this._assert(_cool, _idt), m => m.get());
   },
 
   toChunk() {

@@ -42,7 +42,6 @@
 //   }
 // });
 
-import struct from '../lib/struct';
 import ROUTER from '../constant/router.define';
 import defined from '../utils/defined';
 import view from './view';
@@ -52,25 +51,26 @@ import pathpatch from '../utils/router/pathpatch';
 import generatorEvents from '../utils/router/generatorEvents';
 import generatorRouteTree from '../utils/router/generatorRouteTree';
 import historyActive from '../utils/router/historyActiveAction';
-
-const _idt = struct.broken;
-const _eachObject = struct.each('object');
-const _eachArray = struct.each('array');
-const _merge = struct.merge();
-const _isString = struct.type('string');
-const _isObject = struct.type('object');
-const _isArray = struct.type('array');
-const _isFn = struct.type('func');
-const _paramParse = struct.param('parse');
-const _size = struct.size();
-const _combined = struct.combined();
-const _every = struct.every();
-const _noop = struct.noop();
-const _extend = struct.extend();
-const _eq = struct.eq();
-const _on = struct.event('on');
-const _off = struct.event('off');
-const _emit = struct.event('emit');
+import {
+  _idt,
+  _eachObject,
+  _eachArray,
+  _merge,
+  _isString,
+  _isObject,
+  _isArray,
+  _isFn,
+  _paramParse,
+  _combined,
+  _every,
+  _size,
+  _extend,
+  _eq,
+  _on,
+  _off,
+  _emit,
+  _noop
+} from '../utils/usestruct';
 
 let rid = 0;
 
@@ -116,7 +116,7 @@ class Router {
     let gfn;
     let gview;
 
-    window.addEventListener("popstate", gfn = (event)=>{
+    addEventListener("popstate", gfn = (event)=>{
       this.__match(
         pathfixer(location.pathname),
         _paramParse(location.search),
@@ -140,7 +140,7 @@ class Router {
     this.destory = function(){
       status = false;
       _off.call(this);
-      window.removeEventListener('popstate', gfn);
+      removeEventListener('popstate', gfn);
       if(gview) gview.off(`click:${targets}`);
     };
 

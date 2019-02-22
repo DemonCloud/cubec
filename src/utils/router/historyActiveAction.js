@@ -1,9 +1,9 @@
-import struct from '../../lib/struct';
-
-const _idt = struct.broken;
-const _isFn = struct.type('func');
-const _eachArray = struct.each('array');
-const _emit = struct.event('emit');
+import {
+  _idt,
+  _isFn,
+  _eachArray,
+  _emit
+} from '../usestruct';
 
 export default function(router, path, actions, args, isResolve, isPopState, isStart){
   const emitargs = [path].concat(args);

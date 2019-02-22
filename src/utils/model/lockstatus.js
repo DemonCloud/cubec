@@ -1,6 +1,4 @@
-import struct from '../../lib/struct';
-
-const _idt = struct.broken;
+import { _idt } from '../usestruct';
 
 export default function(model) {
   let isLock = model._asl(_idt);

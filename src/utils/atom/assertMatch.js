@@ -1,14 +1,14 @@
-import struct from '../../lib/struct';
-
-const _type = struct.type();
-const _each = struct.each('array');
+import {
+  _type,
+  _eachArray,
+} from '../usestruct';
 
 export default function(list, match) {
   let use = [];
 
   switch (_type(match)) {
     case 'regexp':
-      _each(list, m => match.test(m.name) && use.push(m));
+      _eachArray(list, m => match.test(m.name) && use.push(m));
       break;
     case 'string':
       use.push(match);
@@ -17,7 +17,7 @@ export default function(list, match) {
       use = match;
       break;
     case 'function':
-      _each(list, m => match(m) && use.push(m));
+      _eachArray(list, m => match(m) && use.push(m));
       break;
     default:
       break;

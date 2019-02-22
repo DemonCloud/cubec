@@ -4,7 +4,7 @@
 // localStorage with micro encryption
 // store.js
 
-const LS = window.localStorage;
+const LS = localStorage;
 const SN = 'CUBEC@';
 const revs = function(str) {
   return str.split('').reverse().join('');

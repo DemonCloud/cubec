@@ -1,7 +1,6 @@
 import VIEW from '../constant/view.define';
 import ERRORS from '../constant/errors.define';
 
-import struct from '../lib/struct';
 import catom from './atom';
 import cmodel from './model';
 import $ from '../lib/jquery';
@@ -9,42 +8,43 @@ import htmlDiff from '../utils/view/htmlDiff';
 import defined from '../utils/defined';
 import {on, off} from '../utils/universalEvent';
 import registerEvent from '../utils/registerEvent';
+import {
+  _idt,
+  _axt,
+  _axtc,
+  _lock,
+  _extend,
+  _some,
+  _eachArray,
+  _eachObject,
+  _slice,
+  _isFn,
+  _isString,
+  _isNumber,
+  _isArray,
+  _isObject,
+  _isElement,
+  _isArrayLike,
+  _get,
+  _size,
+  _ayc,
+  _link,
+  _clone,
+  _define,
+  _toString,
+  _on,
+  _off,
+  _emit,
+  _hasEvent,
+  _fireEvent,
+  _noop,
+} from '../utils/usestruct';
 
 let vid = 0;
 
 // cubec Template engine
-const _idt = struct.broken;
-const _axt = struct.doom();
-const _axtc = struct.doom('cache');
-const _lock = struct.lock();
-const _extend = struct.extend();
-const _some = struct.some();
-const _eachArray = struct.each('array');
-const _eachObject = struct.each('object');
-const _slice = struct.slice();
-const _isFn = struct.type('func');
-const _isStr = struct.type('string');
-const _isNum = struct.type('number');
-const _isArray = struct.type('array');
-const _isObj = struct.type('object');
-const _isElm = struct.type('elm');
-const _isAryL = struct.type('arraylike');
-const _get = struct.prop('get');
-const _size = struct.size();
-const _ayc = struct.ayc();
-const _noop = struct.noop();
-const _link = struct.link();
-const _clone = struct.clone();
-const _define = struct.define();
-const _toStr = struct.convert('string');
-const _on = struct.event('on');
-const _off = struct.event('off');
-const _emit = struct.event('emit');
-const _hasEvent = struct.event('has');
-const _fireEvent = struct.fireEvent();
-
 function checkElm(el) {
-  if (!(_isElm(el) || _isAryL(el)))
+  if (!(_isElement(el) || _isArrayLike(el)))
     throw new TypeError(
       'el must be typeof DOMElement or NodeList collections -> not ' + el,
     );
@@ -165,7 +165,7 @@ function renderSlotComponent(args, slot, index) {
   let slotId = `_cslot-${(_view.name || `v${_view._vid}`)}`;
   let slotOneArg = args[0];
   let slotData = slot.path
-    ? _isObj(slotOneArg)
+    ? _isObject(slotOneArg)
       ? [_get(slotOneArg, slot.path)]
       : args
     : args;
@@ -177,7 +177,7 @@ function renderSlotComponent(args, slot, index) {
       let t = slotTarget({ root: slot.root });
       t.render.apply(t, slotData);
     };
-  } else if (slotTarget instanceof view && _isNum(slotTarget._vid)) {
+  } else if (slotTarget instanceof view && _isNumber(slotTarget._vid)) {
     render = function() {
       if (slotTarget.root) {
         slotTarget.root.setAttribute("id",slotId);
@@ -191,7 +191,7 @@ function renderSlotComponent(args, slot, index) {
     render = function() {
       slotTarget.apply(this, [slot.root].concat(slotData));
     }.bind(this);
-  } else if (_isStr(slotTarget) || _isNum(slotTarget)) {
+  } else if (_isString(slotTarget) || _isNumber(slotTarget)) {
     render = function() {
       slot.root.textContent = slotTarget;
     };
@@ -253,7 +253,7 @@ const view = function(options = {}) {
 
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options || {});
 
-  let props = _lock(_isObj(options.props) ? options.props : {}),
+  let props = _lock(_isObject(options.props) ? options.props : {}),
     vroot = options.root,
     render = options.render,
     events = options.events,
@@ -269,7 +269,7 @@ const view = function(options = {}) {
   // parse template
   // building the render function
   if (!_isFn(render)) {
-    stencil = _isStr(stencil)
+    stencil = _isString(stencil)
       ? (options.cache ? _axtc : _axt)(
           completeTemplate(stencil.trim(), name, this._vid),
           props,
@@ -409,7 +409,7 @@ view.prototype = {
   on(type, fn) {
     if (_isFn(fn)) {
       _eachArray(
-        _toStr(type).split('|'),
+        _toString(type).split('|'),
         function(mk) {
           let param = mk.split(':');
 
@@ -424,7 +424,7 @@ view.prototype = {
 
                 if(ime[pid]) return false;
 
-                e.target.focus && e.target.focus();
+                if(e.target && e.target.focus) e.target.focus();
 
                 let pos = capCursor(e.target);
 
@@ -461,7 +461,7 @@ view.prototype = {
   },
 
   off(type, fn) {
-    if (type && _isStr(type)) {
+    if (type && _isString(type)) {
       _eachArray(
         type.split('|'),
         function(mk) {
@@ -485,7 +485,7 @@ view.prototype = {
   },
 
   emit(type, args) {
-    let t = _toStr(type),
+    let t = _toString(type),
       k = t.split(':');
 
     if (k.length > 2) {
@@ -516,7 +516,7 @@ view.prototype = {
     let items;
     let bounder = this._asb(_idt);
 
-    if(_isAryL(arguments[0])){
+    if(_isArrayLike(arguments[0])){
       items = arguments[0];
     }else{
       items = _slice(arguments);
@@ -540,7 +540,7 @@ view.prototype = {
     let items;
     let bounder = this._asb(_idt);
 
-    if(_isAryL(arguments[0])){
+    if(_isArrayLike(arguments[0])){
       items = arguments[0];
     }else{
       items = _slice(arguments);

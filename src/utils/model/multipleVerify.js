@@ -1,15 +1,15 @@
-import struct from '../../lib/struct';
+import {
+  _idt,
+  _keys,
+  _get,
+  _toString,
+  _type,
+} from '../usestruct';
 
-const _identify = struct.broken;
-const _keys = struct.keys();
-const _get = struct.prop('get');
-const _toString = struct.convert('string');
-const _typec = struct.type();
-
-function modelMutipleVerify(newData, model) {
+export default function(newData, model) {
   if (!model._v) return true;
 
-  let verify = model._asv(_identify);
+  let verify = model._asv(_idt);
   let error = [];
   let key = _keys(verify);
   let i = 0;
@@ -25,7 +25,7 @@ function modelMutipleVerify(newData, model) {
       error.push(key[i], value);
 
       console.error(
-        `model of key ( ${key[i]} ) except error with model verify => ${_typec(
+        `model of key ( ${key[i]} ) except error with model verify => ${_type(
           value,
         ).toUpperCase()} [ ${_toString(value)} ]`,
       );
@@ -45,5 +45,3 @@ function modelMutipleVerify(newData, model) {
 
   return valid;
 }
-
-export default modelMutipleVerify;

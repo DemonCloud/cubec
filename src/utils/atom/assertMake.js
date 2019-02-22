@@ -1,16 +1,16 @@
-import struct from '../../lib/struct';
-
-const _cool = struct.cool();
-const _isString = struct.type("string");
-const _isArray = struct.type("array");
-const _each = struct.each("array");
-const _identify = struct.broken;
+import {
+  _cool,
+  _isString,
+  _isArray,
+  _eachArray,
+  _idt,
+} from '../usestruct';
 
 export default function(list, callback){
-  let LIST = this._assert(_cool, _identify);
+  let LIST = this._assert(_cool, _idt);
   let target = _isString(list) ? [list] : (_isArray(list) ? list : []);
 
-  _each(target, (name)=>callback.call(this,LIST,name));
+  _eachArray(target, (name)=>callback.call(this,LIST,name));
 
   return this;
 }

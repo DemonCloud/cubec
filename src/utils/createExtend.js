@@ -1,6 +1,4 @@
-import struct from '../lib/struct';
-
-const _merge = struct.merge();
+import { _merge } from './usestruct';
 
 export default function(module) {
   return function(malloc) {

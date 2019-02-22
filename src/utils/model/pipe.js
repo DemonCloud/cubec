@@ -1,10 +1,8 @@
 import MODEL from '../../constant/model.define';
-import struct from '../../lib/struct';
 import modelLockStatus from './lockstatus';
+import { _ajax } from '../usestruct';
 
-const _ajax = struct.ajax();
-
-function modelPipe(type, url, param, fnsucess, fnerror, header) {
+export default function(type, url, param, fnsucess, fnerror, header) {
   if (modelLockStatus(this)) return this;
 
   //param must be object typeof
@@ -51,5 +49,3 @@ function modelPipe(type, url, param, fnsucess, fnerror, header) {
 
   return this.emit(type, [_ajax(st), st]);
 }
-
-export default modelPipe;

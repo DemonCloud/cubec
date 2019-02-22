@@ -1,20 +1,20 @@
-import struct from '../../lib/struct';
-
-const _each = struct.each("array");
-const _eachObj = struct.each("object");
-const _isObj = struct.type("object");
-const _isArrayLike = struct.type("arraylike");
+import {
+  _eachArray,
+  _eachObject,
+  _isObject,
+  _isArrayLike,
+} from '../usestruct';
 
 const seekResolve = function(data, key, preres){
   let res = preres || [];
 
   if(data != null){
     if(_isArrayLike(data)){
-      _each(data, function(cdata){
+      _eachArray(data, function(cdata){
         seekResolve(cdata, key, res);
       });
-    }else if(_isObj(data)){
-      _eachObj(data, function(cdata, ckey){
+    }else if(_isObject(data)){
+      _eachObject(data, function(cdata, ckey){
         if(ckey === key){
           res.push(cdata);
           seekResolve(cdata, key, res);
@@ -28,14 +28,12 @@ const seekResolve = function(data, key, preres){
   return res;
 };
 
-const modelSeek = function(data, keys){
+export default function(data, keys){
   let res = {};
 
-  _each(keys, function(key){
+  _eachArray(keys, function(key){
     res[key] = seekResolve(data,key);
   });
 
   return res;
-};
-
-export default modelSeek;
+}

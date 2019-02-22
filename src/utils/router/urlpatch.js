@@ -1,7 +1,6 @@
-import struct from '../../lib/struct';
+import { _isString } from '../usestruct';
 
 const urlfixer = /^.*\/\/[^\/]+/;
-const _isString = struct.type('isString');
 
 export default function(url){
   if(_isString(url) && (url.match("http://") || url.match("https://") || url.match("//"))){

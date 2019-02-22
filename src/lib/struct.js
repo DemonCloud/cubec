@@ -49,8 +49,6 @@
   // var root = (function(){ return this || ev("this"); }());
   var root = struct();
 
-  //alert(root === window);
-
   // Sub struct return pointer
   // Zub struct with custom method in function
   function nub(fn,name){

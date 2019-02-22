@@ -2,7 +2,7 @@
 
 ![npm version](https://img.shields.io/npm/v/cubec.svg?label=cubec&style=flat-square&maxAge=3600)
 
-Micro mvc framework [gzip 29.6k]
+Micro mvc framework [gzip 29k]
 
 # Feature version
 

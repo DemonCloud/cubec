@@ -1,19 +1,19 @@
-import struct from '../../lib/struct';
 import $ from '../../lib/jquery';
-
-const _set = struct.prop("set");
-const _isStr = struct.type("string");
-const _isFn = struct.type("func");
-const _isObj = struct.type("object");
-const _decode = struct.html("decode");
-const _toStr = struct.convert("string");
-const _eachArray = struct.each("array");
-const _eachObject = struct.each("object");
-const _map = struct.map();
-const _noop = struct.noop();
-const _eq = struct.eq();
-const _v8 = struct.v8();
-const _idt = struct.broken;
+import {
+  _set,
+  _isString,
+  _isFn,
+  _isObject,
+  _decode,
+  _toString,
+  _eachArray,
+  _eachObject,
+  _map,
+  _eq,
+  _v8,
+  _idt,
+  _noop
+} from '../usestruct';
 
 // attr list mapping
 const attrList = {
@@ -105,7 +105,7 @@ let attrexec = /(\S+)=["'](.*?)["']|([\w-]+)/gi,
 
 const attrSetter = function(elm, attr, values) {
   let attrName = attrList[attr] || attr;
-  let val = _isStr(values) ? _decode(values) : values;
+  let val = _isString(values) ? _decode(values) : values;
 
   if (defaultAttr.test(attrName)) {
     // is defaultAttr
@@ -137,7 +137,7 @@ const attrEvent = function(key, val, props) {
     res = fn !== void 0 ? fn : val;
   }
 
-  if (key[0] === ':') res = _isFn(fn) ? fn : Function('event', _toStr(val));
+  if (key[0] === ':') res = _isFn(fn) ? fn : Function('event', _toString(val));
 
   return res;
 };
@@ -220,7 +220,7 @@ const patchHack = [
 
 // createSlot
 const patchSlot = function(slot, elm) {
-  let name = _isStr(slot) ? slot : '';
+  let name = _isString(slot) ? slot : '';
 
   if (name && elm) {
     let sloter = {};
@@ -416,7 +416,10 @@ const htmlDiff = {
           n.i = c.length;
           c.push(n);
           n.parent = p;
-          if (!(n.tagName in tagList)) (p = n), (c = n.child);
+          if (!(n.tagName in tagList)) {
+            p = n;
+            c = n.child;
+          }
         } else if (text) {
           if (text.trim()) p.text = text;
         }
@@ -429,7 +432,7 @@ const htmlDiff = {
 
   createObjElement: function(str, vprops) {
     let arr = str.split(' '),
-      props = _isObj(vprops) ? vprops : {},
+      props = _isObject(vprops) ? vprops : {},
       tagName = arr.shift(),
       attributes = arr.join(' '),
       elm = {tagName: tagName, child: []};

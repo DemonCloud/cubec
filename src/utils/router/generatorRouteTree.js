@@ -1,13 +1,13 @@
-import struct from '../../lib/struct';
 import routeFormater from './routeFormater';
-
-const _eachObject = struct.each('object');
-const _eachArray = struct.each('array');
-const _isString = struct.type('string');
-const _isArray = struct.type('array');
+import {
+  _eachObject,
+  _eachArray,
+  _isString,
+  _isArray,
+  leafSign,
+} from '../usestruct';
 
 let tid = 1;
-const leafSign = '###';
 
 // generator prefix tree
 export default function(routes, idmap, existTree={}){

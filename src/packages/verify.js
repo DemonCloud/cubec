@@ -1,29 +1,21 @@
-import atom from './atom';
-import model from './model';
-import struct from '../lib/struct';
-
-const _isNeed = struct.type('required');
-const _isFn = struct.type('func');
-const _isInt = struct.type('int');
-const _isArray = struct.type('array');
-const _isFloat = struct.type('float');
-const _isString = struct.type('string');
-const _isObject = struct.type('object');
-const _isNumber = struct.type('number');
-const _isPrim = struct.type('primitive');
-const _isArrayLike = struct.type('arraylike');
-const _isBool = struct.type('boolean');
-const _v8 = struct.v8();
+import {
+  _isNeed,
+  _isFn,
+  _isInt,
+  _isArray,
+  _isFloat,
+  _isString,
+  _isObject,
+  _isNumber,
+  _isPrim,
+  _isArrayLike,
+  _isBool,
+  _v8,
+} from '../utils/usestruct';
 
 const checker = function(check, type) {
   return function(value) {
     return check(value);
-  };
-};
-
-const makeC = function(compare) {
-  return function(value) {
-    return value instanceof compare;
   };
 };
 
@@ -39,8 +31,6 @@ const verify = {
   isArrayLike: checker(_isArrayLike, 'arrayLike'),
   isPrimitive: checker(_isPrim, 'primitive'),
   isBool: checker(_isBool, 'boolean'),
-  isModel: checker(makeC(model), 'model'),
-  isAtom: checker(makeC(atom), 'atom'),
 };
 
 export default Object.freeze(_v8(verify));

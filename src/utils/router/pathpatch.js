@@ -1,9 +1,9 @@
-import struct from '../../lib/struct';
-
-const rootSign = '/';
-const _idt = struct.broken;
-const _paramStringify = struct.param('stringify');
-const _trim = struct.string('trim');
+import {
+  _idt,
+  _trim,
+  _paramStringify,
+  rootSign
+} from '../usestruct';
 
 export default function(path=_idt, query={}){
   let fixpath = path === _idt ? "" : path;
