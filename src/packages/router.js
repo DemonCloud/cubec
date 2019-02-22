@@ -53,6 +53,7 @@ import generatorRouteTree from '../utils/router/generatorRouteTree';
 import historyActive from '../utils/router/historyActiveAction';
 import {
   _idt,
+  _define,
   _eachObject,
   _eachArray,
   _merge,
@@ -112,9 +113,10 @@ class Router {
       })
     );
 
-    // 增加全局监听事件
+    // add global events
     let gfn;
     let gview;
+    let gevent;
 
     addEventListener("popstate", gfn = (event)=>{
       this.__match(
@@ -127,21 +129,32 @@ class Router {
       );
     });
 
-    // 绑定dom事件
+    // binding DOM events
     if(config.targets && targets){
+      gevent = generatorEvents(this);
       gview = new view({
         root: document.documentElement,
         render: _noop,
-        events: generatorEvents(this, targets)
+        events: { [`click:${targets}`]: gevent }
       });
     }
 
-    // 结束router的生命周期
+    // end router lifecycle
     this.destory = function(){
       status = false;
-      _off.call(this);
+
+      delete this.destory;
+      _off.call(this, this);
       removeEventListener('popstate', gfn);
-      if(gview) gview.off(`click:${targets}`);
+
+      if(gview) gview.off(`click:${targets}`, gevent);
+
+      return _define(this, "destory", {
+        value: false,
+        writable: false,
+        enumerable: false,
+        configurable: false
+      });
     };
 
     _extend(this, config, ROUTER.IGNORE_KEYWORDS);
@@ -315,9 +328,9 @@ class Router {
   }
 
   start(path, query, state){
-    this._status(_idt, true);
+    if(_isFn(this.destory)) this._status(_idt, true);
 
-    if(path == null) return this;
+    if(!this.destory || path == null) return this;
 
     query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};
     query = _merge(_paramParse(path), query);
