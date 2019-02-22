@@ -20,7 +20,7 @@ function off(type, fn) {
 
 function emit(type, args) {
   if(arguments.length > 2) args = _slice(arguments,1);
-  return _emit(this, type, _isArrayLike(args) ? args : [args]);
+  return _emit(this, type, _isArrayLike(args) ? args : args !== null ? [args] : []);
 }
 
 export {on, off, emit};
