@@ -1,7 +1,8 @@
 import {
   _isFn,
-  _isArray,
+  _isArrayLike,
   _isString,
+  _slice,
   _on,
   _off,
   _emit,
@@ -18,7 +19,8 @@ function off(type, fn) {
 }
 
 function emit(type, args) {
-  return _emit(this, type, _isArray(args) ? args : [args]);
+  if(arguments.length > 2) args = _slice(arguments,1);
+  return _emit(this, type, _isArrayLike(args) ? args : [args]);
 }
 
 export {on, off, emit};
