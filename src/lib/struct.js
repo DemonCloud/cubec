@@ -1,5 +1,5 @@
 /*
- * Struct
+ * Struct [with cubec]
  *
  * The C Lang Javascript construction lib
  *
@@ -20,10 +20,7 @@
  * @Author : YiJun 亦俊
  * @Date   : 2017.2.28 - now
  *
- * @Document: https://yj1028.me/Ax/v3/#introduce
  */
-
-  "use strict";
 
   function struct(){
     return self || window || this;
@@ -168,14 +165,6 @@
 
   function isRequired(e){
     return 0 in arguments && e !== void 0;
-  }
-
-  // Error [ type ]
-  function isError(obj){
-    return obj !== null &&
-    isObj(obj) &&
-    isStr(obj.message) &&
-    isStr(obj.name);
   }
 
   // Define the typename [ type ]
@@ -1514,7 +1503,8 @@
     // Complete building Function string
     // try to build anmousyous function
     // console.warn(res);
-    try{ render = ev('(function(_bounds,struct,'+(rname||'_x_')+(args.length?','+args.toString():'')+'){ '+res+' })');
+    try{
+      render = ev('(function(_bounds,struct,'+(rname||'_x_')+(args.length?','+args.toString():'')+'){ '+res+' })');
     }catch(e){
       console.error("[cubec view] Template parser Error!", { template : res });
       e.res = res;
@@ -1526,9 +1516,9 @@
     // @ protect your template code other can observe it?
 
     // _ = function(data){ return eq(arguments,render.pre) ? (render.complete) :
-    // 	(render.pre=arguments, render.complete = trim(render.apply(this,
-    // 		[data,methods,struct].concat(slice(arguments,1))
-    // 	)));
+    //   (render.pre=arguments, render.complete = trim(render.apply(this,
+    //     [data,methods,struct].concat(slice(arguments,1))
+    //   )));
     // };
 
     bounder = [ methods, struct ];
@@ -1548,49 +1538,6 @@
 
   function Axt(){
     return memoize(DOOM4.apply(this,arguments));
-  }
-
-  // Browser cookie
-  // @use cookieParse
-  // @export cookie
-  function cookieParse(ckstr){
-    var res={}, pars = ckstr ? ckstr.split(';') : [];
-
-    al(pars, function(item){
-      var ind = (item||'').search('=');
-
-      if(!~ind) return;
-      var rkey = trim(item.substr(0,ind));
-      if(rkey.length) res[rkey] = trim(item.substr(ind+1));
-    });
-
-    return res;
-  }
-
-  function cookie(param){
-    // args :( name , value, expires, path, domain, secure)
-    var args = slice(arguments),
-      len = args.length,
-      parsec = cookieParse(document.cookie);
-
-    if(len){
-      // get cookie
-      if(len === 1)
-        return parsec[param];
-
-      var time = new Date();
-      time.setDate(time.getDate()+365);
-
-      return document.cookie = trim(
-        args[0]+'='+(args[1]||'') + ';' +
-      'expires='+(args[2]||time.toUTCString()) + ';' +
-      'path='   +(args[3]||'/') + ';' +
-      'domain=' +(args[4]||'') + ';' +
-      ( args[5] ? 'secure':'' )
-      ),true;
-    }
-
-    return parsec;
   }
 
   // slim ajax method
@@ -1913,7 +1860,8 @@
 
   function fireEvent(obj,type,args){
     var res = [];
-    var id = obj._eid || 0; args = args||[];
+    var id = obj._eid || 0;
+    args = args||[];
 
     if(id && _events[id] && type!=='')
       ol(_events[id][type],function(f){ res.push(f.apply(this,args)); },obj);
@@ -2100,9 +2048,10 @@
   function QST_part(ary,left,right){
     var pivotValue = ary[right], i=left, index = left;
 
-    for(; i<right; i++)
+    for(; i<right; i++){
       if(ary[i]<pivotValue)
         swap(ary,i,index,index++);
+    }
 
     swap(ary,right,index);
 
@@ -2563,7 +2512,6 @@
       part      : part,
       once      : once,
       eq        : eq,
-      cookie    : cookie,
       values    : values,
       memoize   : memoize,
       negate    : negate,

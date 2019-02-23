@@ -48,3 +48,21 @@ const view = cubec.view({
 });
 
 view.render();
+
+const { isMultipleOf, isNumber, isString, isArray } = cubec.verify;
+
+const model = window.model = cubec.model({
+  data: {
+    a:{},
+  },
+
+  verify: {
+    a: isMultipleOf(isNumber, isString, isArray)
+  },
+
+  events: {
+    'catch:verify': function(){
+      console.log(arguments);
+    }
+  }
+});

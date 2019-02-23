@@ -2,9 +2,9 @@ import {
   _idt,
   _keys,
   _get,
-  _toString,
   _type,
 } from '../usestruct';
+import output from './outputFormaterVerify';
 
 export default function(newData, model) {
   if (!model._v) return true;
@@ -25,9 +25,7 @@ export default function(newData, model) {
       error.push(key[i], value);
 
       console.error(
-        `model of key ( ${key[i]} ) except error with model verify => ${_type(
-          value,
-        ).toUpperCase()} [ ${_toString(value)} ]`,
+        `model verify of key [ ${key[i]} ] except error with checker => ${_type(value).toUpperCase()} [ ${output(value)} ]`
       );
 
       errorKey = key[i];
@@ -38,10 +36,8 @@ export default function(newData, model) {
 
   valid = !error.length;
 
-  if (!valid) {
-    model.emit('catch:verify', error);
-    model.emit(`catch:verify:${errorKey}`, error);
-  }
+  if (!valid)
+    model.emit(`catch:verify,catch:verify:${errorKey}`, error);
 
   return valid;
 }

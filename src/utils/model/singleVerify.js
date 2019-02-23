@@ -4,9 +4,9 @@ import {
   _get,
   _keys,
   _find,
-  _toString,
   _type,
 } from '../usestruct';
+import output from './outputFormaterVerify';
 
 export default function(key, val, model) {
   if (!model._v) return true;
@@ -35,22 +35,17 @@ export default function(key, val, model) {
       error.push(parKey, value);
 
       console.error(
-        `model of key ( ${
-          validKeys[i]
-        } ) except error with model verify => ${_type(
-          value,
-        ).toUpperCase()} [ ${_toString(value)} ]`,
+        `model verify of key -> [ ${validKeys[i]} ] except error with checker => ${_type(value).toUpperCase()} [ ${output(value)} ]`,
       );
+
       break;
     }
   }
 
   valid = !error.length;
 
-  if (!valid) {
-    model.emit('catch:verify', error);
-    model.emit(`catch:verify:${parKey}`, error);
-  }
+  if (!valid)
+    model.emit(`catch:verify,catch:verify:${parKey}`, error);
 
   return valid;
 }
