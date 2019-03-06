@@ -41,6 +41,7 @@ import {
 } from '../utils/usestruct';
 
 let vid = 0;
+const prefix = "__cubec-";
 
 // cubec Template engine
 function checkElm(el) {
@@ -162,7 +163,7 @@ function renderSlotComponent(args, slot) {
 
   let _view = this;
   let render = _noop;
-  let slotId = `_cslot-${(_view.name || `v${_view._vid}`)}`;
+  let slotId = `${prefix}slotroot-${_view.name}`;
   let slotOneArg = args[0];
   let slotData = slot.path
     ? _isObject(slotOneArg)
@@ -209,8 +210,8 @@ function renderSlotComponent(args, slot) {
   return render();
 }
 
-function completeTemplate(stencil, name, vid) {
-  return `<ct id="_c-${name || 'v' + vid}">${stencil}</ct>`;
+function completeTemplate(stencil, name) {
+  return `<ct id="${prefix}${name}">${stencil}</ct>`;
 }
 
 // extend render methods
@@ -245,13 +246,18 @@ $.fn.render = function(newhtml, view, props, args) {
 // Selector.prototype.render = function(newhtml, view, props, args) {};
 
 const view = function(options = {}) {
+  const id = vid++;
+
   let bounder = {};
   let slotQueue = [];
+  let name = options.name || "v--"+id;
 
   this.refs = {};
 
   defined(this, {
-    _vid : vid++,
+    name : name,
+    prefix : ("#"+ prefix + name + " "),
+    _vid : id,
     _asb : v => v===_idt ? bounder : {},
     _ass : v => v===_idt ? slotQueue : []
   });
@@ -262,7 +268,6 @@ const view = function(options = {}) {
     vroot = options.root,
     render = options.render,
     events = options.events,
-    name = options.name,
     connect = options.connect,
     models = _isArray(connect)
       ? connect
@@ -412,7 +417,7 @@ view.prototype = {
   },
 
   on(type, fn) {
-    if (_isFn(fn)) {
+    if (_isFn(fn)) {      
       _eachArray(
         _toString(type).split('|'),
         function(mk) {
@@ -451,7 +456,7 @@ view.prototype = {
 
               fn._fn = tfn;
 
-              $(this.root).on(param[0], param[1], tfn);
+              $(this.root).on(param[0], this.prefix+param[1], tfn);
 
             }
           } else {
@@ -473,7 +478,7 @@ view.prototype = {
           let param = mk.split(':');
 
           if (param.length > 1) {
-            $(this.root).off(param[0], param[1], fn ? (fn._fn || fn) : fn);
+            $(this.root).off(param[0], this.prefix+param[1], fn ? (fn._fn || fn) : fn);
           } else {
             _off(this, mk, fn);
           }
@@ -484,7 +489,8 @@ view.prototype = {
       return this;
     }
 
-    $(this.root).off(); _off(this);
+    $(this.root).off(); 
+    _off(this);
 
     return this;
   },
@@ -499,7 +505,7 @@ view.prototype = {
         function(mk) {
           let mkf = mk.split(':');
           $(this.root)
-            .find(mkf[1])
+            .find(this.prefix+mkf[1])
             .trigger(mkf[0], args);
         },
         this,
@@ -509,7 +515,7 @@ view.prototype = {
 
     if (k.length > 1) {
       $(this.root)
-        .find(k[1])
+        .find(this.prefix+k[1])
         .trigger(k[0], args);
       return this;
     }
