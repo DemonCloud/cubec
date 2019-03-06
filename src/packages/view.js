@@ -156,7 +156,7 @@ function updateSlotComponent(view, args) {
   }
 }
 
-function renderSlotComponent(args, slot, index) {
+function renderSlotComponent(args, slot) {
   let slotTarget = _get(this, slot.name);
   if (!slotTarget) return;
 
@@ -179,10 +179,15 @@ function renderSlotComponent(args, slot, index) {
     };
   } else if (slotTarget instanceof view && _isNumber(slotTarget._vid)) {
     render = function() {
-      if (slotTarget.root) {
-        slotTarget.root.setAttribute("id",slotId);
-        slot.root.parentNode.replaceChild(slotTarget.root, slot.root);
-        slotTarget.render.apply(slotTarget, slotData);
+      if (slotTarget.root && slotTarget.render) {
+        // same root between rerender
+        if(slotTarget.root === slot.root){
+          slotTarget.render.apply(slotTarget, slotData);
+        }else{
+          slotTarget.root.setAttribute("id",slotId);
+          slot.root.parentNode.replaceChild(slotTarget.root, slot.root);
+          slotTarget.render.apply(slotTarget, slotData);
+        }
       } else {
         slotTarget.mount.apply(slotTarget, [slot.root].concat(slotData));
       }

@@ -60,6 +60,7 @@ const patchList = [
   'addattr', // 7
   'modifyattr', // 8
   'removeattr', // 9
+  'updateslot', // 10
 ];
 
 const slikReg = new RegExp(
@@ -216,6 +217,20 @@ const patchHack = [
       attrClear(patch.s, key, value);
     });
   },
+
+  //9 updateslot
+  function(patch, htmlDiff) {
+    let c = patch.c;
+    let o = patch.o;
+    let t = patch.s;
+
+    if(c === o){
+      // directly createPatch;
+      htmlDiff.createDOMElement(patch.tag, patch.view, t);
+    }else{
+      t.parentNode.replaceChild(htmlDiff.createDOMElement(patch.tag, patch.view),t);
+    }
+  }
 ];
 
 // createSlot
@@ -245,7 +260,10 @@ const htmlDiff = {
       // remove node
       patch.push(this.createPatch(org, 0, 3, view));
     else if (org.tagName === tag.tagName) {
-      if (tag.isSlot || org.isSlot) {
+      if (tag.isSlot && org.isSlot && tag.id === org.id){
+        patch.push(this.createPatch(org, tag, 10, view));
+        return patch;
+      }else if(tag.isSlot || org.isSlot){
         patch.push(this.createPatch(org, tag, 5, view));
         return patch;
       }
@@ -317,7 +335,7 @@ const htmlDiff = {
         }.bind(this),
       ),
       function(patch) {
-        patchHack[patch.t].call(oDOM, patch);
+        patchHack[patch.t].call(oDOM, patch, htmlDiff);
       },
     );
   },
@@ -380,6 +398,9 @@ const htmlDiff = {
       case 'removeattr':
         patch = {t: 9, s: sl, a: org.attributes};
         break;
+      case 'updateslot':
+        patch = {t: 10, s: sl, c: tag.text, o: org.text, tag, view};
+        break;
       default:
         patch = {t: 0};
         break;
@@ -395,6 +416,7 @@ const htmlDiff = {
       child: [],
     };
 
+    let id = 1;
     let p = cubecRoot,
       c = cubecRoot.child,
       n;
@@ -407,12 +429,12 @@ const htmlDiff = {
           p = p.parent;
           c = p.child;
         } else if (stag) {
-          n = this.createObjElement(stag, vprops);
+          n = this.createObjElement(stag, vprops, id++);
           n.i = c.length;
           c.push(n);
           n.parent = p;
         } else if (tag) {
-          n = this.createObjElement(tag, vprops);
+          n = this.createObjElement(tag, vprops, id++);
           n.i = c.length;
           c.push(n);
           n.parent = p;
@@ -430,12 +452,12 @@ const htmlDiff = {
     return cubecRoot;
   },
 
-  createObjElement: function(str, vprops) {
+  createObjElement: function(str, vprops, id) {
     let arr = str.split(' '),
       props = _isObject(vprops) ? vprops : {},
       tagName = arr.shift(),
       attributes = arr.join(' '),
-      elm = {tagName: tagName, child: []};
+      elm = {tagName, child: [], id};
 
     if (tagName === 'slot') elm.isSlot = true;
 
@@ -461,8 +483,8 @@ const htmlDiff = {
     return elm;
   },
 
-  createDOMElement: function(obj, view) {
-    let elm = document.createElement(obj.tagName);
+  createDOMElement: function(obj, view, isUpdateSlot=false) {
+    let elm = isUpdateSlot || document.createElement(obj.tagName);
 
     // registered view.refs Update
     if (view && obj.attributes && obj.attributes.ref)
