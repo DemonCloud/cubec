@@ -1,6 +1,6 @@
 {
   "name": "cubec",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "micro mvc framework",
   "main": "dist/cubec.min.js",
   "scripts": {
