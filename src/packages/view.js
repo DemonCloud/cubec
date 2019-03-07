@@ -37,11 +37,14 @@ import {
   _emit,
   _hasEvent,
   _fireEvent,
+  _trim,
   _noop,
 } from '../utils/usestruct';
 
 let vid = 0;
 const prefix = "__cubec-";
+const eventSplit = "|";
+const eventNameSpace = ":";
 
 // cubec Template engine
 function checkElm(el) {
@@ -60,9 +63,8 @@ function packBefore(view) {
   return function() {
     let res = _fireEvent(view, 'beforeRender', arguments);
 
-    if(res && res.length && _some(res, isUnAllowedRender)){
+    if(res && res.length && _some(res, isUnAllowedRender))
       return false;
-    }
 
     return arguments;
   };
@@ -91,10 +93,7 @@ function packRender(view, render) {
     c = packComplete(view);
 
   let aycrender = function(args) {
-    if(args){
-      // run complete render
-      _ayc(_link(() => args, m, c));
-    }
+    if(args) _ayc(_link(() => args, m, c));
 
     return view;
   };
@@ -105,9 +104,33 @@ function packRender(view, render) {
 }
 
 function compactRender(view,render){
+  // custom compactRender
   return function(){
     try{
-      return render.apply(view, arguments);
+      if(view.root){
+        let useroot;
+        const userootId = _trim(view.prefix);
+        const currentId = userootId.substr(1);
+        const existRoot = view.root.querySelectorAll(userootId);
+
+        if(
+          existRoot &&
+          existRoot[0] &&
+          existRoot[0].tagName.toLowerCase() === "ct" &&
+          existRoot[0].getAttribute("id") === currentId
+        ){
+          useroot = existRoot[0];
+          render.apply(view, [useroot].concat(_slice(arguments)));
+        } else {
+          useroot = document.createElement("ct");
+          useroot.setAttribute("id", currentId);
+          render.apply(view, [useroot].concat(_slice(arguments)));
+          _ayc(()=>view.root.appendChild(useroot));
+        }
+
+      }else{
+        throw new Error(ERRORS.VIEW_MISSING_ROOT);
+      }
     }catch(e){
       console.error(ERRORS.VIEW_CUSTOM_RENDER, e, arguments);
       if (!_hasEvent(view, "catch")) throw e;
@@ -158,10 +181,12 @@ function updateSlotComponent(view, args) {
 }
 
 function renderSlotComponent(args, slot) {
+  const _view = this;
+
   let slotTarget = _get(this, slot.name);
+
   if (!slotTarget) return;
 
-  let _view = this;
   let render = _noop;
   let slotId = `${prefix}slotroot-${_view.name}`;
   let slotOneArg = args[0];
@@ -278,10 +303,12 @@ const view = function(options = {}) {
 
   // parse template
   // building the render function
-  if (!_isFn(render)) {
+  if (_isFn(render)) {
+    render=compactRender(this,render);
+  }else{
     stencil = _isString(stencil)
       ? (options.cache ? _axtc : _axt)(
-          completeTemplate(stencil.trim(), name, this._vid),
+          completeTemplate(_trim(stencil), name, this._vid),
           props,
         )
       : _isFn(stencil)
@@ -312,8 +339,6 @@ const view = function(options = {}) {
             return _idt;
           }
         } : _noop;
-  }else{
-    render=compactRender(this,render);
   }
 
   // if userobj has more events
@@ -417,14 +442,15 @@ view.prototype = {
   },
 
   on(type, fn) {
-    if (_isFn(fn)) {      
+    if (_isFn(fn)) {
       _eachArray(
-        _toString(type).split('|'),
+        _toString(type).split(eventSplit),
         function(mk) {
-          let param = mk.split(':');
+          let param = mk.split(eventNameSpace);
 
           // DOM Element events
           if (param.length > 1) {
+            // console.log(this.prefix+param[1]);
             // hack for input
             if (param[0] === 'input') {
               let pid = _iid++;
@@ -471,14 +497,19 @@ view.prototype = {
   },
 
   off(type, fn) {
+
     if (type && _isString(type)) {
       _eachArray(
-        type.split('|'),
+        type.split(eventSplit),
         function(mk) {
-          let param = mk.split(':');
+          let param = mk.split(eventNameSpace);
 
           if (param.length > 1) {
-            $(this.root).off(param[0], this.prefix+param[1], fn ? (fn._fn || fn) : fn);
+            if(param[1] === ""){
+              $(this.root).off(param[0]);
+            }else{
+              $(this.root).off(param[0], this.prefix+param[1], fn ? (fn._fn || fn) : fn);
+            }
           } else {
             _off(this, mk, fn);
           }
@@ -489,7 +520,7 @@ view.prototype = {
       return this;
     }
 
-    $(this.root).off(); 
+    $(this.root).off();
     _off(this);
 
     return this;
@@ -497,13 +528,13 @@ view.prototype = {
 
   emit(type, args) {
     let t = _toString(type),
-      k = t.split(':');
+      k = t.split(eventNameSpace);
 
     if (k.length > 2) {
       _eachArray(
-        t.split('|'),
+        t.split(eventSplit),
         function(mk) {
-          let mkf = mk.split(':');
+          let mkf = mk.split(eventNameSpace);
           $(this.root)
             .find(this.prefix+mkf[1])
             .trigger(mkf[0], args);

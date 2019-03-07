@@ -1,3 +1,6 @@
+import isArrayOf from '../utils/verify/isArrayOf';
+import isObjectOf from '../utils/verify/isObjectOf';
+import isMultipleOf from '../utils/verify/isMultipleOf';
 import {
   _isNeed,
   _isInt,
@@ -11,9 +14,6 @@ import {
   _isBool,
   _v8,
 } from '../utils/usestruct';
-import isArrayOf from '../utils/verify/isArrayOf';
-import isObjectOf from '../utils/verify/isObjectOf';
-import isMultipleOf from '../utils/verify/isMultipleOf';
 
 const verify = {
   isRequired: _isNeed,

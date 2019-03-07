@@ -44,7 +44,7 @@
 
 import ROUTER from '../constant/router.define';
 import defined from '../utils/defined';
-import view from './view';
+import $ from '../lib/jquery';
 
 import pathfixer from '../utils/router/pathfixer';
 import pathpatch from '../utils/router/pathpatch';
@@ -70,7 +70,6 @@ import {
   _on,
   _off,
   _emit,
-  _noop
 } from '../utils/usestruct';
 
 let rid = 0;
@@ -104,7 +103,7 @@ class Router {
       defined(this, {
         _rid: rid++,
         _assert: idt => (_idt === idt ? source : {}),
-        _status: (idt, change) => ( _idt === idt ? (status=change) : null),
+        _status: (idt, change) => (_idt === idt ? (status=change) : null),
         _idmap: idt => (_idt === idt ? idmap: {}),
         _clear: idt => (_idt === idt ? (cache = {}) : null),
         _b: idt => (_idt === idt ? beforeActions : null),
@@ -115,7 +114,6 @@ class Router {
 
     // add global events
     let gfn;
-    let gview;
     let gevent;
 
     addEventListener("popstate", gfn = (event)=>{
@@ -132,22 +130,22 @@ class Router {
     // binding DOM events
     if(config.targets && targets){
       gevent = generatorEvents(this);
-      gview = new view({
-        root: document.documentElement,
-        render: _noop,
-        events: { [`click:${targets}`]: gevent }
-      });
+
+      $(document.documentElement).on("click", targets, gevent);
     }
 
     // end router lifecycle
     this.destory = function(){
       status = false;
 
-      delete this.destory;
       _off.call(this, this);
+
       removeEventListener('popstate', gfn);
 
-      if(gview) gview.off(`click:${targets}`, gevent);
+      if(gevent)
+        $(document.documentElement).off("click", targets, gevent);
+
+      delete this.destory;
 
       return _define(this, "destory", {
         value: false,

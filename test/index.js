@@ -1,5 +1,8 @@
 import cubec from '../src/cubec';
 
+const root = document.createElement("app");
+document.body.appendChild(root);
+
 const r = window.router = cubec.router({
   targets: ".router",
 
@@ -38,31 +41,33 @@ const r = window.router = cubec.router({
   }
 });
 
-r.start('/custom/213/event/1');
-
 const view = cubec.view({
-  root: document.body,
-  template: `
-    <a class="router" href="/today/abc/subs">/toady/abc/subs</a>
-  `
-});
+  root: root,
 
-view.render();
+  render: function(root, data){
+    // console.log(root);
+    // console.log(data);
 
-const { isMultipleOf, isNumber, isString, isArray } = cubec.verify;
-
-const model = window.model = cubec.model({
-  data: {
-    a:{},
-  },
-
-  verify: {
-    a: isMultipleOf(isNumber, isString, isArray)
+    root.innerHTML = `
+      <button class="a">${data.str}</button>
+      <button class="b">${data.str}</button>
+      <a class="router" href="/today/12321/subs", query="a=1&b=2">CLICK ME!</a>
+    `;
   },
 
   events: {
-    'catch:verify': function(){
-      console.log(arguments);
+    'click:.a': function(){
+      alert(1);
+    },
+
+    'click:.b': function(){
+      alert(2);
     }
   }
 });
+
+r.start();
+
+view.render({ str: 'fuck' });
+
+setTimeout(()=>view.render({ str: "sucker" }), 5000);
