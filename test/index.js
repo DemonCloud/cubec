@@ -51,6 +51,7 @@ const view = cubec.view({
     root.innerHTML = `
       <button class="a">${data.str}</button>
       <button class="b">${data.str}</button>
+      <button id="c">${data.str}-C</button>
       <a class="router" href="/today/12321/subs", query="a=1&b=2">CLICK ME!</a>
     `;
   },
@@ -62,6 +63,10 @@ const view = cubec.view({
 
     'click:.b': function(){
       alert(2);
+    },
+
+    'click:#c': function(){
+      alert(3);
     }
   }
 });

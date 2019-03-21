@@ -1,6 +1,6 @@
 {
   "name": "cubec",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "micro mvc framework",
   "main": "dist/cubec.min.js",
   "scripts": {
@@ -15,11 +15,11 @@
     "url": "git+https://github.com/DemonCloud/cubec.git"
   },
   "devDependencies": {
-    "@babel/core": "^7.3.4",
+    "@babel/core": "^7.4.0",
     "@babel/plugin-external-helpers": "^7.2.0",
-    "@babel/plugin-transform-runtime": "^7.3.4",
-    "@babel/preset-env": "^7.3.4",
-    "@babel/runtime": "^7.3.4",
+    "@babel/plugin-transform-runtime": "^7.4.0",
+    "@babel/preset-env": "^7.4.1",
+    "@babel/runtime": "^7.4.0",
     "body-parser": "^1.18.3",
     "css-loader": "^1.0.1",
     "html-webpack-plugin": "^3.2.0",
@@ -33,7 +33,7 @@
     "rollup-plugin-uglify": "^5.0.2",
     "style-loader": "^0.23.1",
     "webpack": "^4.29.6",
-    "webpack-cli": "^3.2.3",
+    "webpack-cli": "^3.3.0",
     "webpack-dev-server": "^3.2.1"
   }
 }

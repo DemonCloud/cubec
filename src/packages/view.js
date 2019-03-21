@@ -45,6 +45,8 @@ let vid = 0;
 const prefix = "__cubec-";
 const eventSplit = "|";
 const eventNameSpace = ":";
+const idSign = "#";
+const empty = "";
 
 // cubec Template engine
 function checkElm(el) {
@@ -431,16 +433,6 @@ function setCursor(elm, pos) {
 view.prototype = {
   constructor: view,
 
-  inject(root){
-    let r = root || this.root;
-
-    r._vid = view._vid;
-
-    this.axml = htmlDiff.createTreeFromHTML(r.innerHTML);
-
-    return this;
-  },
-
   on(type, fn) {
     if (_isFn(fn)) {
       _eachArray(
@@ -475,15 +467,14 @@ view.prototype = {
               $(this.root)
                 .on('compositionstart', pida, compositionIn)
                 .on('compositionend', pida, compositionOut)
-                .on(param[0], param[1], pfn);
+                .on(param[0], (param[1][0] === idSign ? empty : this.prefix)+param[1], pfn);
 
             } else {
               let tfn = fn.bind(this);
 
               fn._fn = tfn;
 
-              $(this.root).on(param[0], this.prefix+param[1], tfn);
-
+              $(this.root).on(param[0], (param[1][0] === idSign ? empty : this.prefix)+param[1], tfn);
             }
           } else {
             _on(this, mk, fn);
@@ -508,7 +499,7 @@ view.prototype = {
             if(param[1] === ""){
               $(this.root).off(param[0]);
             }else{
-              $(this.root).off(param[0], this.prefix+param[1], fn ? (fn._fn || fn) : fn);
+              $(this.root).off(param[0], (param[1][0] === idSign ? empty : this.prefix)+param[1], fn ? (fn._fn || fn) : fn);
             }
           } else {
             _off(this, mk, fn);
@@ -533,11 +524,11 @@ view.prototype = {
     if (k.length > 2) {
       _eachArray(
         t.split(eventSplit),
-        function(mk) {
-          let mkf = mk.split(eventNameSpace);
+        function(params) {
+          let param = params.split(eventNameSpace);
           $(this.root)
-            .find(this.prefix+mkf[1])
-            .trigger(mkf[0], args);
+            .find((param[1][0] === idSign ? empty : this.prefix)+param[1])
+            .trigger(param[0], args);
         },
         this,
       );
@@ -546,7 +537,7 @@ view.prototype = {
 
     if (k.length > 1) {
       $(this.root)
-        .find(this.prefix+k[1])
+        .find((k[1][0] === idSign ? empty : this.prefix)+k[1])
         .trigger(k[0], args);
       return this;
     }
