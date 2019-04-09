@@ -3,6 +3,11 @@ import struct from '../lib/struct';
 const rootSign = '/';
 const paramSign = ':';
 const leafSign = '###';
+const querySign = '?';
+const hashSign = '#';
+const urlSlash = '//';
+const http = 'http://';
+const https = 'https://';
 
 const _idt = struct.broken,
   _extend = struct.extend(),
@@ -121,5 +126,10 @@ export {
 
   rootSign,
   paramSign,
-  leafSign
+  leafSign,
+  querySign,
+  hashSign,
+  http,
+  https,
+  urlSlash,
 };

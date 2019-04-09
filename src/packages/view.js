@@ -6,8 +6,7 @@ import cmodel from './model';
 import $ from '../lib/jquery';
 import htmlDiff from '../utils/view/htmlDiff';
 import defined from '../utils/defined';
-import {on, off} from '../utils/universalEvent';
-import registerEvent from '../utils/registerEvent';
+import {on, off, registerEvent } from '../utils/universalEvent';
 import {
   _idt,
   _axt,

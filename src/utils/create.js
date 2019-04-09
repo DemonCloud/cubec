@@ -1,6 +1,6 @@
 import { _merge } from './usestruct';
 
-export default function(module) {
+export const createExtend = function(module) {
   return function(malloc) {
     const extender = function(o) {
       return new module(_merge(malloc, o || {}));
@@ -12,3 +12,9 @@ export default function(module) {
     return extender;
   };
 }
+
+export const createC = function(module) {
+  return function(o) {
+    return new module(o || {});
+  };
+};

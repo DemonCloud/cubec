@@ -5,8 +5,7 @@ import _view from './packages/view';
 import _router from './packages/router';
 import _verify from './packages/verify';
 
-import createC from './utils/createC';
-import createExtend from './utils/createExtend';
+import { createC, createExtend } from './utils/create';
 
 const cubec = Object.create(null);
 

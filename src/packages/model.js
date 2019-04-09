@@ -3,7 +3,6 @@ import ERRORS from '../constant/errors.define';
 
 import store from '../lib/store';
 import defined from '../utils/defined';
-import registerEvent from '../utils/registerEvent';
 import modelMultipleVerify from '../utils/model/multipleVerify';
 import modelSingleVerify from '../utils/model/singleVerify';
 import modelPipe from '../utils/model/pipe';
@@ -11,7 +10,7 @@ import modelFetch from '../utils/model/fetch';
 import modelLockStatus from '../utils/model/lockstatus';
 import modelSeek from '../utils/model/seek';
 import modelCombined from '../utils/model/combined';
-import {on, off, emit} from '../utils/universalEvent';
+import {on, off, emit, registerEvent} from '../utils/universalEvent';
 import {
   _extend,
   _idt,

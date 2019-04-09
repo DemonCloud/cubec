@@ -4,6 +4,7 @@ docs
 test/
 test/*
 test
+.DS_Store
 rollup.config.js
 webpack.config.js
 text.html

@@ -1,4 +1,4 @@
-import { rootSign, paramSign } from '../usestruct';
+import { rootSign, paramSign, querySign, hashSign } from '../usestruct';
 
 const rootfixer = /^\/+|\/+$/g;
 
@@ -15,7 +15,7 @@ export default function(route, actions=[], id){
       actions
     };
   } else {
-    route = (route.split("?")[0].split("#")[0]).replace(rootfixer,'');
+    route = (route.split(querySign)[0].split(hashSign)[0]).replace(rootfixer,'');
 
     const routeParam = [];
     const routePointer = route

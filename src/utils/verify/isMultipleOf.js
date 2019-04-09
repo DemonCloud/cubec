@@ -14,8 +14,6 @@ export default function(){
     throw new Error(ERRORS.VERIFY_ISCHECKER_UNEXCEPT);
 
   return function(value){
-    let check = _some(checkerQueue, fn=>fn(value));
-
-    return check;
+    return _some(checkerQueue, fn=>fn(value));
   };
 }

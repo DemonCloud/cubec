@@ -23,4 +23,8 @@ function emit(type, args) {
   return _emit(this, type, _isArrayLike(args) ? args : args !== null ? [args] : []);
 }
 
-export {on, off, emit};
+function registerEvent(fn, type) {
+  return this.on(type, fn);
+}
+
+export {on, off, emit, registerEvent};
