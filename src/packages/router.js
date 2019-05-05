@@ -195,9 +195,6 @@ class Router {
       return this;
     }
 
-    console.log(path, path === _idt);
-    console.log(_tree, _idmap, rootSign, leafSign);
-
     // isRoot
     if(path === _idt){
       matchId = _tree[rootSign][leafSign];
