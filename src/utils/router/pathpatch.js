@@ -8,5 +8,5 @@ import {
 export default function(path=_idt, query={}){
   const querys = _paramStringify(query);
 
-  return _trim((rootSign + path === _idt ? "" : path) + (querys ? `?${querys}` : ''));
+  return _trim(rootSign + (path === _idt ? "" : path) + (querys ? `?${querys}` : ''));
 }

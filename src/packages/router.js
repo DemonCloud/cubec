@@ -195,6 +195,9 @@ class Router {
       return this;
     }
 
+    console.log(path, path === _idt);
+    console.log(_tree, _idmap, rootSign, leafSign);
+
     // isRoot
     if(path === _idt){
       matchId = _tree[rootSign][leafSign];
@@ -336,6 +339,7 @@ class Router {
 
     if(path && _isString(path)){
       const usePath = pathfixer(path);
+      // console.log(usePath, query, state);
       this.__match(usePath, query, state, usePath === pathfixer(location.pathname), false);
     }else if(path === false){
       this.__match(pathfixer(location.pathname), _paramParse(location.search), state, false, false, true);

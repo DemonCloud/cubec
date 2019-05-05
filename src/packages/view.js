@@ -190,13 +190,11 @@ function renderSlotComponent(args, slot) {
 
   let render = _noop;
   let slotId = `${prefix}slotroot-${_view.name}`;
-  let slotOneArg = args[0];
-  let slotData = slot.path
-    ? _isObject(slotOneArg)
-      ? [_get(slotOneArg, slot.path)]
-      : args
-    : args;
+  let slotData = (slot.path && _isObject(args[0])) ? [_get(args[0], slot.path)] : args; // dell with slotdata shortcut
+
   slot.root.setAttribute("id",slotId);
+
+  // console.log(slot, slotData);
 
   if (slotTarget.constructor === view && slotTarget._isExtender) {
     // is extends constructor view

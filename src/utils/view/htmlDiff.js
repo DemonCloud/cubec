@@ -12,7 +12,8 @@ import {
   _eq,
   _v8,
   _idt,
-  _noop
+  _noop,
+  _trim,
 } from '../usestruct';
 
 // attr list mapping
@@ -239,10 +240,10 @@ const patchSlot = function(slot, elm) {
 
   if (name && elm) {
     let sloter = {};
-    let slotParse = name.trim().split('::');
+    let slotParse = _trim(name).split('::');
 
-    sloter.name = slotParse[0];
-    sloter.path = slotParse[1];
+    sloter.name = _trim(slotParse[0] || "");
+    sloter.path = _trim(slotParse[1] || "");
     sloter.root = elm;
 
     return sloter;
@@ -443,7 +444,7 @@ const htmlDiff = {
             c = n.child;
           }
         } else if (text) {
-          if (text.trim()) p.text = text;
+          if (_trim(text)) p.text = text;
         }
         return match;
       }.bind(this),
