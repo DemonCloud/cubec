@@ -1,9 +1,9 @@
-import { _merge } from './usestruct';
+import { _merge, _idt } from './usestruct';
 
 export const createExtend = function(module) {
   return function(malloc) {
     const extender = function(o) {
-      return new module(_merge(malloc, o || {}));
+      return new module(_merge(malloc, o || _idt));
     };
 
     extender.constructor = module;
@@ -11,10 +11,10 @@ export const createExtend = function(module) {
 
     return extender;
   };
-}
+};
 
 export const createC = function(module) {
   return function(o) {
-    return new module(o || {});
+    return new module(o || _idt);
   };
 };

@@ -14,6 +14,7 @@ import {
   _idt,
   _noop,
   _trim,
+  _has,
 } from '../usestruct';
 
 // attr list mapping
@@ -26,6 +27,7 @@ const attrList = {
   max: '@max',
   min: '@min',
   href: '@href',
+  src: '@src',
   checked: '*checked',
   disabled: '*disabled',
   readonly: '*readonly',
@@ -49,6 +51,31 @@ const attrList = {
   defer: '*defer',
   async: '*async',
 };
+
+const attrShortcut = [
+  'checked',
+  'disabled',
+  'readonly',
+  'required',
+  'selected',
+  'controls',
+  'ended',
+  'muted',
+  'hidden',
+  'seeking',
+  'paused',
+  'loop',
+  'autoplay',
+  'multiple',
+  'autofocus',
+  'autocomplete',
+  'draggable',
+  'spellcheck',
+  'translate',
+  'specified',
+  'defer',
+  'async',
+];
 
 const patchList = [
   'no', // 0
@@ -115,8 +142,7 @@ const attrSetter = function(elm, attr, values) {
     let inval = elm.getAttribute(attrName) || elm[attrName];
 
     if (inval == null || inval === '') attrSetter(elm, attrName, val);
-  } else if (attrName[0] === '*')
-    _set(elm, attrName.slice(1), val === 'true' || val === true);
+  } else if (attrName[0] === '*') _set(elm, attrName.slice(1), val === 'true' || val === true);
   else if (attrName[0] === '@') elm.setAttribute(attrName.slice(1), val);
   else if (attrName[0] === ':') $(elm).on(attrName.slice(1), val);
   else _set(elm, attrName, val);
@@ -468,7 +494,10 @@ const htmlDiff = {
         tg;
       while ((s = attrexec.exec(attributes))) {
         if (!s[1]) {
-          if (!tg) {
+          // shortcut props in html5
+          if(_has(attrShortcut, s[0])){
+            attrs[s[0]] = true;
+          } else if(!tg) {
             tg = s[0];
           } else {
             attrs[tg] = attrEvent(tg, s[0], props);
@@ -478,6 +507,7 @@ const htmlDiff = {
           attrs[s[1]] = attrEvent(s[1], s[2], props);
         }
       }
+
       elm.attributes = attrs;
     }
 

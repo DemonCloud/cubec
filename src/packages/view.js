@@ -286,7 +286,7 @@ const view = function(options = {}) {
     _ass : v => v===_idt ? slotQueue : []
   });
 
-  options = _extend(_clone(VIEW.DEFAULT_OPTION), options || {});
+  options = _extend(_clone(VIEW.DEFAULT_OPTION), options || _idt);
 
   let props = _lock(_isObject(options.props) ? options.props : {}),
     vroot = options.root,

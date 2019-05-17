@@ -1556,11 +1556,11 @@
     if(enable)
       switch(header){
         case 0:
-          return paramStringify(param||{});
+          return paramStringify(param || broken);
         case 1:
-          return JSON.stringify(param||{});
+          return JSON.stringify(param || broken);
         default:
-          return paramStringify(param||{});
+          return paramStringify(param || broken);
       }
     return param;
   }
@@ -1568,7 +1568,7 @@
   var cacheaix = {};
 
   // base ajax aix [ method ]
-  function aix(option){
+  function aix(options){
 
     var config = extend({
       url       : '',
@@ -1588,7 +1588,7 @@
       aysnc     : true,
       emulateJSON : true,
       contentType : true
-    } , option || {});
+    } , options || broken);
 
     if(isFn(config.param)){
       config.param = config.param();
@@ -1730,7 +1730,7 @@
       error : noop,
       success : noop,
       callback : ('structJSTP'+Math.random()).replace('.','')
-    }, option || {} );
+    }, option || broken );
 
     if(isFn(config.param))
       config.param = config.param();

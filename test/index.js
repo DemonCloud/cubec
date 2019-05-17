@@ -93,3 +93,29 @@ r.start();
 view.render({ str: '123' });
 
 setTimeout(()=>view.render({ str: "fuck" }), 3000);
+
+
+
+// 2019 5 10
+const model1 = cubec.model({
+  name: "m1",
+  url: "/mock1",
+});
+
+const model2 = cubec.model({
+  name: "m2",
+  url: "/mock4",
+});
+
+const model3 = cubec.model({
+  url: "/mock3",
+});
+
+const watom = window.atom = cubec.atom({
+  use: [model1, model2, model3],
+  connect: true,
+});
+
+watom.subscribe(function(data){
+  console.log("watom data:", data);
+});

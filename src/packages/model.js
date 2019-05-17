@@ -15,6 +15,7 @@ import {
   _extend,
   _idt,
   _clone,
+  _every,
   _isString,
   _isBool,
   _isObject,
@@ -123,9 +124,7 @@ const model = function(option = {}) {
     store.ram[this.name] = this;
   }
 
-  _extend(this, config, MODEL.IGNORE_KEYWORDS)
-    .emit('init')
-    .off('init');
+  _extend(this, config, MODEL.IGNORE_KEYWORDS).emit('init').off('init');
 };
 
 function modelChangeDetecter(model,currentData,prevData,preset){
@@ -306,13 +305,11 @@ model.prototype = {
   },
 
   push(events){
-    if(_isString(events)){
+    if(_isString(events))
       events = events.split(",");
-    }
 
-    if(_isArray(events)){
+    if(_isArray(events))
       this.emit(events.join(","),[this.get()]);
-    }
 
     return this;
   },
@@ -320,8 +317,7 @@ model.prototype = {
   back(isStatic) {
     if (modelLockStatus(this) || !this.history) return this;
 
-    let ram = this._ash(_idt),
-      source;
+    let ram = this._ash(_idt), source;
 
     if (ram.length && (source = ram.pop())) {
       let prevData = this.get();
@@ -343,10 +339,13 @@ model.prototype = {
   },
 
   ajax(config = {}) {
-    let conf = _merge(
+    let conf = _extend(
       {
         type: 'get',
         async: true,
+        url: this.url || "/",
+        param: this.param || this.get(),
+        header: this.header,
         success: _noop,
         error: _noop,
       },
@@ -428,29 +427,28 @@ model.prototype = {
   },
 
   sync(url, header) {
-    if (_isString(url)) {
-      return modelPipe.call(
-        this,
-        'sync',
-        url,
-        this.get(),
-        _noop,
-        _noop,
-        header,
-      );
+    if(url && _isObject(url) && _size(url)){
+      header = url;
+      url = this.url;
     }
 
-    return this;
+    return modelPipe.call(
+      this,
+      'sync',
+      url || this.url,
+      this.get(),
+      _noop,
+      _noop,
+      header,
+    );
   },
 
   merge(data, isStatic) {
-    if (data instanceof model) {
+    if (data instanceof model)
       data = data.get();
-    }
 
-    if (_isObject(data) && data != null) {
+    if (data && _isObject(data))
       this.set(_merge(this.get(), data), isStatic);
-    }
 
     return this;
   },
@@ -463,28 +461,22 @@ model.prototype = {
 
     let trans = _isFn(ft) ? ft : _cool;
 
-    if (md instanceof model) {
+    if (md instanceof model)
       md.set(trans(this.get()), isStatic);
-    }
 
     return this;
   },
 
   seek(keys, needCombined){
+    let res = {};
 
-    if(keys){
+    if(keys && (_isString(keys) || (_isArray(keys) && _every(keys, _isString)))){
+      const resource = modelSeek(this.get(),_isString(keys) ? [keys] : keys);
 
-      if(_isString(keys)){
-        keys = [keys];
-      }
-
-      if(_isArray(keys)){
-        const resource = modelSeek(this.get(),keys);
-        return needCombined ? modelCombined(resource) : resource;
-      }
+      res = needCombined ? modelCombined(resource) : resource;
     }
 
-    return {};
+    return res;
   }
 };
 

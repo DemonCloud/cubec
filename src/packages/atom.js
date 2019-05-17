@@ -28,6 +28,8 @@ import {
   _map,
   _size,
   _idt,
+  _ayc,
+  _get,
   _noop
 } from '../utils/usestruct';
 
@@ -46,17 +48,25 @@ const outAtomList = function(LIST,model,isConnecty,transmit){
   }
 };
 
+const activeFetchSign = function(number){
+  return number === 1;
+};
+
 const atom = function(option = {}) {
   const config = _extend(_clone(ATOM.DEFAULT_OPTION), option);
   const _isConnectivity = !!config.connect;
   const _transmit = function(){ this.transmit(); }.bind(this);
+
   let LIST = [];
+  let inFetchAll = false;
 
   defined(this, {
     _mid: "_at"+atid++,
     _assert : (todo, v) => v === _idt ? todo(LIST) : [],
     _transmit : v => v === _idt ? _transmit : _noop,
-    _connecty : v => v === _idt ? _isConnectivity : null
+    _connecty : v => v === _idt ? _isConnectivity : null,
+    _inFetchAll : v => v === _idt ? inFetchAll : null,
+    _setFetchState: (state, v) => v==_idt ? (inFetchAll=!!state) : null
   });
 
   _extend(this.use(config.use,true), config, ATOM.IGNORE_KEYWORDS);
@@ -119,13 +129,18 @@ atom.prototype = {
   },
 
   transmit(args=[]) {
-    let transData = this.toChunk();
+    const _inFetchAll = this._inFetchAll(_idt);
 
-    if(_isString(this.preset) && this.preset){
-      transData = { [this.preset] : transData };
+    if(!_inFetchAll){
+      let transData = this.toChunk();
+
+      if(this.preset && _isString(this.preset))
+        transData = { [this.preset] : transData };
+
+      return emit.call(this,"change",[transData,...args]);
     }
 
-    return emit.call(this,"change",[transData,...args]);
+    return this;
   },
 
   out(list,isStatic) {
@@ -218,6 +233,58 @@ atom.prototype = {
   reset(isStatic=true) {
     this.unsubscribe(true);
     this.out(this.all(), isStatic);
+    return this;
+  },
+
+  fetchAll(models, params, header){
+    if((!_isString(models) && !_isArrayLike(models)) || 
+       (_isArrayLike(models) && !_every(models, _isString))){
+      header = params;
+      params = models;
+      models = this.all().map(model=>(model.name || model._mid));
+    }
+
+    if(_isString(models))
+      models = [models];
+
+    const activeModels = this.all().filter(m=>{
+      const name = m.name || m._mid;
+      return _has(models, name) && (_isString(m.url) || (_isArray(m.url) && _every(m.url, _isString)));
+    });
+
+    // include fetchModel
+    if(activeModels.length){
+      let sign = [];
+
+      this._setFetchState(true, _idt);
+
+      _eachArray(activeModels, m=>{
+        const index = sign.length;
+
+        const trigger = ()=>{
+          sign[index] = 1;
+
+          m.off("fetch:error", trigger);
+          m.off("fetch:success", trigger);
+
+          if(_every(sign, activeFetchSign)){
+            _ayc(()=>{
+              this._setFetchState(false, _idt);
+              this.transmit();
+            });
+          }
+        };
+
+        // push sign
+        sign.push(0);
+
+        m.on("fetch:error", trigger);
+        m.on("fetch:success", trigger);
+        m.fetch(params ? _get(params, (m.name || m._mid)) : {}, header);
+      });
+
+    }
+
     return this;
   },
 
