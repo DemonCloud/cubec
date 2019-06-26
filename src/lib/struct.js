@@ -1616,7 +1616,7 @@
           return config.error.call(root,data);
         }
 
-        return config.sucess.call(root,data);
+        return config.sucess.call(root,data, new XMLHttpRequest());
       }
     }
 

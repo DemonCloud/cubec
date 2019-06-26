@@ -8,16 +8,15 @@ Micro mvc framework [gzip 29k]
 
 [2.0.0]
 
-1. Completely independent new DOM event system
-2. Optimize the template engine, speed up compilation, and normalize SLOT components (not currently recommended)
+1. Completely independent new DOM event system (jQuery 4.0 slim event version)
+2. Optimize the template engine, speed up compilation, and normalize SLOT components
 3. Optimize model
 4. Optimize atom
-5. Consider whether you need to extract the struct package, stand-alone toolkit
 
 
-# Documentation [v1]
+# Documentation [v2]
 
-[doc/v1] in development...
+[doc/v2] in development...
 
 ----------
 

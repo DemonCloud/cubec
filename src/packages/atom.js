@@ -237,7 +237,7 @@ atom.prototype = {
   },
 
   fetchAll(models, params, header){
-    if((!_isString(models) && !_isArrayLike(models)) || 
+    if((!_isString(models) && !_isArrayLike(models)) ||
        (_isArrayLike(models) && !_every(models, _isString))){
       header = params;
       params = models;

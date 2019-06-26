@@ -244,7 +244,6 @@ const patchHack = [
       attrClear(patch.s, key, value);
     });
   },
-
   //9 updateslot
   function(patch, htmlDiff) {
     let c = patch.c;

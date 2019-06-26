@@ -94,8 +94,6 @@ view.render({ str: '123' });
 
 setTimeout(()=>view.render({ str: "fuck" }), 3000);
 
-
-
 // 2019 5 10
 const model1 = cubec.model({
   name: "m1",
