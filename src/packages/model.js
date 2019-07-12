@@ -297,9 +297,14 @@ model.prototype = {
     let empty = {};
 
     this.set(empty, clearStatic);
+    this.clearStore();
 
-    if (this._ast(_cool, _idt) === empty && !clearStatic)
-      this.emit('clear');
+    if (this._ast(_cool, _idt) === empty && !clearStatic) this.emit('clear');
+    return this;
+  },
+
+  clearStore(){
+    if(this._s) store.rm(this.name);
 
     return this;
   },

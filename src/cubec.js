@@ -10,7 +10,7 @@ import { createC, createExtend } from './utils/create';
 const cubec = Object.create(null);
 
 // information
-cubec.version = "1.5.10";
+cubec.version = "1.5.11";
 
 // utils
 export const struct = cubec.struct = _struct;

@@ -19,6 +19,7 @@ import {
 
 // attr list mapping
 const attrList = {
+  for: 'htmlFor',
   class: 'className',
   style: 'style.cssText',
   placeholder: '@placeholder',
@@ -152,7 +153,9 @@ const attrClear = function(elm, key, val) {
   if (key[0] === ':' && _isFn(val))
     $(elm).off(key.slice(1), val);
   else if (elm[key] && !delete elm[key])
-    try { elm[key] = null; } catch (e) { }
+    try { elm[key] = null; } catch (e) {
+      //empty
+    }
   else elm.removeAttribute(key);
 };
 

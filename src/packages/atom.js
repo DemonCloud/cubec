@@ -192,24 +192,6 @@ atom.prototype = {
     return this;
   },
 
-  swap(a, b, swapStatic) {
-    if (!a || !b || !_isString(a) || !_isString(b))
-      throw new Error(ERRORS.ATOM_UNDEFINED_MODELNAME);
-
-    let ma = this.getModelByNames(a);
-    let mb = this.getModelByNames(b);
-
-    if (!ma || !mb) {
-      throw new Error(ERRORS.ATOM_MISSING_MODELINSTANCE);
-    }
-
-    let tmp = ma.get();
-    ma.set(mb.get(), swapStatic);
-    mb.set(tmp, swapStatic);
-
-    return this;
-  },
-
   select(match, connect=false) {
     return stom(this, atomAssertMatch(this.all(), match), connect, this);
   },

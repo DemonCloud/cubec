@@ -69,6 +69,7 @@ const view = cubec.view({
     <button class="a">{{#str}}</button>
     <button class="b">{{#str}}</button>
     <button id="c">{{#str}}-C</button>
+    <label for="abc">DARK</label>
     <a class="router" href="/today/12321/subs", query="a=1&b=2">CLICK ME!</a>
     <slot>a.slot1</slot>
   `,
@@ -116,4 +117,10 @@ const watom = window.atom = cubec.atom({
 
 watom.subscribe(function(data){
   console.log("watom data:", data);
+});
+
+window.testModel = cubec.model({
+  name: "abcdef",
+  store: true,
+  data: {},
 });
