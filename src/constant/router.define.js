@@ -1,14 +1,16 @@
 const ROUTER = {
   DEFAULT_OPTION: {
     routes: {},
-    actions: {}
+    actions: {},
+    events: {
+      beforeActions: ()=>true
+    }
   },
 
   IGNORE_KEYWORDS: [
     'targets',
     'routes',
     'actions',
-    'beforeActions',
     'events',
 
     '_rid',
@@ -16,7 +18,6 @@ const ROUTER = {
     '_status',
     '_idmap',
     '_clear',
-    '_b',
     '_s',
     '_c',
   ],

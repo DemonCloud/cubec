@@ -32,9 +32,8 @@
 //     'custom': function,
 //   }
 //
-//   beforeActions: function,
-//
 //   events: {
+//     beforeActions: function,
 //     completeActions: function,
 //     preventActions: function,
 //     catch:notmatch: function,
@@ -90,7 +89,6 @@ class Router {
 
     const idmap = {};
     const targets = _isArray(config.targets) ? config.targets.join(",") : config.targets;
-    const beforeActions = _isFn(config.beforeActions) ? config.beforeActions : returnTrue;
     const source = {
       idmap,
       tree: generatorRouteTree(config.routes, idmap),
@@ -106,7 +104,6 @@ class Router {
         _status: (idt, change) => (_idt === idt ? (status=change) : null),
         _idmap: idt => (_idt === idt ? idmap: {}),
         _clear: idt => (_idt === idt ? (cache = {}) : null),
-        _b: idt => (_idt === idt ? beforeActions : null),
         _s: idt => (_idt === idt ? status : null),
         _c: idt => (_idt === idt ? cache : {})
       })
@@ -130,7 +127,6 @@ class Router {
     // binding DOM events
     if(config.targets && targets){
       gevent = generatorEvents(this);
-
       $(document.documentElement).on("click", targets, gevent);
     }
 

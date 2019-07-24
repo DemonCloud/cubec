@@ -2,15 +2,17 @@ import {
   _idt,
   _isFn,
   _eachArray,
+  _fireEvent,
   _emit
 } from '../usestruct';
 
 export default function(router, path, actions, args, isResolve, isPopState, isStart){
   const emitargs = [path].concat(args);
-  const beforeActions = router._b(_idt);
 
   try{
-    if(beforeActions.apply(router,emitargs)){
+    const allow = _fireEvent(router, "beforeActions", emitargs);
+
+    if(allow && allow[0]){
 
       if(!isPopState && !isStart) history[isResolve ? 'replaceState' : 'pushState'](args[2], null, path);
 

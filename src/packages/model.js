@@ -331,7 +331,7 @@ model.prototype = {
 
       if (!isStatic){
         let currentData = _clone(source);
-        this.emit('back', [currentData]);
+        this.emit('back', [currentData,prevData]);
         modelChangeDetecter(this,currentData,prevData);
       }
     }

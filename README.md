@@ -2,16 +2,14 @@
 
 ![npm version](https://img.shields.io/npm/v/cubec.svg?label=cubec&style=flat-square&maxAge=3600)
 
-Micro mvc framework [gzip 29k]
+Micro mvc framework [gzip 29.4k]
 
 # Feature version
 
-[2.0.0]
+### TODO [2.0.0]
 
 1. Completely independent new DOM event system (jQuery 4.0 slim event version)
-2. Optimize the template engine, speed up compilation, and normalize SLOT components
-3. Optimize model
-4. Optimize atom
+2. Optimize atom
 
 
 # Documentation [v2]
