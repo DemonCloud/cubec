@@ -45,7 +45,7 @@ const slot = cubec.view({
   template: `
     <div id="slot">slot1</div>
   `
-})
+});
 
 const slot1 = cubec.view({
   components: {
@@ -119,8 +119,20 @@ watom.subscribe(function(data){
   console.log("watom data:", data);
 });
 
+window.atom = watom;
 window.testModel = cubec.model({
   name: "abcdef",
-  store: true,
+  url: "/mock1",
+  verify: {
+    "a" : cubec.verify.isArray
+  },
   data: {},
+  events: {
+    "change": function(data){
+      console.log(data);
+    },
+    "catch:verify": function(){
+      console.log("CATCH VERIFY ERROR!", arguments);
+    }
+  }
 });

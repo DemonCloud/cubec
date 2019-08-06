@@ -31,7 +31,6 @@ import {
   _merge,
   _noop,
   _slice,
-  _not,
   _hasEvent,
   _isPrim,
   _eq,
@@ -184,13 +183,14 @@ model.prototype = {
   off(type,callback){
     off.apply(this,arguments);
     let changeDetect = this._asc(_idt);
+    const findIndex = changeDetect.indexOf(type);
 
     if(type &&
       _isString(type) &&
       changeReg.test(type) &&
-      changeDetect.indexOf(type)>=-1 &&
+      findIndex > -1 &&
       !_hasEvent(this, type)){
-      _not(changeDetect, type);
+      changeDetect.splice(findIndex,1);
     }else if(type == null){
       changeDetect.splice(0,changeDetect.length);
     }

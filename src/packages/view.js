@@ -22,7 +22,7 @@ import {
   _isNumber,
   _isArray,
   _isObject,
-  _isElement,
+  _isDOM,
   _isArrayLike,
   _get,
   _size,
@@ -49,7 +49,7 @@ const empty = "";
 
 // cubec Template engine
 function checkElm(el) {
-  if (!(_isElement(el) || _isArrayLike(el)))
+  if (!(_isDOM(el) || _isArrayLike(el)))
     throw new TypeError(
       'el must be typeof DOMElement or NodeList collections -> not ' + el,
     );

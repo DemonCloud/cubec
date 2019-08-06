@@ -130,6 +130,11 @@
     return !!e && (typeof e === 'object' || isFn(e));
   }
 
+  // PlainObject [ type ]
+  function isPlainObject(e){
+    return e != null && typeof e === 'object' && e.constructor === Object;
+  }
+
   // String [ type ]
   function isStr(e){
     return typeof e === 'string' || e+'' === e;
@@ -1590,14 +1595,12 @@
       contentType : true
     } , options || broken);
 
-    if(isFn(config.param)){
-      config.param = config.param();
-    }
+    if(isFn(config.param)) config.param = config.param();
 
-    var cacheParam = config.param ? (isObj(config.param) ? paramStringify(config.param) : config.param) : "";
+    var cacheParam = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
     var cacheUrl = config.url + "$$" + cacheParam;
 
-    // check if has ajax cache
+    // check isObjisObjisObjif has ajax cache
     if(config.cache && config.url){
       var data;
       var item = cacheaix[cacheUrl];
@@ -1624,8 +1627,7 @@
 
     // with GET method
     if(config.type.toUpperCase() === 'GET' && config.param){
-      config.url += (~config.url.search(/\?/g) ?
-        '&' : (keys(config.param).length ? '?' : ''))+
+      config.url += (~config.url.search(/\?/g) ? '&' : (keys(config.param).length ? '?' : ''))+
       paramStringify(config.param);
       config.param = null;
     }
@@ -1650,7 +1652,7 @@
       'application/x-www-form-urlencoded';
 
     // FormData support
-    if(window.FormData !== void 0 && config.param instanceof FormData){
+    if(window.FormData != null && config.param instanceof FormData){
       cType = '';
       config.contentType = false;
       delete config.header['Content-Type'];
@@ -1660,8 +1662,8 @@
       ol(config.header,function(val,key){ xhr.setRequestHeader(key,val); });
 
     if(config.type.toUpperCase() === 'POST' &&
-    config.contentType === true &&
-    (cType||'').search('json')===-1)
+      config.contentType === true &&
+      (cType||'').search('json')===-1)
       xhr.setRequestHeader('Content-Type',cType+';chartset='+config.charset);
 
     xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
@@ -1714,7 +1716,7 @@
 
     // send request
     xhr.send(config.param ?
-      (isObj(config.param) ?
+      (isPlainObject(config.param) ?
         dataMIME(config.contentType,MIME[cType],config.param) :
         config.param) : null);
 
@@ -2225,6 +2227,7 @@
   var $type = {
       obj: isObj,
       object: isObj,
+      plainobject: isPlainObject,
       arr: isArray,
       array: isArray,
       arraylike: isArrayLike,

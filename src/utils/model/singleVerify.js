@@ -3,7 +3,6 @@ import {
   _set,
   _get,
   _keys,
-  _find,
   _type,
 } from '../usestruct';
 import output from './outputFormaterVerify';
@@ -19,7 +18,7 @@ export default function(key, val, model) {
     'm',
   );
 
-  let validKeys = _find(keys, parReg);
+  let validKeys = keys.filter(v=>parReg.test(v));
   let error = [];
   let isRequired, valid, value, parKey;
 

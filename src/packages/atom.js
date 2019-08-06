@@ -15,7 +15,6 @@ import {
   _slice,
   _has,
   _index,
-  _one,
   _isArrayLike,
   _isString,
   _isNumber,
@@ -177,7 +176,12 @@ atom.prototype = {
     let res;
 
     if (name == null) res = this.all();
-    else if (_isString(name)) res = _one(this.all(), atomAssertModel(name));
+    else if (_isString(name)){ 
+      _eachArray(this.all(), function(n){ 
+        if(n.name === name)
+          res = n;
+      });
+    }
     else if (_isArray(name) && _size(name)) {
       res = _map(name, n => this.getModelByNames(n));
       if (_size(res) === 1) res = res[0];

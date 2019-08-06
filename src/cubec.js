@@ -1,4 +1,4 @@
-import _struct from './lib/struct';
+// import _struct from './lib/struct';
 import _model from './packages/model';
 import _atom from './packages/atom';
 import _view from './packages/view';
@@ -10,10 +10,15 @@ import { createC, createExtend } from './utils/create';
 const cubec = Object.create(null);
 
 // information
-cubec.version = "1.6.0";
+cubec.version = "1.7.0";
+// console.log(cubec.version);
 
-// utils
-export const struct = cubec.struct = _struct;
+// since version 1.7.0. struct is not a part of cubec module.
+// if you want to import struct
+// please ( import struct from "ax-struct-js" ) [ npm install ax-struct-js@latest  ]
+// export const struct = cubec.struct = _struct;
+
+// verify utils functions
 export const verify = cubec.verify = _verify;
 
 // create module
