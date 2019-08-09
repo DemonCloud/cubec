@@ -77,8 +77,6 @@ const leafSign = '###';
 const paramSign = ':';
 const rootSign = '/';
 
-const returnTrue = function(){ return true; };
-
 // Router Class
 class Router {
   constructor(config={}){

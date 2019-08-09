@@ -1,4 +1,3 @@
-// import _struct from './lib/struct';
 import _model from './packages/model';
 import _atom from './packages/atom';
 import _view from './packages/view';
@@ -17,6 +16,8 @@ cubec.version = "1.7.0";
 // if you want to import struct
 // please ( import struct from "ax-struct-js" ) [ npm install ax-struct-js@latest  ]
 // export const struct = cubec.struct = _struct;
+_view.__instance[0] = _model;
+_view.__instance[1] = _atom;
 
 // verify utils functions
 export const verify = cubec.verify = _verify;

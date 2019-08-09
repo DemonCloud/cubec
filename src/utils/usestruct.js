@@ -68,8 +68,6 @@ const urlSlash = '//';
 const http = 'http://';
 const https = 'https://';
 
-// const _ajax = struct.ajax(); //
-
 export {
   _extend,
   _define,

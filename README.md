@@ -2,35 +2,22 @@
 
 ![npm version](https://img.shields.io/npm/v/cubec.svg?label=cubec&style=flat-square&maxAge=3600)
 
-Micro mvc framework [gzip 29.4k]
+Micro mvc framework [gzip 24k]
 
-# Feature version
+## Feature version 2.0.0
 
 ### TODO [2.0.0]
 
 1. Completely independent new DOM event system (jQuery 4.0 slim event version)
-2. Optimize atom
+2. Optimize view template
 
 
-# Documentation [v2]
+## Documentation [v2]
 
-[doc/v2] in development...
+[doc/v2] in development ...
 
-----------
 
-run development after ``npm install``
-
-```sh
-npm run dev
-```
-
-build source
-
-```sh
-npm run build
-```
-
-# The old documentation
+## The old project documentation
 
 > Replace [ax] with [cubec]
 

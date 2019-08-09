@@ -1,8 +1,6 @@
 import VIEW from '../constant/view.define';
 import ERRORS from '../constant/errors.define';
 
-import catom from './atom';
-import cmodel from './model';
 import $ from '../lib/jquery';
 import htmlDiff from '../utils/view/htmlDiff';
 import defined from '../utils/defined';
@@ -295,7 +293,7 @@ const view = function(options = {}) {
     connect = options.connect,
     models = _isArray(connect)
       ? connect
-      : (connect instanceof cmodel || connect instanceof catom)
+      : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1])
         ? [connect]
         : [],
     stencil = options.template;
@@ -321,8 +319,8 @@ const view = function(options = {}) {
           let args = _slice(arguments);
 
           try{
-            if (args[0] instanceof cmodel) args[0] = args[0].get();
-            if (args[0] instanceof catom) args[0] = args[0].toChunk();
+            if (args[0] instanceof view.__instance[0]) args[0] = args[0].get();
+            if (args[0] instanceof view.__instance[1]) args[0] = args[0].toChunk();
 
             if(this.directRender){
               this.axml = null;
@@ -381,6 +379,8 @@ const view = function(options = {}) {
     .emit('init')
     .off('init');
 };
+
+view.__instance = [_noop, _noop]; // model, atom
 
 let _iid = 1;
 const ime = {};
@@ -554,7 +554,7 @@ view.prototype = {
 
     if (items.length) {
       _eachArray(items, item => {
-        if ((item instanceof cmodel || item instanceof catom) && item._mid != null) {
+        if ((item instanceof view.__instance[0] || item instanceof view.__instance[1]) && item._mid != null) {
           if (!bounder[item._mid]) {
             bounder[item._mid] = item;
             on.call(item, 'change', this.render);
@@ -578,7 +578,7 @@ view.prototype = {
 
     if (items.length) {
       _eachArray(items, item => {
-        if ((item instanceof cmodel || item instanceof catom) && item._mid != null ) {
+        if ((item instanceof view.__instance[0] || item instanceof view.__instance[1]) && item._mid != null ) {
           if (bounder[item._mid]) {
             delete bounder[item._mid];
             off.call(item, 'change', this.render);
