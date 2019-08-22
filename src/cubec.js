@@ -9,7 +9,7 @@ import { createC, createExtend } from './utils/create';
 const cubec = Object.create(null);
 
 // information
-cubec.version = "1.7.0";
+cubec.version = "1.8.0";
 // console.log(cubec.version);
 
 // since version 1.7.0. struct is not a part of cubec module.

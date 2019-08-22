@@ -70,7 +70,11 @@ const view = cubec.view({
     <button class="b">{{#str}}</button>
     <button id="c">{{#str}}-C</button>
     <label for="abc">DARK</label>
+    <br />
     <a class="router" href="/today/12321/subs", query="a=1&b=2">CLICK ME!</a>
+
+    <br />
+    <a class="router" href="/today/222", query="c=3&d=4">CLICK ME 2</a>
     <slot>a.slot1</slot>
   `,
 
@@ -92,21 +96,20 @@ const view = cubec.view({
 r.start();
 
 view.render({ str: '123' });
-
-setTimeout(()=>view.render({ str: "fuck" }), 3000);
+setTimeout(()=>view.render({ str: "FUCK" }), 3000);
 
 // 2019 5 10
-const model1 = cubec.model({
+const model1 = window.m1 =  cubec.model({
   name: "m1",
   url: "/mock1",
 });
 
-const model2 = cubec.model({
+const model2 = window.m2 = cubec.model({
   name: "m2",
   url: "/mock4",
 });
 
-const model3 = cubec.model({
+const model3 = window.m3 = cubec.model({
   url: "/mock3",
 });
 
@@ -119,7 +122,6 @@ watom.subscribe(function(data){
   console.log("watom data:", data);
 });
 
-window.atom = watom;
 window.testModel = cubec.model({
   name: "abcdef",
   url: "/mock1",

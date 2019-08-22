@@ -20,6 +20,8 @@ import {
   _isBool,
   _isObject,
   _isArray,
+  _isArrayLike,
+  _isNumber,
   _isFn,
   _eachObject,
   _eachArray,
@@ -30,7 +32,6 @@ import {
   _rm,
   _merge,
   _noop,
-  _slice,
   _hasEvent,
   _isPrim,
   _eq,
@@ -46,18 +47,28 @@ const replaceChangeReg = /^change:/;
 // This special data format is because the model only cares about the data structure
 // how to store data, how to communicate with the server, and how to persist locally.
 
-function defaultParse() {
-  let args = _slice(arguments);
-  let res = {};
+// make fetch parse function
+function makeParse(fn, model){
+  return function(fetchData){
+    let res;
 
-  try {
-    if (args.length > 1) _eachArray(args, data => (res = _merge(res, data)));
-    else res = args[0];
-  } catch (error) {
-    console.error(ERRORS.MODEL_DEFAULT_PARSE);
-    this.emit('catch', [error]);
-    return false;
-  }
+    try {
+      res = fn.call(this, fetchData);
+    } catch (error) {
+      console.error(ERRORS.MODEL_DEFAULT_PARSE);
+      this.emit('catch', [error]);
+      return false;
+    }
+
+    return res;
+  }.bind(model);
+}
+
+// default fetch parse
+function defaultParse(data){
+  let res = data;
+
+  if(_isArray(data)) res = { fetchMutipleData: data };
 
   return res;
 }
@@ -80,7 +91,6 @@ const model = function(option = {}) {
   let changeDetect = [];
 
   let cdata = config.data || {};
-
   let initlize_data = identify_usestore
     ? store.get(config.name) || cdata
     : cdata;
@@ -119,9 +129,8 @@ const model = function(option = {}) {
     }),
   );
 
-  if (identify_existname) {
+  if (identify_existname)
     store.ram[this.name] = this;
-  }
 
   _extend(this, config, MODEL.IGNORE_KEYWORDS).emit('init').off('init');
 };
@@ -169,6 +178,8 @@ model.prototype = {
   emit,
 
   on(type){
+    if (modelLockStatus(this)) return this;
+
     if(type && _isString(type)){
       if(changeReg.test(type)){
         let changeDetect = this._asc(_idt);
@@ -181,6 +192,8 @@ model.prototype = {
   },
 
   off(type,callback){
+    if (modelLockStatus(this)) return this;
+
     off.apply(this,arguments);
     let changeDetect = this._asc(_idt);
     const findIndex = changeDetect.indexOf(type);
@@ -209,24 +222,27 @@ model.prototype = {
   },
 
   get(key, by) {
-    let data = this._ast(_cool, _idt);
+    const data = this._ast(_clone, _idt);
 
-    return _clone(key || key === 0 ? _get(data, key, by) : data);
+    return (key || key === 0) ? (_isFn(key) ? key(this.get()) : _get(data, key, by)) : data;
   },
 
   set(key, val, isStatic) {
     if (modelLockStatus(this)) return this;
 
     let ref;
-    let assert = this._ast(_cool, _idt);
-    let assertram = this._ash(_idt);
-    let argslength = arguments.length;
-    let single = !_isPrim(key) && _isObject(key);
+    const assert = this._ast(_cool, _idt);
+    const assertram = this._ash(_idt);
+    const argslength = arguments.length;
+    const useKeyword = argslength >= 2 && (_isNumber(key) || _isString(key));
+    const undefinedArgs = (key == null) || (useKeyword && val===void 0);
+    const single = !useKeyword && (_isObject(key) || _isFn(key));
 
-    if (argslength) {
+    if (argslength && !undefinedArgs) {
       if (single) {
         // single pointer select
         isStatic = val;
+        key = key instanceof model ? key.get() : (_isFn(key) ? key(this.get()) : key);
 
         if (
           (ref = key) &&
@@ -234,35 +250,44 @@ model.prototype = {
           modelMultipleVerify(ref, this)
         ) {
           // create history
-          let prevData = _clone(assert);
+          const prevData = _clone(assert);
 
+          // save history
           if (this.history) assertram.push(_clone(assert));
+
           // change data
-          this._c(ref, _idt, (this.change = true));
+          this._c(_clone(ref), _idt, (this.change = true));
+
+          // save store
           if (this._s) store.set(this.name, ref);
 
           if (!isStatic){
-            let currentData = _clone(ref);
+            const currentData = _clone(ref);
             modelChangeDetecter(this,currentData,prevData);
           }
         }
+
       } else {
+
         if (
           !_eq(_get(assert, key), val) &&
           modelSingleVerify(key, val, this)
         ) {
           // create history
-          let prevData = _clone(assert);
+          const prevData = _clone(assert);
+
           if (this.history) assertram.push(_clone(assert));
-          _set(assert, key, val, (this.change = true));
+
+          _set(assert, key, _clone(val), (this.change = true));
+
           if (this._s) store.set(this.name, assert);
 
-
           if (!isStatic) {
-            let currentData = _clone(assert);
+            const currentData = _clone(assert);
             modelChangeDetecter(this,currentData,prevData,key);
           }
         }
+
       }
     }
 
@@ -272,21 +297,25 @@ model.prototype = {
   remove(prop, rmStatic) {
     if (modelLockStatus(this)) return this;
 
-    let assert = this._ast(_cool, _idt),
-      assertram = this._ash(_idt);
+    const assert = this._ast(_cool, _idt);
+    const assertram = this._ash(_idt);
 
     if (_isPrim(prop) && prop != null) {
       // create history
-      let prevData = _clone(assert);
+      const prevData = _clone(assert);
+
       if (this.history) assertram.push(_clone(assert));
+
       _rm(assert, prop);
+
       if (this._s) store.set(this.name, assert);
 
       if (!rmStatic) {
-        let currentData = _clone(assert);
+        const currentData = _clone(assert);
 
-        this.emit('remove:' + prop);
         modelChangeDetecter(this,currentData,prevData,prop);
+
+        this.emit('remove:' + prop, [currentData]);
       }
     }
 
@@ -294,16 +323,23 @@ model.prototype = {
   },
 
   clear(clearStatic) {
-    let empty = {};
+    if (modelLockStatus(this)) return this;
+
+    const empty = {};
 
     this.set(empty, clearStatic);
+
     this.clearStore();
 
-    if (this._ast(_cool, _idt) === empty && !clearStatic) this.emit('clear');
+    if (this._ast(_cool, _idt) === empty && !clearStatic)
+      this.emit('clear');
+
     return this;
   },
 
   clearStore(){
+    if (modelLockStatus(this)) return this;
+
     if(this._s) store.rm(this.name);
 
     return this;
@@ -313,8 +349,11 @@ model.prototype = {
     if(_isString(events))
       events = events.split(",");
 
-    if(_isArray(events))
-      this.emit(events.join(","),[this.get()]);
+    if(_isArray(events)){
+      const data = this.get();
+
+      this.emit(events.join(","), [data,_clone(data)]);
+    }
 
     return this;
   },
@@ -371,62 +410,45 @@ model.prototype = {
   fetch(param, header) {
     param = param || this.param;
 
-    let actions = [];
-    let urls = _isArray(this.url)
+    const actions = [];
+    const urls = _isArray(this.url)
       ? this.url
       : _isString(this.url)
         ? [this.url]
         : [];
 
-    let params = _isArray(param) ? param : _isObject(param) ? [param] : [];
+    const params = _isArray(param) ? param : _isObject(param) ? [param] : [];
+    const parse = makeParse((_isFn(this.parse) ? this.parse : defaultParse), this);
 
-    let parse = this.parse || defaultParse;
+    _eachArray(urls, (url, i) =>
+      actions.push(
+        modelFetch.call(this, 'fetch', url, _isArrayLike(params) ? params[i] : params, header)
+      )
+    );
 
-    _eachArray(urls, (url, i) => {
-      actions.push(modelFetch.call(this, 'fetch', url, params[i], header));
+    (actions.length === 1 ?
+    // single fetch request
+    actions[0] :
+    // mutilple fetch request
+    Promise.all(actions)).then(
+    datas => {
+      const source = parse(datas);
+
+      if(source != null && _isObject(source)) {
+        this.emit('fetch:success', [source]);
+        this.set(source);
+      }
+    },
+    error => {
+      this.emit('fetch:error', [error]);
+      console.error(error);
+
+    }).catch(
+    error => {
+      this.emit('catch:request:fetch', [error]);
+      this.emit('catch', [error]);
+      console.error(error);
     });
-
-    if (actions.length === 1) {
-      actions[0]
-        .then(
-          datas => {
-            let source = parse.call(this, datas);
-
-            if (source) {
-              this.emit('fetch:success', [source]);
-              this.set(source);
-            }
-          },
-          error => {
-            this.emit('fetch:error', [error]);
-            console.error(error);
-          },
-        )
-        .catch(error => {
-          this.emit('catch', [error]);
-          console.error(error);
-        });
-    } else if (actions.length > 1) {
-      Promise.all(actions)
-        .then(
-          datas => {
-            let source = parse.apply(this, datas);
-
-            if (source) {
-              this.emit('fetch:success', [source]);
-              this.set(source);
-            }
-          },
-          error => {
-            this.emit('fetch:error', [error]);
-            console.error(error);
-          },
-        )
-        .catch(error => {
-          this.emit('catch', [error]);
-          console.error(error);
-        });
-    }
 
     return this;
   },

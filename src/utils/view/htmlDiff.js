@@ -136,13 +136,18 @@ const attrSetter = function(elm, attr, values) {
   let attrName = attrList[attr] || attr;
   let val = _isString(values) ? _decode(values) : values;
 
+  // if(attrName === "*checked"){
+  //   console.log("*checked", val);
+  // }
+
   if (defaultAttr.test(attrName)) {
     // is defaultAttr
     attrName = attrName.slice(7).toLowerCase();
     let inval = elm.getAttribute(attrName) || elm[attrName];
 
     if (inval == null || inval === '') attrSetter(elm, attrName, val);
-  } else if (attrName[0] === '*') _set(elm, attrName.slice(1), val === 'true' || val === true);
+  }
+  else if (attrName[0] === '*') _set(elm, attrName.slice(1), (val === 'true' || val === true));
   else if (attrName[0] === '@') elm.setAttribute(attrName.slice(1), val);
   else if (attrName[0] === ':') $(elm).on(attrName.slice(1), val);
   else _set(elm, attrName, val);

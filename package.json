@@ -1,8 +1,8 @@
 {
   "name": "cubec",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "micro mvc framework",
-  "main": "dist/cubec.min.js",
+  "main": "src/cubec.js",
   "scripts": {
     "dev": "webpack-dev-server -d",
     "build": "node rollup.config.js"
@@ -31,9 +31,9 @@
     "rollup-plugin-optimize-js": "^0.0.4",
     "rollup-plugin-uglify": "^6.0.2",
     "style-loader": "^1.0.0",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6",
-    "webpack-dev-server": "^3.7.2"
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.7",
+    "webpack-dev-server": "^3.8.0"
   },
   "dependencies": {}
 }

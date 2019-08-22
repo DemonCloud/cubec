@@ -29,6 +29,7 @@ export default function(type, url, param, fnsucess, fnerror, header) {
       fnsucess.apply(this, arguments);
     } catch(error) {
       console.error(error);
+      this.emit(`catch:request:${type}`,[error]);
       return this.emit("catch",[error]);
     }
 
@@ -40,6 +41,7 @@ export default function(type, url, param, fnsucess, fnerror, header) {
       fnerror.apply(this, arguments);
     } catch (error) {
       console.error(error);
+      this.emit(`catch:request:${type}`,[error]);
       return this.emit("catch",[error]);
       // return this.emit(type + ':error', arguments);
     }

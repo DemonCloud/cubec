@@ -1,10 +1,12 @@
+import toString from '../tools/toString';
+
 export default function setProp(obj,prop,value){
   let tmp, end, i, check;
-  let keygen = (prop||'').split('.');
+  let keygen = toString(prop).split('.');
 
-  if(keygen.length === 1){
+  if(keygen.length === 1 && prop !== ""){
     obj[prop] = value;
-  }else{
+  }else if(prop !== ""){
     // [a.b.2]
     for(i=0,tmp=obj,check,end=keygen.pop(); i<keygen.length; i++)
       tmp = (check = tmp[keygen[i]]) == null ? {} : check;

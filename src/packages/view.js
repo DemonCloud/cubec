@@ -58,9 +58,9 @@ function isUnAllowedRender(val){
    return !val;
 }
 
-function packBefore(view) {
+function packBefore(v) {
   return function() {
-    let res = _fireEvent(view, 'beforeRender', arguments);
+    let res = _fireEvent(v, 'beforeRender', arguments);
 
     if(res && res.length && _some(res, isUnAllowedRender))
       return false;
@@ -69,20 +69,23 @@ function packBefore(view) {
   };
 }
 
-function packMain(view, renderFunc) {
+function packMain(v, renderFunc) {
   return function(args) {
-    return renderFunc.apply(view, args);
+    return renderFunc.apply(v, args);
   };
 }
 
-function packComplete(view) {
+function packComplete(v) {
   return function(args) {
     if(args !== _idt){
-      view.root._vid = view._vid;
-      return view.emit('completeRender', args);
+      v.root._vid = v._vid;
+      if(args && args[0] instanceof view.__instance[0])
+        args[0] = args[0].get();
+      else if(args && args[1] instanceof view.__instance[1])
+        args[0] = args[0].toChunk();
+      return v.emit('completeRender', args);
     }
-
-    return view.emit('catch');
+    return v.emit('catch');
   };
 }
 
@@ -266,7 +269,6 @@ $.fn.render = function(newhtml, view, props, args) {
 };
 
 // Selector.prototype.render = function(newhtml, view, props, args) {};
-
 const view = function(options = {}) {
   const id = vid++;
 
@@ -591,20 +593,23 @@ view.prototype = {
   },
 
   destroy(withRoot) {
-    this.emit('beforeDestroy');
+    if(this.root){
+      this.emit('beforeDestroy');
 
-    this.root._vid = void 0;
+      this.root._vid = void 0;
 
-    const createDestory = ()=>{
-      $(this.root).off();
-      this.root.innerHTML = "";
-      _eachObject(this._asb(_idt), (item)=>this.disconnect(item));
-      if(this.root.parentNode && withRoot) this.root.parentNode.removeChild(this.root);
-      this.emit('destroy', delete this.root);
-    };
+      const createDestory = ()=>{
+        this.root.innerHTML = "";
+        $(this.root).off();
+        _eachObject(this._asb(_idt), (item)=>this.disconnect(item));
+        if(this.root.parentNode && withRoot) this.root.parentNode.removeChild(this.root);
+        this.emit('destroy', delete this.root);
+      };
 
-    return createDestory();
+      return createDestory();
+    }
   },
+
 };
 
 export default view;

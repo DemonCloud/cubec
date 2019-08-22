@@ -19,7 +19,6 @@ import {
   _isString,
   _isNumber,
   _isArray,
-  _isBool,
   _isFn,
   _cool,
   _every,
@@ -176,8 +175,8 @@ atom.prototype = {
     let res;
 
     if (name == null) res = this.all();
-    else if (_isString(name)){ 
-      _eachArray(this.all(), function(n){ 
+    else if (_isString(name)){
+      _eachArray(this.all(), function(n){
         if(n.name === name)
           res = n;
       });
@@ -207,17 +206,16 @@ atom.prototype = {
   },
 
   unsubscribe(fn) {
-    if(_isBool(fn) && fn){
-      off.call(this,"change");
-    }else if(_isFn(fn)){
+    if(_isFn(fn))
       off.call(this,"change",fn);
-    }
+    else if(fn == null)
+      off.call(this,"change");
 
     return this;
   },
 
   reset(isStatic=true) {
-    this.unsubscribe(true);
+    this.unsubscribe();
     this.out(this.all(), isStatic);
     return this;
   },
@@ -246,10 +244,8 @@ atom.prototype = {
 
       _eachArray(activeModels, m=>{
         const index = sign.length;
-
         const trigger = ()=>{
           sign[index] = 1;
-
           m.off("fetch:error", trigger);
           m.off("fetch:success", trigger);
 
@@ -263,7 +259,6 @@ atom.prototype = {
 
         // push sign
         sign.push(0);
-
         m.on("fetch:error", trigger);
         m.on("fetch:success", trigger);
         m.fetch(params ? _get(params, (m.name || m._mid)) : {}, header);
