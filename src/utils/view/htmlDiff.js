@@ -21,80 +21,68 @@ import {
 const attrList = {
   for: 'htmlFor',
   class: 'className',
-  style: 'style.cssText',
-  placeholder: '@placeholder',
-  maxlength: '@maxlength',
-  minLength: '@minLength',
-  max: '@max',
-  min: '@min',
-  href: '@href',
-  src: '@src',
-  checked: '*checked',
-  disabled: '*disabled',
-  readonly: '*readonly',
-  required: '*required',
-  selected: '*selected',
-  controls: '*controls',
-  ended: '*ended',
-  muted: '*muted',
-  hidden: '*hidden',
-  seeking: '*seeking',
-  paused: '*paused',
-  loop: '*loop',
-  autoplay: '*autoplay',
-  multiple: '*multiple',
-  autofocus: '*autofocus',
-  draggable: '*draggable',
-  spellcheck: '*spellcheck',
-  translate: '*translate',
-  specified: '*specified',
-  defer: '*defer',
-  async: '*async',
+  style: 'style.cssText'
 };
 
-const attrShortcut = [
-  'checked',
-  'disabled',
-  'readonly',
-  'required',
-  'selected',
-  'controls',
-  'ended',
-  'muted',
-  'hidden',
-  'seeking',
-  'paused',
-  'loop',
-  'autoplay',
-  'multiple',
-  'autofocus',
-  // 'autocomplete',
-  'draggable',
-  'spellcheck',
-  'translate',
-  'specified',
-  'defer',
-  'async',
+const attrNeedSetAttributes = [
+  "placeHolder",
+  "maxLength",
+  "minLength",
+  "tabIndex",
+  "cellSpacing",
+  "cellPadding",
+  "rowSpan",
+  "colSpan",
+  "contentEditable",
+  "useMap",
+  "frameBorder",
+  "max",
+  "min",
+  "href",
+  "src"
 ];
 
-const patchList = [
-  'no', // 0
-  'replace', // 1
-  'append', // 2
-  'remove', // 3
-  'modifytext', // 4
-  'withtext', // 5
-  'removetext', // 6
-  'addattr', // 7
-  'modifyattr', // 8
-  'removeattr', // 9
-  'updateslot', // 10
+const attrBooleanValues = [
+  "checked",
+  "disabled",
+  "required",
+  "readOnly",
+  "selected",
+  "controls",
+  "ended",
+  "muted",
+  "hidden",
+  "seeking",
+  "paused",
+  "loop",
+  "autoPlay",
+  "multiple",
+  "autoFocus",
+  "draggable",
+  "spellCheck",
+  "translate",
+  "specified",
+  "defer",
+  "async",
 ];
 
-const slikReg = new RegExp(
-  '</([^><]+?)>|<([^><]+?)/>|<([^><]+?)>|([^><]+)|$',
-  'g',
-);
+const attrShortcut = [];
+
+_eachArray(attrNeedSetAttributes, function(attr){
+  const prefix = attr.toLowerCase();
+  const value = "@"+prefix;
+  attrList[attr] = value;
+  attrList[prefix] = value;
+});
+
+_eachArray(attrBooleanValues, function(attr){
+  const prefix = attr.toLowerCase();
+  const value = "*"+prefix;
+  attrList[attr] = value;
+  attrList[prefix] = value;
+  attrShortcut.push(attr);
+  if(prefix !== attr) attrShortcut.push(prefix);
+});
 
 const tagList = {
   input: 1,
@@ -125,6 +113,25 @@ const tagList = {
   polyline: 1,
   polygon: 1,
 };
+
+const slikReg = new RegExp(
+  '</([^><]+?)>|<([^><]+?)/>|<([^><]+?)>|([^><]+)|$',
+  'g',
+);
+
+const patchList = [
+  'no', // 0
+  'replace', // 1
+  'append', // 2
+  'remove', // 3
+  'modifytext', // 4
+  'withtext', // 5
+  'removetext', // 6
+  'addattr', // 7
+  'modifyattr', // 8
+  'removeattr', // 9
+  'updateslot', // 10
+];
 
 let attrexec = /(\S+)=["'](.*?)["']|([\w-]+)/gi,
   attreval = /^\{|\}$/gi,
