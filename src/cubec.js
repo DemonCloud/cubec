@@ -3,23 +3,26 @@ import _atom from './packages/atom';
 import _view from './packages/view';
 import _router from './packages/router';
 import _verify from './packages/verify';
+import * as _struct from './utils/usestruct';
 
 import { createC, createExtend } from './utils/create';
 
 const cubec = Object.create(null);
 
 // information
-cubec.version = "1.7.1";
+cubec.version = "1.7.2";
 // console.log(cubec.version);
 
-// since version 1.7.0. struct is not a part of cubec module.
-// if you want to import struct
-// please ( import struct from "ax-struct-js" ) [ npm install ax-struct-js@latest  ]
-// export const struct = cubec.struct = _struct;
 _view.__instance[0] = _model;
 _view.__instance[1] = _atom;
 
 // verify utils functions
+// export usestruct for cubec plugin [cubec-jsform]
+// since version 1.7.0. struct is not a part of cubec module.
+// if you want to import struct
+// please ( import struct from "ax-struct-js" ) [ npm install ax-struct-js@latest  ]
+// export const struct = cubec.struct = _struct;
+export const struct = cubec.struct = _struct;
 export const verify = cubec.verify = _verify;
 
 // create module

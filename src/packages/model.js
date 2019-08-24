@@ -268,7 +268,7 @@ model.prototype = {
         }
 
       } else {
-
+        
         if (
           !_eq(_get(assert, key), val) &&
           modelSingleVerify(key, val, this)

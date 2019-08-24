@@ -1,4 +1,6 @@
-import cubec from '../src/cubec';
+import cubec from '../dist/cubec.min';
+
+window.cubec = cubec;
 
 const root = document.createElement("app");
 document.body.appendChild(root);
