@@ -306,15 +306,20 @@ const view = function(options = {}) {
       props,
     );
 
-    this.renderToString = ()=>(stencil.apply(this, arguments) || '');
+    _define(this, "renderToString", {
+      value: function(){ return stencil.apply(this, arguments) || ''; }.bind(this),
+      writable: false,
+      enumerable: false,
+      configurable: false,
+    });
 
-    render = function() {
-      // directRender without virtual node render!
-      const args = _slice(arguments);
-
+    render = function(){
+      // directRender without virtual node render
       try{
+        const args = _slice(arguments);
         if (args[0] instanceof view.__instance[0]) args[0] = args[0].get();
         if (args[0] instanceof view.__instance[1]) args[0] = args[0].toChunk();
+
         const renderString = this.renderToString.apply(this, args);
 
         if(this.directRender){

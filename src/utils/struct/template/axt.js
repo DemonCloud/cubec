@@ -213,9 +213,7 @@ export default function axt(txt,bounds,name){
   bounder = [ methods, __tools__ ];
 
   _ = function(){
-    return trim(render.apply(this,
-      bounder.concat(slice(arguments))
-    ));
+    return trim(render.apply(this, bounder.concat(slice(arguments))));
   };
 
   return _;
