@@ -1,8 +1,7 @@
-import isString from '../type/isString';
+import toString from './toString';
 
 const tm = ("").trim;
 
 export default function trim(str){
-  str = str || "";
-  return tm.call(isString(str) ? str : str.toString());
+  return tm.call(toString(str == null ? "" : str));
 }

@@ -79,10 +79,6 @@ function packComplete(v) {
   return function(args) {
     if(args !== _idt){
       v.root._vid = v._vid;
-      if(args && args[0] instanceof view.__instance[0])
-        args[0] = args[0].get();
-      else if(args && args[1] instanceof view.__instance[1])
-        args[0] = args[0].toChunk();
       return v.emit('completeRender', args);
     }
     return v.emit('catch');
@@ -298,46 +294,42 @@ const view = function(options = {}) {
       : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1])
         ? [connect]
         : [],
-    stencil = options.template;
+    stencil = options.template || '';
 
   // parse template
   // building the render function
   if (_isFn(render)) {
-    render=compactRender(this,render);
+    render = compactRender(this,render);
   }else{
-    stencil = _isString(stencil)
-      ? (options.cache ? _axtc : _axt)(
-          completeTemplate(_trim(stencil), name, this._vid),
-          props,
-        )
-      : _isFn(stencil)
-        ? stencil
-        : _noop;
+    stencil = (options.cache ? _axtc : _axt)(
+      completeTemplate(_trim(_isFn(stencil) ? stencil.call(this, props) : stencil), name, this._vid),
+      props,
+    );
 
-    render =
-      stencil != _noop ?
-        function() {
-          // directRender without virtual node render!
-          let args = _slice(arguments);
+    this.renderToString = ()=>(stencil.apply(this, arguments) || '');
 
-          try{
-            if (args[0] instanceof view.__instance[0]) args[0] = args[0].get();
-            if (args[0] instanceof view.__instance[1]) args[0] = args[0].toChunk();
+    render = function() {
+      // directRender without virtual node render!
+      const args = _slice(arguments);
 
-            if(this.directRender){
-              this.axml = null;
-              this.root.innerHTML = stencil.apply(this, args) || '';
-            }else{
-              $(this.root).render(stencil.apply(this, args), this, props, args);
-            }
+      try{
+        if (args[0] instanceof view.__instance[0]) args[0] = args[0].get();
+        if (args[0] instanceof view.__instance[1]) args[0] = args[0].toChunk();
+        const renderString = this.renderToString.apply(this, args);
 
-            return arguments;
-          }catch(e){
-            console.error(ERRORS.VIEW_RENDER,e,arguments);
-            if(!_hasEvent(this,"catch")) throw e;
-            return _idt;
-          }
-        } : _noop;
+        if(this.directRender){
+          this.axml = null;
+          this.root.innerHTML = renderString;
+        }else{
+          $(this.root).render(renderString, this, props, args);
+        }
+
+        return args;
+      }catch(e){
+        console.error(ERRORS.VIEW_RENDER,e,arguments);
+        if(!_hasEvent(this,"catch")) throw e;
+      }
+    };
   }
 
   // if userobj has more events

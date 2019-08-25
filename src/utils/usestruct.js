@@ -16,6 +16,7 @@ import _isNeed from './struct/type/isRequired';
 import _isPrim from './struct/type/isPrim';
 import _isBool from './struct/type/isBoolean';
 import _isFn from './struct/type/isFunction';
+import _isPlainObject from './struct/type/isPlainObject';
 import _type from './struct/type/typec';
 
 import _extend from './struct/tools/extend';
@@ -80,6 +81,7 @@ export {
   _isDOM,
   _isDefine,
   _isObject,
+  _isPlainObject,
   _isString,
   _isNumber,
   _isInt,

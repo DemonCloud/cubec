@@ -19,6 +19,7 @@ import {
   _isString,
   _isBool,
   _isObject,
+  _isPlainObject,
   _isArray,
   _isArrayLike,
   _isNumber,
@@ -75,8 +76,8 @@ function defaultParse(data){
 
 const model = function(option = {}) {
   const config = _extend(_clone(MODEL.DEFAULT_OPTION), option);
-
-  if (!_isObject(config.data) || _isArray(config.data))
+  
+  if (!_isPlainObject(config.data) && !_isArray(config.data))
     throw new Error(ERRORS.MODEL_UNEXPECT);
 
   const events = config.events;
