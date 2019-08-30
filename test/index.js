@@ -1,4 +1,4 @@
-import cubec from '../dist/cubec.min';
+import cubec from '../src/cubec';
 
 window.cubec = cubec;
 

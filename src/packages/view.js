@@ -17,12 +17,10 @@ import {
   _slice,
   _isFn,
   _isString,
-  _isNumber,
   _isArray,
   _isObject,
   _isDOM,
   _isArrayLike,
-  _get,
   _size,
   _ayc,
   _link,
@@ -91,8 +89,7 @@ function packRender(view, render) {
     c = packComplete(view);
 
   let aycrender = function(args) {
-    if(args) _ayc(_link(() => args, m, c));
-
+    if(args) _ayc(_link(function(){ return args; }, m, c));
     return view;
   };
 
@@ -170,67 +167,6 @@ function setRender(view, render) {
   return view;
 }
 
-function updateSlotComponent(view, args) {
-  const slotQueue = view._ass(_idt);
-
-  if (view && slotQueue.length) {
-    _eachArray(slotQueue.splice(0, slotQueue.length), renderSlotComponent.bind(view, args));
-  }
-}
-
-function renderSlotComponent(args, slot) {
-  const _view = this;
-
-  let slotTarget = _get(this, slot.name);
-
-  if (!slotTarget) return;
-
-  let render = _noop;
-  let slotId = `${prefix}slotroot-${_view.name}`;
-  let slotData = (slot.path && _isObject(args[0])) ? [_get(args[0], slot.path)] : args; // dell with slotdata shortcut
-
-  slot.root.setAttribute("id",slotId);
-
-  // console.log(slot, slotData);
-
-  if (slotTarget.constructor === view && slotTarget._isExtender) {
-    // is extends constructor view
-    render = function() {
-      let t = slotTarget({ root: slot.root });
-      t.render.apply(t, slotData);
-    };
-  } else if (slotTarget instanceof view && _isNumber(slotTarget._vid)) {
-    render = function() {
-      if (slotTarget.root && slotTarget.render) {
-        // same root between rerender
-        if(slotTarget.root === slot.root){
-          slotTarget.render.apply(slotTarget, slotData);
-        }else{
-          slotTarget.root.setAttribute("id",slotId);
-          slot.root.parentNode.replaceChild(slotTarget.root, slot.root);
-          slotTarget.render.apply(slotTarget, slotData);
-        }
-      } else {
-        slotTarget.mount.apply(slotTarget, [slot.root].concat(slotData));
-      }
-    };
-  } else if (_isFn(slotTarget)) {
-    render = function() {
-      slotTarget.apply(this, [slot.root].concat(slotData));
-    }.bind(this);
-  } else if (_isString(slotTarget) || _isNumber(slotTarget)) {
-    render = function() {
-      slot.root.textContent = slotTarget;
-    };
-  } else {
-    render = function() {
-      slot.root.textContent = '';
-    };
-  }
-
-  return render();
-}
-
 function completeTemplate(stencil, name) {
   return `<ct id="${prefix}${name}">${stencil}</ct>`;
 }
@@ -238,27 +174,23 @@ function completeTemplate(stencil, name) {
 // extend render methods
 $.fn.render = function(newhtml, view, props, args) {
   return this.each(function(i,elm) {
-    let target = htmlDiff.createTreeFromHTML(newhtml, props);
+    let target = htmlDiff.createTreeFromHTML(newhtml, props, args);
 
     if (elm._vid !== view._vid || !view.axml) {
       elm._destory = () => view.destroy();
 
-      let internal = htmlDiff.createDOMElement((view.axml = target), view).firstElementChild;
-      updateSlotComponent(view, args);
+      let internal = htmlDiff.createDOMElement((view.axml = target), view, args).firstElementChild;
 
       elm.appendChild(internal, (elm.innerHTML = ''));
-
       return view;
     }
 
     htmlDiff.applyPatch(
       elm,
-      htmlDiff.treeDiff(view.axml, target, [], null, null, view),
+      htmlDiff.treeDiff(view.axml, target, [], null, null, view, args),
+      args,
       (view.axml = target),
     );
-
-    // sync render Slot
-    updateSlotComponent(view, args);
 
     return view;
   });
@@ -268,9 +200,9 @@ $.fn.render = function(newhtml, view, props, args) {
 const view = function(options = {}) {
   const id = vid++;
 
-  let bounder = {};
-  let slotQueue = [];
-  let name = options.name || "v--"+id;
+  const bounder = {};
+  const slotQueue = [];
+  const name = options.name || "v--"+id;
 
   this.refs = {};
 
@@ -592,14 +524,26 @@ view.prototype = {
   destroy(withRoot) {
     if(this.root){
       this.emit('beforeDestroy');
-
       this.root._vid = void 0;
 
+      const recyclerList = this._ass(_idt);
+      let recycler;
+
       const createDestory = ()=>{
-        this.root.innerHTML = "";
+
         $(this.root).off();
+
         _eachObject(this._asb(_idt), (item)=>this.disconnect(item));
+
+        while(recycler = recyclerList.pop()){
+          try{ recycler(); }
+          catch(e){ }
+        }
+
         if(this.root.parentNode && withRoot) this.root.parentNode.removeChild(this.root);
+
+        this.root.innerHTML = "";
+
         this.emit('destroy', delete this.root);
       };
 
