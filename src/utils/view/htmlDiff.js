@@ -543,7 +543,7 @@ const htmlDiff = {
             _get(args[0], slotDataPath) : args[0]; // dell with slotdata shortcut
           const recycler = this.renderSlot(getSlotRender, elm, view, slotData);
 
-          if(_isFn(recycler)) view._ass(_idt).push(recycler)
+          if(_isFn(recycler)) view._ass(_idt).push(recycler);
         }
 
         // view._ass(_idt).push(slot);

@@ -5,10 +5,10 @@ import { _ajax } from '../usestruct';
 export default function(type, url, param, header) {
   if (modelLockStatus(this)) return this;
 
-  let promiseObj = new Promise((resolve, reject)=> {
+  const promiseObj = new Promise((resolve, reject)=> {
 
     //param must be object typeof
-    let st = {
+    const st = {
       url: url || this.url || '',
       type: MODEL.EMULATEHTTP[type],
       async: true,

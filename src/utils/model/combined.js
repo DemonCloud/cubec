@@ -7,9 +7,9 @@ import {
 export default function(data){
   let combined = [];
   let maxLen = 0;
-  let keys = _keys(data);
+  const keys = _keys(data);
 
-  _eachObject(data, function(arr, key){
+  _eachObject(data, function(arr){
     maxLen = arr.length > maxLen ? arr.length : maxLen;
   });
 

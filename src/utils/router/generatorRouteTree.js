@@ -19,7 +19,7 @@ export default function(routes, idmap, existTree={}){
 
       const id = tid++;
       const path = idmap[id] = routeFormater(route, actions, id);
-      const pathEnd = path.treepath.length-1;
+      const pathEnd = path.treepath.length - 1;
 
       if(pathEnd > -1){
         let parent = tree;
