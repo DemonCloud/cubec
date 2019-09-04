@@ -1,12 +1,13 @@
 {
   "name": "cubec",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "description": "micro mvc framework",
   "main": "dist/cubec.min.js",
   "scripts": {
     "dev": "webpack-dev-server -d",
     "build": "node rollup.config.js"
   },
+  "types": "index.d.ts",
   "author": "YiJun",
   "license": "ISC",
   "repository": {

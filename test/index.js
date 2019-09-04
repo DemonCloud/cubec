@@ -46,7 +46,7 @@ const r = window.router = cubec.router({
 const slot = cubec.view({
   template: `
     <div id="slot">slot1</div>
-  `
+  `,
 });
 
 const slot1 = cubec.view({
@@ -57,14 +57,28 @@ const slot1 = cubec.view({
   template: `
     <div id="slotP">slotP</div>
     <slot>components.slot</slot>
-  `
+  `,
 });
 
-const view = cubec.view({
+const view = window.view = cubec.view({
   root: root,
 
   a: {
     slot1,
+  },
+
+  events: {
+    'click:.a': function(){
+      alert(1);
+    },
+
+    'click:.b': function(){
+      alert(2);
+    },
+
+    'click:#c': function(){
+      alert(3);
+    }
   },
 
   template:`
@@ -80,19 +94,6 @@ const view = cubec.view({
     <slot>a.slot1</slot>
   `,
 
-  events: {
-    'click:.a': function(){
-      alert(1);
-    },
-
-    'click:.b': function(){
-      alert(2);
-    },
-
-    'click:#c': function(){
-      alert(3);
-    }
-  }
 });
 
 r.start();
