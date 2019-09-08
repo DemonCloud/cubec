@@ -481,19 +481,19 @@ model.prototype = {
     return this;
   },
 
-  transTo(md, isStatic, ft) {
-    if (_isFn(isStatic)) {
-      ft = isStatic;
-      isStatic = false;
-    }
+  // transTo(md, isStatic, ft) {
+  //   if (_isFn(isStatic)) {
+  //     ft = isStatic;
+  //     isStatic = false;
+  //   }
 
-    let trans = _isFn(ft) ? ft : _cool;
+  //   let trans = _isFn(ft) ? ft : _cool;
 
-    if (md instanceof model)
-      md.set(trans(this.get()), isStatic);
+  //   if (md instanceof model)
+  //     md.set(trans(this.get()), isStatic);
 
-    return this;
-  },
+  //   return this;
+  // },
 
   seek(keys, needCombined){
     let res = {};
