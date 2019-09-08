@@ -8,6 +8,8 @@ yarn-error.log*
 .npm-log
 dist
 dist/*
+src/index.js
+src/index.html
 
 # Runtime data
 pids

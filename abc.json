@@ -1,0 +1,17 @@
+{
+  "name": "cubec",
+  "type": "SPA",
+  "wap": true,
+  "package": "yarn",
+  "path": {
+    "output": "demo/",
+    "public": "/"
+  },
+  "mockServer": {
+    "debug": true
+  },
+  "devServer": {
+    "port": 9008,
+    "https": false
+  }
+}

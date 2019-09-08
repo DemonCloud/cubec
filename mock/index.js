@@ -1,39 +1,18 @@
-const bodyparser = require('body-parser');
-const multer = require('multer');
-const mock = require('mockjs');
+module.exports = {
+  "GET=>/api/test": {
+    resultCode: 0,
+    resultMsg: "Test API request success"
+  },
 
-const upload = multer();
+  "GET=>/api/mock1": {
+    a: 1
+  },
 
-module.exports = function(app) {
-  app.use(bodyparser.json());
-  app.use(bodyparser.urlencoded({ extended: true }));
+  "GET=>/api/mock2": {
+    b: 2
+  },
 
-  app.get('/mock1', (req, res) => {
-    res.json(mock.mock({
-      "a|1": '@range(6)'
-    }));
-  });
-
-  app.get('/mock2', (req, res) => {
-    res.json(mock.mock({
-      "b|1": '@range(9,15)'
-    }));
-  });
-
-  app.get('/mock3', (req, res) => {
-    res.json({
-      c: [9,10,11,12]
-    });
-  });
-
-  app.post("/sync", upload.array(), (req, res) => {
-    console.log("request method: "+ req.method);
-    console.log("request data: "+ JSON.stringify(req.body));
-
-    res.json({
-      statusCode: 200,
-      res: {
-      }
-    });
-  });
+  "GET=>/api/mock3": {
+    c: 3
+  }
 };
