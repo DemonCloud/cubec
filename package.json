@@ -4,7 +4,7 @@
   "description": "micro mvc framework",
   "main": "dist/cubec.min.js",
   "scripts": {
-    "dev": "webpack-dev-server -d",
+    "dev": "xcli dev",
     "build": "node rollup.config.js"
   },
   "types": "index.d.ts",

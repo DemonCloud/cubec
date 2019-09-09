@@ -134,14 +134,14 @@ function makeComand(command){
   return res;
 }
 
-export default function axt(txt,bounds,name){
+export default function axt(txt,bounds,view,name){
   let _, render, position = 0,
     res = '_p+=\'', bounder,
 
     rname = isObject(bounds) ? name : (isString(bounds) ? bounds : ''),
     methods = isObject(bounds) ? bounds : {},
 
-    args = slice(arguments,2),
+    args = slice(arguments,3),
     exp = new RegExp(
       axtSetting.escape +
       '|' + axtSetting.interpolate +
@@ -214,7 +214,7 @@ export default function axt(txt,bounds,name){
 
   _ = function(){
     return trim(render.apply(this, bounder.concat(slice(arguments))));
-  };
+  }.bind(view);
 
   return _;
 

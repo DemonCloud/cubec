@@ -4,7 +4,8 @@ import ERRORS from '../constant/errors.define';
 import $ from '../lib/jquery';
 import htmlDiff from '../utils/view/htmlDiff';
 import defined from '../utils/defined';
-import {on, off, registerEvent } from '../utils/universalEvent';
+import {on, off, registerEvent} from '../utils/universalEvent';
+import {requestIdleCallback} from '../utils/view/requestIdleCallback';
 import {
   _idt,
   _axt,
@@ -46,9 +47,7 @@ const empty = "";
 // cubec Template engine
 function checkElm(el) {
   if (!(_isDOM(el) || _isArrayLike(el)))
-    throw new TypeError(
-      'el must be typeof DOMElement or NodeList collections -> not ' + el,
-    );
+    throw new TypeError('el must be typeof DOMElement or NodeList collections -> not ' + el);
   return true;
 }
 
@@ -236,6 +235,7 @@ const view = function(options = {}) {
     stencil = (options.cache ? _axtc : _axt)(
       completeTemplate(_trim(_isFn(stencil) ? stencil.call(this, props) : stencil), name, this._vid),
       props,
+      this
     );
 
     _define(this, "renderToString", {
@@ -526,17 +526,16 @@ view.prototype = {
       this.emit('beforeDestroy');
       this.root._vid = void 0;
 
-      const recyclerList = this._ass(_idt);
       let recycler;
+      const recyclerList = this._ass(_idt);
 
       const createDestory = ()=>{
-
         $(this.root).off();
 
         _eachObject(this._asb(_idt), (item)=>this.disconnect(item));
 
         while(recycler = recyclerList.pop()){
-          try{ recycler(); }
+          try{ requestIdleCallback(recycler); }
           catch(e){ }
         }
 
