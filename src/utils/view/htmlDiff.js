@@ -17,6 +17,7 @@ import {
   _ayc,
   _noop,
   _trim,
+  _extend,
   _has,
 } from '../usestruct';
 
@@ -275,6 +276,13 @@ const patchHack = [
     }
   }
 ];
+
+const createParentProps = function(view){
+  return _extend(
+    _extend({}, view.getParentProps()),
+    { [view.name]: view.props },
+  );
+};
 
 // singe html parse and diff
 // with virtual dom algorithm
@@ -580,11 +588,15 @@ const htmlDiff = {
       // is extends constructor view
       render = function() {
         const renderNewView = slotRender({ root });
+        renderNewView._assp(_idt, createParentProps(view));
         renderNewView.render(data);
         return ()=>renderNewView.destroy(true);
       };
     } else if (slotRender instanceof view.constructor && _isNumber(slotRender._vid)) {
       render = function() {
+        // createParentProps
+        slotRender._assp(_idt, createParentProps(view));
+
         if (slotRender.root && slotRender.render) {
           // same root between rerender
           if(slotRender.root !== root){
@@ -608,9 +620,9 @@ const htmlDiff = {
       };
     } else if (_isFn(slotRender)) {
       render = function() {
-        const renderResult = slotRender.call(view, root, data);
+        const renderResult = slotRender.call(view, root, data, createParentProps(view));
 
-        if(!_isFn(renderResult))
+        if(!renderResult || !_isFn(renderResult))
           console.warn("[cubec] case performance, the custom <slot> render component should return a recycle function()");
 
         return renderResult;

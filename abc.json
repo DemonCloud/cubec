@@ -7,8 +7,12 @@
     "output": "demo/",
     "public": "/"
   },
+  "css": {
+    "module": true
+  },
   "mockServer": {
-    "debug": true
+    "debug": true,
+    "proxy": "/api"
   },
   "devServer": {
     "port": 9008,

@@ -10,6 +10,8 @@ dist
 dist/*
 src/index.js
 src/index.html
+src/index.pug
+src/index.module.scss
 
 # Runtime data
 pids

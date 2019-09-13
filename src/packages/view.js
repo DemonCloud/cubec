@@ -19,7 +19,7 @@ import {
   _isFn,
   _isString,
   _isArray,
-  _isObject,
+  _isPlainObject,
   _isDOM,
   _isArrayLike,
   _size,
@@ -199,10 +199,12 @@ $.fn.render = function(newhtml, view, props, args) {
 const view = function(options = {}) {
   const id = vid++;
 
+  let parentProps = {};
   const bounder = {};
   const slotQueue = [];
   const name = options.name || "v--"+id;
 
+  // create refs;
   this.refs = {};
 
   defined(this, {
@@ -210,12 +212,17 @@ const view = function(options = {}) {
     prefix : ("#"+ prefix + name + " "),
     _vid : id,
     _asb : v => v===_idt ? bounder : {},
-    _ass : v => v===_idt ? slotQueue : []
+    _ass : v => v===_idt ? slotQueue : [],
+    _asp : v => v===_idt ? parentProps : {},
+    _assp : (v, newProps) => {
+      if(v === _idt && newProps && _isPlainObject(newProps))
+        parentProps = _lock(newProps);
+    }
   });
 
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options || _idt);
 
-  let props = _lock(_isObject(options.props) ? options.props : {}),
+  let props = _lock(_extend({}, _isPlainObject(options.props) ? options.props : {})),
     vroot = options.root,
     render = options.render,
     events = options.events,
@@ -519,6 +526,16 @@ view.prototype = {
     }
 
     return this;
+  },
+
+  getParentProps: function(name){
+    const parentProps = this._asp(_idt);
+    let target = parentProps;
+
+    if(name && _isString(name))
+      target = parentProps[name] || {};
+
+    return _lock(_extend({}, target));
   },
 
   destroy(withRoot) {

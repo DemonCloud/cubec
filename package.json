@@ -1,7 +1,7 @@
 {
   "name": "cubec",
-  "version": "1.7.6",
-  "description": "micro mvc framework",
+  "version": "1.8.0",
+  "description": "[cubec] micro mvc framework",
   "main": "dist/cubec.min.js",
   "scripts": {
     "dev": "xcli dev",
@@ -20,7 +20,7 @@
     "@babel/plugin-transform-runtime": "^7.6.0",
     "@babel/preset-env": "^7.6.0",
     "@babel/runtime": "^7.6.0",
-    "rollup": "^1.20.3",
+    "rollup": "^1.21.2",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
