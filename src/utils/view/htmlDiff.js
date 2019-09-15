@@ -620,7 +620,7 @@ const htmlDiff = {
       };
     } else if (_isFn(slotRender)) {
       render = function() {
-        const renderResult = slotRender.call(view, root, data, createParentProps(view));
+        const renderResult = slotRender.call(view, root, data, ()=>createParentProps(view));
 
         if(!renderResult || !_isFn(renderResult))
           console.warn("[cubec] case performance, the custom <slot> render component should return a recycle function()");

@@ -76,7 +76,7 @@ function defaultParse(data){
 
 const model = function(option = {}) {
   const config = _extend(_clone(MODEL.DEFAULT_OPTION), option);
-  
+
   if (!_isPlainObject(config.data) && !_isArray(config.data))
     throw new Error(ERRORS.MODEL_UNEXPECT);
 
@@ -121,8 +121,7 @@ const model = function(option = {}) {
 
       _v: !!_size(verify),
 
-      _l: (state, v) =>
-        v === _idt ? (this.isLock = identify_lock = !!state) : void 0,
+      _l: (state, v) => v === _idt ? (this.isLock = identify_lock = !!state) : void 0,
 
       _c: (newdata, v) => v === _idt ? (cdata = newdata) : {},
 
@@ -269,7 +268,7 @@ model.prototype = {
         }
 
       } else {
-        
+
         if (
           !_eq(_get(assert, key), val) &&
           modelSingleVerify(key, val, this)

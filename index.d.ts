@@ -110,12 +110,16 @@ declare class View extends BaseInstance {
   private axml: object;
   private _asb: any;
   private _ass: any;
+  private _asp: any;
+  private _assp: any;
 
   props: object;
 
   root: HTMLElement;
 
   refs: Refs;
+
+  getParentProps(parentViewName?: string): object;
 
   render(data: object|InstanceType<typeof Model>): this;
 
