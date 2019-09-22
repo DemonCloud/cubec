@@ -1,6 +1,3 @@
-import isString from '../type/isString';
-import isObject from '../type/isObject';
-import slice from '../tools/slice';
 import extend from '../tools/extend';
 import trim from '../tools/trim';
 import encode from '../tools/encode';
@@ -34,7 +31,7 @@ const axtSetting  = {
   command     : '{{\\*([\\s\\S]+?)}}',
   evaluate    : '{{([\\s\\S]+?)}}',
 };
-const __tools__ = {
+const tools = {
   est,
   each,
   encode,
@@ -75,7 +72,7 @@ function makeEvaluate(evaluate){
     else if(
       (elseifpart === 'elseif' ||
         elseifpart === 'elseif(' ||
-        elseifpart === 'esle if')
+        elseifpart === 'else if')
     )
       evaluatec = '}else if(' + parserEval.slice(6) + '){';
 
@@ -112,7 +109,7 @@ function makeComand(command){
       case '/each':
       case '/if':
       case '/exist':
-        res = '\';}); _p+=\'';
+        res = '\';}, this); _p+=\'';
         break;
       case 'if':
       case 'exist':
@@ -134,24 +131,22 @@ function makeComand(command){
   return res;
 }
 
-export default function axt(txt,bounds,view,name){
+export default function axt(txt, binder={}){
   let _, render, position = 0,
-    res = '_p+=\'', bounder,
+    res = '_p+=\'',
 
-    rname = isObject(bounds) ? name : (isString(bounds) ? bounds : ''),
-    methods = isObject(bounds) ? bounds : {},
-
-    args = slice(arguments,3),
     exp = new RegExp(
       axtSetting.escape +
       '|' + axtSetting.interpolate +
       '|' + axtSetting.command +
       '|' + axtSetting.evaluate +
       '|$',
-      'g');
+      'gi');
 
   // Start parse
-  trim(txt).replace(exp,function(
+  const fixTxt = trim(txt);
+
+  fixTxt.replace(exp,function(
     match,
     escape,
     interpolate,
@@ -159,21 +154,23 @@ export default function axt(txt,bounds,view,name){
     evaluate,
     offset
   ){
-    res += txt.slice(position,offset).replace(escaper,c_escape);
+    res += fixTxt.slice(position, offset).replace(escaper,c_escape);
     // refresh index where to find text string
     position = offset + match.length;
 
     if(escape)
       // if command is - should encodeHTML string
-      res += '\'+((_t=(' + escape + '))==null?\'\':_(_t))+\'';
+      res += "'+((_t=(" + escape + "))==null?'':_(_t))+'";
     else if(interpolate)
-      res += '\'+((_t=(' + interpolate + '))==null?\'\':_t)+\'';
+      res += "'+((_t=(" + interpolate + "))==null?'':_t)+'";
     else if(command)
-      res += makeComand(command,res);
+      res += makeComand(command, res);
     else if(evaluate)
-      res += '\';' + makeEvaluate(evaluate) + ';_p+=\'';
+      res += "';" + makeEvaluate(evaluate) + ";_p+='";
     return match;
   });
+
+  // console.log(res);
 
   // Minix compline && optimizer
   res = res.replace(optimizer.line,'').
@@ -186,14 +183,14 @@ export default function axt(txt,bounds,view,name){
 
   // End wrap res@ String
   // use default paramKey to compline
-  res = 'with(__('+(!rname ? '__({},_x_||{})' : '{}')+',_bounds)){ ' + res + '\'; }';
+  res = 'with(__x__||{}){ ' + res + '\'; }';
   res = 'var _t,_d,_est=__tools__.est,_=__tools__.encode,__=__tools__.extend,_p=\'\'; ' + res + ' return _p;';
 
   // Complete building Function string
   // try to build anmousyous function
   // console.warn(res);
   try{
-    render = ev('(function(_bounds,__tools__,'+(rname||'_x_')+(args.length?','+args.toString():'')+'){ '+res+' })');
+    render = ev('(function(__tools__,__x__){ '+res+' })');
   }catch(e){
     console.error("[cubec view] Template parser Error!", { template : res });
     e.res = res;
@@ -210,11 +207,7 @@ export default function axt(txt,bounds,view,name){
   //   )));
   // };
 
-  bounder = [ methods, __tools__ ];
-
-  _ = function(){
-    return trim(render.apply(this, bounder.concat(slice(arguments))));
-  }.bind(view);
+  _ = function(data){ return trim(render.call(binder.view, tools, data)); };
 
   return _;
 

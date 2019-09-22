@@ -5,6 +5,7 @@ import {
   _isFn,
   _isNumber,
   _isObject,
+  _isPlainObject,
   _decode,
   _toString,
   _eachArray,
@@ -15,6 +16,8 @@ import {
   _get,
   _idt,
   _ayc,
+  _axt,
+  _axtc,
   _noop,
   _trim,
   _extend,
@@ -45,6 +48,9 @@ const attrNeedSetAttributes = [
   "href",
   "src"
 ];
+
+const pluginList = {};
+const pluginForkViewProps = /^this\./;
 
 const attrBooleanValues = [
   "checked",
@@ -135,6 +141,7 @@ const patchList = [
   'modifyattr', // 8
   'removeattr', // 9
   'updateslot', // 10
+  'updateplugin' // 11
 ];
 
 let attrexec = /(\S+)=["'](.*?)["']|([\w-]+)/gi,
@@ -256,24 +263,30 @@ const patchHack = [
       if (!(key in s)) attrSetter(t, key, value);
     });
   },
-  //8 removeattr
+  //9 removeattr
   function(patch) {
     _eachObject(patch.a, function(value, key) {
       attrClear(patch.s, key, value);
     });
   },
-  //9 updateslot
+  //10 updateslot
   function(patch, htmlDiff, args) {
     let c = patch.c;
     let o = patch.o;
     let t = patch.s;
 
     if(c === o){
-      // directly createPatch;
+      // directly createPatch updateslot
       htmlDiff.createDOMElement(patch.tag, patch.view, args, t);
     }else{
       t.parentNode.replaceChild(htmlDiff.createDOMElement(patch.tag, patch.view, args),t);
     }
+  },
+  // 11 updateplugin
+  function(patch, htmlDiff, args) {
+    let t = patch.s;
+    // directly createPatch updateplugin
+    htmlDiff.createDOMElement(patch.tag, patch.view, args, false, t);
   }
 ];
 
@@ -301,6 +314,12 @@ const htmlDiff = {
         return patch;
       }else if(tag.isSlot || org.isSlot){
         patch.push(this.createPatch(org, tag, 5, view, args));
+        return patch;
+      }
+
+      if(tag.isPlug || org.isPlug){
+        // update plugin
+        patch.push(this.createPatch(org, tag, 11, view, args));
         return patch;
       }
 
@@ -435,7 +454,10 @@ const htmlDiff = {
         patch = {t: 9, s: sl, a: org.attributes};
         break;
       case 'updateslot': //10
-        patch = {t: 10, s: sl, c: tag.text, o: org.text, tag, view};
+        patch = {t: 10, s: sl, c: tag.text, o: org.text, tag: tag, view: view };
+        break;
+      case 'updateplugin':
+        patch = {t: 11, s: sl, tag: tag, view: view };
         break;
       default:
         patch = {t: 0};
@@ -457,23 +479,56 @@ const htmlDiff = {
       c = cubecRoot.child,
       n;
 
+    let skip = false;
+    let skipSign = '';
+    let skipHTML = '';
+
     html.replace(
       slikReg,
       function(match, close, stag, tag, text) {
         if (!match || !match.replace(excapetab, '')) return match;
+
+        // match plugin skip
+        if(skip){
+          const closeTagName = (close||"").split(" ")[0];
+          // not match plugin
+          if(closeTagName !== skipSign){
+            skipHTML += match;
+            return match;
+          }
+
+          // skip end
+          skip = false;
+          skipSign = '';
+          p.children = _trim(skipHTML);
+          p.text = void 0;
+          skipHTML = '';
+        }
+
+        // close tag
         if (close) {
           p = p.parent;
           c = p.child;
+        // special tag
         } else if (stag) {
           n = this.createObjElement(stag, vprops, id++, args);
           n.i = c.length;
           c.push(n);
           n.parent = p;
+        // normal tag
         } else if (tag) {
           n = this.createObjElement(tag, vprops, id++, args);
+          const tagName = tag.split(" ")[0];
+
+          if(pluginList[tagName]){
+            skip = true;
+            skipSign = tagName;
+          }
+
           n.i = c.length;
           c.push(n);
           n.parent = p;
+
           if (!(n.tagName in tagList)) {
             p = n;
             c = n.child;
@@ -496,11 +551,10 @@ const htmlDiff = {
       elm = {tagName, child: [], id};
 
     if (tagName === 'slot') elm.isSlot = true;
+    else if(pluginList[tagName]) elm.isPlug = true;
 
     if (attributes) {
-      let attrs = {},
-        s,
-        tg;
+      let attrs = {}, s, tg;
       while ((s = attrexec.exec(attributes))) {
         if (!s[1]) {
           // shortcut props in html5
@@ -523,16 +577,15 @@ const htmlDiff = {
     return elm;
   },
 
-  createDOMElement: function(obj, view, args, isUpdateSlot=false) {
-    const elm = isUpdateSlot || document.createElement(obj.tagName);
+  createDOMElement: function(obj, view, args, isUpdateSlot=false, isUpdatePlugin=false) {
+    const elm = isUpdateSlot || isUpdatePlugin || document.createElement(obj.tagName);
 
     // registered view.refs Update
     if (view && obj.attributes && obj.attributes.ref)
       view.refs[obj.attributes.ref] = elm;
 
-    _eachObject(obj.attributes, function(value, key) {
-      attrSetter(elm, key, value);
-    });
+    // setAttribute
+    _eachObject(obj.attributes, function(value, key) { attrSetter(elm, key, value); });
 
     // parse if it's <slot>
     // slot is significative in [ax.view]
@@ -547,17 +600,23 @@ const htmlDiff = {
         const getSlotRender = _get(view, slotName);
 
         if(getSlotRender){
-          const slotData = (slotDataPath && _isObject(args[0])) ?
-            _get(args[0], slotDataPath) : args[0]; // dell with slotdata shortcut
+          const slotData = (slotDataPath && _isObject(args)) ?
+            _get(args, slotDataPath) : args; // dell with slotdata shortcut
           const recycler = this.renderSlot(getSlotRender, elm, view, slotData);
 
           if(_isFn(recycler)) view._ass(_idt).push(recycler);
         }
-
         // view._ass(_idt).push(slot);
       }
 
       return elm;
+    }
+
+    // parse if it's [cubec.view.plugin]
+    if (view && obj.isPlug){
+      const getPluginRender = pluginList[obj.tagName];
+
+      return getPluginRender(elm, this.createPluginProps(elm, obj, view, args), view, args, isUpdatePlugin);
     }
 
     if (obj.text) {
@@ -638,6 +697,99 @@ const htmlDiff = {
     }
 
     return render();
+  },
+
+  createDynamicProps: function(attrs, view, data) {
+    let props = {};
+
+    _eachObject(attrs, function(v,k){
+      if(k[0] === "#"){
+        k = k.substr(1);
+        v = pluginForkViewProps.test(v) ?
+          _get(view, v.replace("this.","")) :
+          _get(data||{}, v);
+      }
+      props[k] = v;
+    });
+
+    return props;
+  },
+
+  createPluginProps: function(elm, obj, view, args){
+    return {
+      view: view,
+      props: _extend(
+        htmlDiff.createDynamicProps(obj.attributes, view, args),
+        { children: obj.children }
+      )
+    };
+  },
+
+  createPluginEvents: function(root, newProps, events) {
+    const $root = $(root).off();
+    // #TODO same as cubec.view event
+    _eachObject(events, function(callback,event){
+      event = event.split(":");
+      const eventName = event[0];
+      const eventSelector = event[1];
+      $root.on(eventName, eventSelector, callback.bind(newProps));
+    });
+  },
+
+  createPluginRender: function(name, pugOptions){
+    const createThis = { };
+    const renderToString = pugOptions.cache ?
+      _axtc(pugOptions.template, createThis) :
+      _axt(pugOptions.template, createThis);
+
+    return (root, props, view, args, isUpdate)=>{
+      if(_eq(root.prevProps, props)) return root;
+
+      createThis.view = props;
+
+      const target = this.createTreeFromHTML(
+        renderToString(props),
+        view.props,
+        args
+      );
+
+      // recreate events
+      this.createPluginEvents(root, props, pugOptions.events);
+
+      // new render
+      if(!root.axml || (root.pugName != name && isUpdate)){
+        root.pugName = name;
+        root.prevProps = props;
+        const internal = this.createDOMElement((root.axml = target), view, args).firstElementChild;
+        root.appendChild(internal, root.innerHTML='');
+        return root;
+      }
+
+      // diff render
+      this.applyPatch(
+        root,
+        this.treeDiff(root.axml, target, [], null, null, view, args),
+        args,
+        (root.axml = target),
+        (root.prevProps = props)
+      );
+
+      return root;
+    };
+  },
+
+  // import plugin from view
+  // cubec.view.plugin(pluginName, functionalPlugin);
+  pluginRegister: function(name, pugOptions){
+    if(!_isString(name) ||
+       !_isPlainObject(pugOptions) ||
+       !_isString(pugOptions.template))
+      return console.error(`[cubec view] [plugin] name of [${name}] is not plugin format`);
+
+    if(name in tagList)
+      return console.error(`[cubec view] [plugin] name of [${name}] register can not be HTML5 special tag keyword`);
+
+    pluginList[name] = htmlDiff.createPluginRender(name, pugOptions);
   }
 };
 

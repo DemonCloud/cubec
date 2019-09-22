@@ -7,8 +7,10 @@
     "output": "demo/",
     "public": "/"
   },
-  "css": {
-    "module": true
+  "plugin": {
+    "css": {
+      "module": true
+    }
   },
   "mockServer": {
     "debug": true,

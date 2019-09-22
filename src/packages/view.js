@@ -56,29 +56,28 @@ function isUnAllowedRender(val){
 }
 
 function packBefore(v) {
-  return function() {
-    let res = _fireEvent(v, 'beforeRender', arguments);
+  return function(data) {
+    let res = _fireEvent(v, 'beforeRender', [data]);
 
-    if(res && res.length && _some(res, isUnAllowedRender))
-      return false;
+    if(res && res.length && _some(res, isUnAllowedRender)) return false;
 
-    return arguments;
+    return data;
   };
 }
 
 function packMain(v, renderFunc) {
-  return function(args) {
-    return renderFunc.apply(v, args);
+  return function(data) {
+    return renderFunc.call(v, data);
   };
 }
 
 function packComplete(v) {
-  return function(args) {
-    if(args !== _idt){
+  return function(data) {
+    if(data !== _idt){
       v.root._vid = v._vid;
-      return v.emit('completeRender', args);
+      return v.emit('completeRender', [data]);
     }
-    return v.emit('catch');
+    return v.emit('catch', data);
   };
 }
 
@@ -87,8 +86,8 @@ function packRender(view, render) {
     m = packMain(view, render),
     c = packComplete(view);
 
-  let aycrender = function(args) {
-    if(args) _ayc(_link(function(){ return args; }, m, c));
+  let aycrender = function(data) {
+    if(data) _ayc(_link(function(){ return data; }, m, c));
     return view;
   };
 
@@ -97,88 +96,31 @@ function packRender(view, render) {
   return _link(b, aycrender);
 }
 
-function compactRender(view,render){
-  // custom compactRender
-  return function(){
-    try{
-      if(view.root){
-        let useroot;
-        const userootId = _trim(view.prefix);
-        const currentId = userootId.substr(1);
-        const existRoot = view.root.querySelectorAll(userootId);
-
-        if(
-          existRoot &&
-          existRoot[0] &&
-          existRoot[0].tagName.toLowerCase() === "ct" &&
-          existRoot[0].getAttribute("id") === currentId
-        ){
-          useroot = existRoot[0];
-          render.apply(view, [useroot].concat(_slice(arguments)));
-        } else {
-          useroot = document.createElement("ct");
-          useroot.setAttribute("id", currentId);
-          render.apply(view, [useroot].concat(_slice(arguments)));
-          _ayc(()=>view.root.appendChild(useroot));
-        }
-
-      }else{
-        throw new Error(ERRORS.VIEW_MISSING_ROOT);
-      }
-    }catch(e){
-      console.error(ERRORS.VIEW_CUSTOM_RENDER, e, arguments);
-      if (!_hasEvent(view, "catch")) throw e;
-      return _idt;
-    }
-  };
-}
-
 function setRender(view, render) {
-  if (_isFn(render)) {
-    let renderFn = packRender(view, render.bind(view));
-    let bounder = view._asb(_idt);
-
-    _define(view, 'render', {
-      get() {
-        return renderFn;
-      },
-      set(newRender) {
-        if (_isFn(newRender)) {
-          let prevFn = view.render;
-          renderFn = packRender(view, compactRender(view, newRender.bind(view)));
-
-          if (_size(bounder)) {
-            // switch connnect event
-            _eachObject(bounder, item => {
-              off.call(item, 'change', prevFn);
-              on.call(item, 'change', renderFn);
-            });
-          }
-        }
-
-        return renderFn;
-      },
-      enumerable: false,
-      configurable: false,
-    });
-  }
+  _define(view, 'render', {
+    value: packRender(view, render.bind(view)),
+    writable: false,
+    enumerable: false,
+    configurable: false,
+  });
 
   return view;
 }
 
 function completeTemplate(stencil, name) {
-  return `<ct id="${prefix}${name}">${stencil}</ct>`;
+  return `<cubec id="${prefix}${name}">${stencil||''}</cubec>`;
 }
 
 // extend render methods
-$.fn.render = function(newhtml, view, props, args) {
+$.fn.render = function(newhtml, view, props, data) {
+
   return this.each(function(i,elm) {
-    let target = htmlDiff.createTreeFromHTML(newhtml, props, args);
+    let target = htmlDiff.createTreeFromHTML(newhtml, props, data);
 
     if (elm._vid !== view._vid || !view.axml) {
       elm._destory = () => view.destroy();
 
-      let internal = htmlDiff.createDOMElement((view.axml = target), view, args).firstElementChild;
+      let internal = htmlDiff.createDOMElement((view.axml = target), view, data).firstElementChild;
 
       elm.appendChild(internal, (elm.innerHTML = ''));
       return view;
@@ -186,8 +128,8 @@ $.fn.render = function(newhtml, view, props, args) {
 
     htmlDiff.applyPatch(
       elm,
-      htmlDiff.treeDiff(view.axml, target, [], null, null, view, args),
-      args,
+      htmlDiff.treeDiff(view.axml, target, [], null, null, view, data),
+      data,
       (view.axml = target),
     );
 
@@ -224,57 +166,50 @@ const view = function(options = {}) {
 
   let props = _lock(_extend({}, _isPlainObject(options.props) ? options.props : {})),
     vroot = options.root,
-    render = options.render,
+    render,
     events = options.events,
     connect = options.connect,
+    stencil = options.template,
     models = _isArray(connect)
       ? connect
       : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1])
         ? [connect]
-        : [],
-    stencil = options.template || '';
+        : [];
 
   // parse template
   // building the render function
-  if (_isFn(render)) {
-    render = compactRender(this,render);
-  }else{
-    stencil = (options.cache ? _axtc : _axt)(
-      completeTemplate(_trim(_isFn(stencil) ? stencil.call(this, props) : stencil), name, this._vid),
-      props,
-      this
-    );
+  stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(stencil), name, this._vid), { view: this });
 
-    _define(this, "renderToString", {
-      value: function(){ return stencil.apply(this, arguments) || ''; }.bind(this),
-      writable: false,
-      enumerable: false,
-      configurable: false,
-    });
+  _define(this, "renderToString", {
+    value: stencil,
+    writable: false,
+    enumerable: false,
+    configurable: false,
+  });
 
-    render = function(){
-      // directRender without virtual node render
-      try{
-        const args = _slice(arguments);
-        if (args[0] instanceof view.__instance[0]) args[0] = args[0].get();
-        if (args[0] instanceof view.__instance[1]) args[0] = args[0].toChunk();
+  render = function(data){
+    // directRender without virtual node render
+    try{
+      // model
+      if (data instanceof view.__instance[0]) data = data.get();
+      // atom
+      else if (data instanceof view.__instance[1]) data = data.toChunk();
 
-        const renderString = this.renderToString.apply(this, args);
+      const renderString = this.renderToString(data);
 
-        if(this.directRender){
-          this.axml = null;
-          this.root.innerHTML = renderString;
-        }else{
-          $(this.root).render(renderString, this, props, args);
-        }
-
-        return args;
-      }catch(e){
-        console.error(ERRORS.VIEW_RENDER,e,arguments);
-        if(!_hasEvent(this,"catch")) throw e;
+      if(this.directRender){
+        this.axml = null; this.root.innerHTML = renderString;
+      }else{
+        $(this.root).render(renderString, this, props, data);
       }
-    };
-  }
+
+      return data;
+    }catch(e){
+      console.error(ERRORS.VIEW_RENDER, e, data);
+
+      if(!_hasEvent(this,"catch")) throw e;
+    }
+  };
 
   // if userobj has more events
   if (vroot && checkElm(vroot)) {
@@ -291,7 +226,7 @@ const view = function(options = {}) {
       delete events.init;
     }
 
-    this.mount = function(el) {
+    this.mount = function(el, data={}) {
       if (checkElm(el)) {
         // create Root Element
         this.root = vroot = el;
@@ -301,21 +236,19 @@ const view = function(options = {}) {
 
         this.connect.apply(this, models);
         // trigger render
-        if (1 in arguments) this.render.apply(this, _slice(arguments, 1));
+        if(data&&_isPlainObject(data)) this.render(data);
 
         // delete mount
         delete this.mount;
       } else {
-        console.error(ERRORS.VIEW_MOUNT);
+        console.error(ERRORS.VIEW_MOUNT, data);
       }
 
       return this;
     };
   }
 
-  _extend(this, options, VIEW.IGNORE_KEYWORDS)
-    .emit('init')
-    .off('init');
+  _extend(this, options, VIEW.IGNORE_KEYWORDS).emit('init').off('init');
 };
 
 view.__instance = [_noop, _noop]; // model, atom
@@ -549,11 +482,10 @@ view.prototype = {
       const createDestory = ()=>{
         $(this.root).off();
 
-        _eachObject(this._asb(_idt), (item)=>this.disconnect(item));
+        _eachObject(this._asb(_idt), item=>this.disconnect(item));
 
         while(recycler = recyclerList.pop()){
-          try{ requestIdleCallback(recycler); }
-          catch(e){ }
+          try{ requestIdleCallback(recycler); }catch(e){ }
         }
 
         if(this.root.parentNode && withRoot) this.root.parentNode.removeChild(this.root);

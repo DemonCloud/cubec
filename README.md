@@ -5,10 +5,11 @@ Micro mvc framework [gzip 24k]
 ## TODO [2.0.0]
 
 1. Completely independent new DOM event system (jQuery 4.0 slim event version)
-2. Standard view slot (Component)
-3. Optimize view template compile
-4. recycle view rendered (Component) and HTMLElement
-5. Decide on the final atom API
+2. powerful model rx-like api
+3. Standard view slot and plugin (Component)
+4. Optimize view template compile
+5. recycle view slot render
+6. Decide on the final atom API
 
 ## Documentation [v2]
 
