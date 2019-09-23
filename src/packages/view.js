@@ -4,8 +4,10 @@ import ERRORS from '../constant/errors.define';
 import $ from '../lib/jquery';
 import htmlDiff from '../utils/view/htmlDiff';
 import defined from '../utils/defined';
-import {on, off, registerEvent} from '../utils/universalEvent';
 import {requestIdleCallback} from '../utils/view/requestIdleCallback';
+import {on, off, emit, registerEvent} from '../utils/universalEvent';
+import {bindDomEvent, removeDomEvent, triggerEmitDomEvent} from '../utils/view/domEventSystem';
+import polyfillimeInputEvent from '../utils/view/polyfillimeInputEvent';
 import {
   _idt,
   _axt,
@@ -20,29 +22,24 @@ import {
   _isString,
   _isArray,
   _isPlainObject,
+  _isObject,
   _isDOM,
   _isArrayLike,
-  _size,
   _ayc,
   _link,
   _clone,
   _define,
   _toString,
-  _on,
-  _off,
-  _emit,
   _hasEvent,
   _fireEvent,
   _trim,
   _noop,
+  eventSplit,
+  eventNameSpace,
 } from '../utils/usestruct';
 
 let vid = 0;
 const prefix = "__cubec-";
-const eventSplit = "|";
-const eventNameSpace = ":";
-const idSign = "#";
-const empty = "";
 
 // cubec Template engine
 function checkElm(el) {
@@ -153,9 +150,9 @@ const view = function(options = {}) {
     name : name,
     prefix : ("#"+ prefix + name + " "),
     _vid : id,
-    _asb : v => v===_idt ? bounder : {},
-    _ass : v => v===_idt ? slotQueue : [],
-    _asp : v => v===_idt ? parentProps : {},
+    _asb : v => (v===_idt ? bounder : {}),
+    _ass : v => (v===_idt ? slotQueue : []),
+    _asp : v => (v===_idt ? parentProps : {}),
     _assp : (v, newProps) => {
       if(v === _idt && newProps && _isPlainObject(newProps))
         parentProps = _lock(newProps);
@@ -236,7 +233,7 @@ const view = function(options = {}) {
 
         this.connect.apply(this, models);
         // trigger render
-        if(data&&_isPlainObject(data)) this.render(data);
+        if(data&&_isObject(data)) this.render(data);
 
         // delete mount
         delete this.mount;
@@ -253,103 +250,27 @@ const view = function(options = {}) {
 
 view.__instance = [_noop, _noop]; // model, atom
 
-let _iid = 1;
-const ime = {};
-
-function compositionIn(e) {
-  if(e.data && e.data.iid){
-    ime[e.data.iid] = true;
-  }
-}
-
-function compositionOut(e) {
-  if(e.data && e.data.iid){
-    ime[e.data.iid]= false;
-    $(e.target).trigger('input');
-  }
-}
-
-function capCursor(elm) {
-  let pos = 0;
-
-  if (elm.selectionStart != null) pos = elm.selectionStart;
-  // IE Support
-  else if (document.selection) {
-    elm.focus();
-
-    let sel = document.selection.createRange();
-    sel.moveStart('character', -elm.value.length);
-    // The caret position is selection length
-    pos = sel.text.length;
-  }
-
-  return pos;
-}
-
-function setCursor(elm, pos) {
-  if (elm.createTextRange) {
-    let range = elm.createTextRange();
-    range.move('character', pos);
-    return range.select();
-  }
-
-  return elm.selectionStart
-    ? elm.setSelectionRange(pos, pos, elm.focus())
-    : elm.focus();
-}
-
 view.prototype = {
+
   constructor: view,
 
   on(type, fn) {
     if (_isFn(fn)) {
-      _eachArray(
-        _toString(type).split(eventSplit),
-        function(mk) {
-          let param = mk.split(eventNameSpace);
+      _eachArray(_toString(type).split(eventSplit), function(mk) {
+        let param = mk.split(eventNameSpace);
 
-          // DOM Element events
-          if (param.length > 1) {
-            // console.log(this.prefix+param[1]);
-            // hack for input
-            if (param[0] === 'input') {
-              let pid = _iid++;
-              let pida = { iid: pid };
-
-              let pfn = function(e){
-
-                if(ime[pid]) return false;
-
-                if(e.target && e.target.focus) e.target.focus();
-
-                let pos = capCursor(e.target);
-
-                fn.apply(this, arguments);
-
-                if (pos) setCursor(e.target, pos);
-
-              }.bind(this);
-
-              fn._fn = pfn;
-
-              $(this.root)
-                .on('compositionstart', pida, compositionIn)
-                .on('compositionend', pida, compositionOut)
-                .on(param[0], (param[1][0] === idSign ? empty : this.prefix)+param[1], pfn);
-
-            } else {
-              let tfn = fn.bind(this);
-
-              fn._fn = tfn;
-
-              $(this.root).on(param[0], (param[1][0] === idSign ? empty : this.prefix)+param[1], tfn);
-            }
-          } else {
-            _on(this, mk, fn);
-          }
-        },
-        this,
-      );
+        // DOM Element events
+        if (param.length === 2) {
+          // console.log(this.prefix+param[1]);
+          // hack for input
+          if (param[0] === 'input')
+            polyfillimeInputEvent(this, param[1], fn);
+          else
+            bindDomEvent(this, param[0], param[1], fn);
+        } else {
+          on.call(this, mk, fn);
+        }
+      }, this);
     }
 
     return this;
@@ -358,74 +279,48 @@ view.prototype = {
   off(type, fn) {
 
     if (type && _isString(type)) {
-      _eachArray(
-        type.split(eventSplit),
-        function(mk) {
-          let param = mk.split(eventNameSpace);
+      _eachArray(type.split(eventSplit), function(mk) {
+        let param = mk.split(eventNameSpace);
 
-          if (param.length > 1) {
-            if(param[1] === ""){
-              $(this.root).off(param[0]);
-            }else{
-              $(this.root).off(param[0], (param[1][0] === idSign ? empty : this.prefix)+param[1], fn ? (fn._fn || fn) : fn);
-            }
-          } else {
-            _off(this, mk, fn);
-          }
-        },
-        this,
-      );
+        if (param.length === 2)
+          removeDomEvent(this, param[0], param[1], fn);
+        else
+          off.call(this, mk, fn);
+      },this);
 
       return this;
     }
 
-    $(this.root).off();
-    _off(this);
+    removeDomEvent(off.call(this));
 
     return this;
   },
 
   emit(type, args) {
-    let t = _toString(type),
-      k = t.split(eventNameSpace);
+    let fixType = _toString(type);
+    let emitKey = fixType.split(eventNameSpace);
 
-    if (k.length > 2) {
-      _eachArray(
-        t.split(eventSplit),
-        function(params) {
-          let param = params.split(eventNameSpace);
-          $(this.root)
-            .find((param[1][0] === idSign ? empty : this.prefix)+param[1])
-            .trigger(param[0], args);
-        },
-        this,
-      );
+    if (emitKey.length == 2) {
+      _eachArray(fixType.split(eventSplit), function(mk) {
+        let param = mk.split(eventNameSpace);
+        triggerEmitDomEvent(this, param[0], param[1], args);
+      },this);
       return this;
     }
 
-    if (k.length > 1) {
-      $(this.root)
-        .find((k[1][0] === idSign ? empty : this.prefix)+k[1])
-        .trigger(k[0], args);
-      return this;
-    }
-
-    return _emit(this, type, args);
+    return emit.call(this, fixType, args);
   },
 
   connect() {
-    let items;
+    let items = _isArrayLike(arguments[0]) ? arguments[0] : _slice(arguments);
     let bounder = this._asb(_idt);
-
-    if(_isArrayLike(arguments[0])){
-      items = arguments[0];
-    }else{
-      items = _slice(arguments);
-    }
 
     if (items.length) {
       _eachArray(items, item => {
-        if ((item instanceof view.__instance[0] || item instanceof view.__instance[1]) && item._mid != null) {
+        if ((
+          item instanceof view.__instance[0] ||
+          item instanceof view.__instance[1]) &&
+          item._mid != null) {
           if (!bounder[item._mid]) {
             bounder[item._mid] = item;
             on.call(item, 'change', this.render);
@@ -438,18 +333,15 @@ view.prototype = {
   },
 
   disconnect() {
-    let items;
+    let items = _isArrayLike(arguments[0]) ? arguments[0] : _slice(arguments);
     let bounder = this._asb(_idt);
-
-    if(_isArrayLike(arguments[0])){
-      items = arguments[0];
-    }else{
-      items = _slice(arguments);
-    }
 
     if (items.length) {
       _eachArray(items, item => {
-        if ((item instanceof view.__instance[0] || item instanceof view.__instance[1]) && item._mid != null ) {
+        if ((
+          item instanceof view.__instance[0] ||
+          item instanceof view.__instance[1]) &&
+          item._mid != null ) {
           if (bounder[item._mid]) {
             delete bounder[item._mid];
             off.call(item, 'change', this.render);
@@ -480,7 +372,7 @@ view.prototype = {
       const recyclerList = this._ass(_idt);
 
       const createDestory = ()=>{
-        $(this.root).off();
+        removeDomEvent(this);
 
         _eachObject(this._asb(_idt), item=>this.disconnect(item));
 

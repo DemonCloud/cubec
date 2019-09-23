@@ -68,6 +68,10 @@ const hashSign = '#';
 const urlSlash = '//';
 const http = 'http://';
 const https = 'https://';
+const idSign = hashSign;
+const empty = "";
+const eventSplit = "|";
+const eventNameSpace = paramSign;
 
 export {
   _extend,
@@ -133,4 +137,8 @@ export {
   http,
   https,
   urlSlash,
+  idSign,
+  empty,
+  eventSplit,
+  eventNameSpace,
 };

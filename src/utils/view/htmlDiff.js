@@ -1,4 +1,4 @@
-import $ from '../../lib/jquery';
+import {bindDomEvent, removeDomEvent} from './domEventSystem';
 import {
   _set,
   _isString,
@@ -7,7 +7,6 @@ import {
   _isObject,
   _isPlainObject,
   _decode,
-  _toString,
   _eachArray,
   _eachObject,
   _map,
@@ -22,6 +21,8 @@ import {
   _trim,
   _extend,
   _has,
+  eventNameSpace,
+  empty
 } from '../usestruct';
 
 // attr list mapping
@@ -145,8 +146,8 @@ const patchList = [
 ];
 
 let attrexec = /(\S+)=["'](.*?)["']|([\w-]+)/gi,
-  attreval = /^\{|\}$/gi,
-  attrprops = /^\{([^'"\s]+)\}$/i,
+  // attreval = /^\{|\}$/gi,
+  // attrprops = /^\{([^'"\s]+)\}$/i,
   excapetab = /^[\r\n\f\t\s]+|[\r\n\f\t\s]+$/gi,
   defaultAttr = /^default[^\s]+/i;
 
@@ -165,34 +166,18 @@ const attrSetter = function(elm, attr, values) {
 
     if (inval == null || inval === '') attrSetter(elm, attrName, val);
   }
+
   else if (attrName[0] === '*') _set(elm, attrName.slice(1), (val === 'true' || val === true));
   else if (attrName[0] === '@') elm.setAttribute(attrName.slice(1), val);
-  else if (attrName[0] === ':') $(elm).on(attrName.slice(1), val);
   else _set(elm, attrName, val);
 };
 
 const attrClear = function(elm, key, val) {
-  if (key[0] === ':' && _isFn(val))
-    $(elm).off(key.slice(1), val);
-  else if (elm[key] && !delete elm[key])
+  if (elm[key] && !delete elm[key])
     try { elm[key] = null; } catch (e) {
       //empty
     }
   else elm.removeAttribute(key);
-};
-
-const attrEvent = function(key, val, props) {
-  let res = val, fn;
-
-  // parse props
-  if (attrprops.test(val)) {
-    fn = props[val.replace(attreval, '')];
-    res = fn !== void 0 ? fn : val;
-  }
-
-  if (key[0] === ':') res = _isFn(fn) ? fn : Function('event', _toString(val));
-
-  return res;
 };
 
 const patchAttr = function(o, t) {
@@ -545,7 +530,6 @@ const htmlDiff = {
 
   createObjElement: function(str, vprops, id, args) {
     let arr = str.split(' '),
-      props = _isObject(vprops) ? vprops : {},
       tagName = arr.shift(),
       attributes = arr.join(' '),
       elm = {tagName, child: [], id};
@@ -563,11 +547,11 @@ const htmlDiff = {
           } else if(!tg) {
             tg = s[0];
           } else {
-            attrs[tg] = attrEvent(tg, s[0], props);
+            attrs[tg] = s[0];
             tg = 0;
           }
         } else {
-          attrs[s[1]] = attrEvent(s[1], s[2], props);
+          attrs[s[1]] = s[2];
         }
       }
 
@@ -718,6 +702,8 @@ const htmlDiff = {
   createPluginProps: function(elm, obj, view, args){
     return {
       view: view,
+      root: elm,
+      prefix: empty,
       props: _extend(
         htmlDiff.createDynamicProps(obj.attributes, view, args),
         { children: obj.children }
@@ -726,13 +712,13 @@ const htmlDiff = {
   },
 
   createPluginEvents: function(root, newProps, events) {
-    const $root = $(root).off();
+    removeDomEvent(newProps);
     // #TODO same as cubec.view event
     _eachObject(events, function(callback,event){
-      event = event.split(":");
+      event = event.split(eventNameSpace);
       const eventName = event[0];
       const eventSelector = event[1];
-      $root.on(eventName, eventSelector, callback.bind(newProps));
+      bindDomEvent(newProps, eventName, eventSelector, callback);
     });
   },
 

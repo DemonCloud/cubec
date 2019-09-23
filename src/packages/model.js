@@ -103,28 +103,18 @@ const model = function(option = {}) {
     registerEvent,
     defined(this, {
       name: identify_existname ? config.name : void 0,
-
       _ast: (todo, v) => {
         const pass = _isFn(todo) ? todo : _cool;
         return v === _idt ? pass(cdata) : {};
       },
-
       _mid: mid++,
-
-      _asl: v => v === _idt ? identify_lock : null,
-
-      _asv: v => v === _idt ? verify : {},
-
-      _ash: v => v === _idt ? ram : [],
-
-      _asc: v => v === _idt ? changeDetect : [],
-
+      _asl: v => (v === _idt ? identify_lock : null),
+      _asv: v => (v === _idt ? verify : {}),
+      _ash: v => (v === _idt ? ram : []),
+      _asc: v => (v === _idt ? changeDetect : []),
       _v: !!_size(verify),
-
-      _l: (state, v) => v === _idt ? (this.isLock = identify_lock = !!state) : void 0,
-
-      _c: (newdata, v) => v === _idt ? (cdata = newdata) : {},
-
+      _l: (state, v) => (v === _idt ? (this.isLock = identify_lock = !!state) : void 0),
+      _c: (newdata, v) => (v === _idt ? (cdata = newdata) : {}),
       _s: identify_usestore,
     }),
   );
