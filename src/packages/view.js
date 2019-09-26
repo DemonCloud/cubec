@@ -7,6 +7,7 @@ import defined from '../utils/defined';
 import {requestIdleCallback} from '../utils/view/requestIdleCallback';
 import {on, off, emit, registerEvent} from '../utils/universalEvent';
 import {bindDomEvent, removeDomEvent, triggerEmitDomEvent} from '../utils/view/domEventSystem';
+import createRender from '../utils/view/createRender';
 import polyfillimeInputEvent from '../utils/view/polyfillimeInputEvent';
 import {
   _idt,
@@ -14,7 +15,6 @@ import {
   _axtc,
   _lock,
   _extend,
-  _some,
   _eachArray,
   _eachObject,
   _slice,
@@ -25,13 +25,10 @@ import {
   _isObject,
   _isDOM,
   _isArrayLike,
-  _ayc,
-  _link,
   _clone,
   _define,
   _toString,
   _hasEvent,
-  _fireEvent,
   _trim,
   _noop,
   eventSplit,
@@ -46,62 +43,6 @@ function checkElm(el) {
   if (!(_isDOM(el) || _isArrayLike(el)))
     throw new TypeError('el must be typeof DOMElement or NodeList collections -> not ' + el);
   return true;
-}
-
-function isUnAllowedRender(val){
-   return !val;
-}
-
-function packBefore(v) {
-  return function(data) {
-    let res = _fireEvent(v, 'beforeRender', [data]);
-
-    if(res && res.length && _some(res, isUnAllowedRender)) return false;
-
-    return data;
-  };
-}
-
-function packMain(v, renderFunc) {
-  return function(data) {
-    return renderFunc.call(v, data);
-  };
-}
-
-function packComplete(v) {
-  return function(data) {
-    if(data !== _idt){
-      v.root._vid = v._vid;
-      return v.emit('completeRender', [data]);
-    }
-    return v.emit('catch', data);
-  };
-}
-
-function packRender(view, render) {
-  let b = packBefore(view),
-    m = packMain(view, render),
-    c = packComplete(view);
-
-  let aycrender = function(data) {
-    if(data) _ayc(_link(function(){ return data; }, m, c));
-    return view;
-  };
-
-  // return _link(b,m,c);
-
-  return _link(b, aycrender);
-}
-
-function setRender(view, render) {
-  _define(view, 'render', {
-    value: packRender(view, render.bind(view)),
-    writable: false,
-    enumerable: false,
-    configurable: false,
-  });
-
-  return view;
 }
 
 function completeTemplate(stencil, name) {
@@ -213,7 +154,7 @@ const view = function(options = {}) {
     // bind events
     this.root = vroot;
 
-    _eachObject(events, registerEvent, setRender(this, render));
+    _eachObject(events, registerEvent, createRender(this, render));
 
     this.connect.apply(this, models);
   } else {
@@ -229,7 +170,7 @@ const view = function(options = {}) {
         this.root = vroot = el;
 
         // bind events
-        _eachObject(events, registerEvent, setRender(this, render));
+        _eachObject(events, registerEvent, createRender(this, render));
 
         this.connect.apply(this, models);
         // trigger render
@@ -353,7 +294,7 @@ view.prototype = {
     return this;
   },
 
-  getParentProps: function(name){
+  getParentProps(name){
     const parentProps = this._asp(_idt);
     let target = parentProps;
 

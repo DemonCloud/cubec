@@ -4,6 +4,7 @@ import _view from './packages/view';
 import _router from './packages/router';
 import _verify from './packages/verify';
 import htmlDiff from './utils/view/htmlDiff';
+import { registerLink } from './utils/model/linkSystem';
 import * as _struct from './utils/usestruct';
 
 import { createC, createExtend } from './utils/create';
@@ -34,6 +35,7 @@ export const router = cubec.router = createC(_router);
 // create Extra option
 atom.extend = createExtend(_atom);
 model.extend = createExtend(_model);
+model.link = registerLink;
 view.extend = createExtend(_view);
 view.plugin = htmlDiff.pluginRegister;
 router.extend = createExtend(_router);

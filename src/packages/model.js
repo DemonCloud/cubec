@@ -1,15 +1,38 @@
+// chore: model redesign
+//
+// model({
+//   name: "model",
+//   url: "/api/usermodel",
+//   lock: true,
+//   store: true,
+//   history: true,
+//   data: {
+//     a: 1,
+//     b: 2
+//   }
+// });
+//
+// model.link;
+// linkRegister()
+//
+// model.link(model.set)
+//   .validate()
+//   .catch()
+
+// model.link(model.fetch)
+//   .parse(()=>{})
+//   .param(()=>{})
+//   .catch(()=>{})
 import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
 
 import store from '../lib/store';
 import defined from '../utils/defined';
-import modelMultipleVerify from '../utils/model/multipleVerify';
-import modelSingleVerify from '../utils/model/singleVerify';
-import modelPipe from '../utils/model/pipe';
-import modelFetch from '../utils/model/fetch';
 import modelLockStatus from '../utils/model/lockstatus';
 import modelSeek from '../utils/model/seek';
 import modelCombined from '../utils/model/combined';
+import modelChangeDetector from '../utils/model/changeDetector';
+import { createLink } from '../utils/model/linkSystem';
 import {on, off, emit, registerEvent} from '../utils/universalEvent';
 import {
   _extend,
@@ -21,146 +44,66 @@ import {
   _isObject,
   _isPlainObject,
   _isArray,
-  _isArrayLike,
   _isNumber,
   _isFn,
   _eachObject,
-  _eachArray,
   _cool,
-  _size,
   _get,
   _set,
   _rm,
-  _merge,
-  _noop,
   _hasEvent,
   _isPrim,
   _eq,
 } from '../utils/usestruct';
 
 let mid = 0;
-const changeReg = /^change:([a-zA-Z0-9_$.]+)$/;
-const replaceChangeReg = /^change:/;
+const changeReg = /^change:([\w\S]+)$/;
 
-// C.Model
-// A tool for storing data that uses a model to efficiently manage data structures while keeping the code clear and concise.
-// Model has a written convention that the data stored by the model must be a standard JSON object.
-// This special data format is because the model only cares about the data structure
-// how to store data, how to communicate with the server, and how to persist locally.
-
-// make fetch parse function
-function makeParse(fn, model){
-  return function(fetchData){
-    let res;
-
-    try {
-      res = fn.call(this, fetchData);
-    } catch (error) {
-      console.error(ERRORS.MODEL_DEFAULT_PARSE);
-      this.emit('catch', [error]);
-      return false;
-    }
-
-    return res;
-  }.bind(model);
-}
-
-// default fetch parse
-function defaultParse(data){
-  let res = data;
-
-  if(_isArray(data)) res = { fetchMutipleData: data };
-
-  return res;
-}
-
-const model = function(option = {}) {
-  const config = _extend(_clone(MODEL.DEFAULT_OPTION), option);
+const model = function(option) {
+  const config = _extend(_clone(MODEL.DEFAULT_OPTION), option || {});
 
   if (!_isPlainObject(config.data) && !_isArray(config.data))
     throw new Error(ERRORS.MODEL_UNEXPECT);
 
-  const events = config.events;
-  const verify = config.verify;
+  let cdata = config.data || {};
 
   const identify_existname = _isString(config.name);
-  const identify_usestore =
-    _isBool(config.store) && config.store && identify_existname;
+  const identify_usestore = _isBool(config.store) && config.store && identify_existname;
+  const identify_usehistory = _isBool(config.history) && config.history;
   let identify_lock = (this.isLock = !!config.lock);
 
-  let ram = [];
+  let historyRAM = [];
   let changeDetect = [];
+  const events = _isPlainObject(config.events) ? config.events : {};
+  const initlize_data = identify_usestore ? store.get(config.name) || cdata : cdata;
 
-  let cdata = config.data || {};
-  let initlize_data = identify_usestore
-    ? store.get(config.name) || cdata
-    : cdata;
-
-  cdata = _clone(initlize_data);
+  cdata = cdata === initlize_data ? cdata : _clone(initlize_data);
 
   _eachObject(
     events,
     registerEvent,
     defined(this, {
       name: identify_existname ? config.name : void 0,
+      _mid: mid++,
       _ast: (todo, v) => {
         const pass = _isFn(todo) ? todo : _cool;
         return v === _idt ? pass(cdata) : {};
       },
-      _mid: mid++,
       _asl: v => (v === _idt ? identify_lock : null),
-      _asv: v => (v === _idt ? verify : {}),
-      _ash: v => (v === _idt ? ram : []),
+      _ash: v => (v === _idt ? historyRAM : []),
       _asc: v => (v === _idt ? changeDetect : []),
-      _v: !!_size(verify),
       _l: (state, v) => (v === _idt ? (this.isLock = identify_lock = !!state) : void 0),
       _c: (newdata, v) => (v === _idt ? (cdata = newdata) : {}),
       _s: identify_usestore,
+      _h: identify_usehistory
     }),
   );
 
-  if (identify_existname)
-    store.ram[this.name] = this;
+  if (identify_existname) store.ram[config.name] = this;
 
   _extend(this, config, MODEL.IGNORE_KEYWORDS).emit('init').off('init');
 };
 
-function modelChangeDetecter(model,currentData,prevData,preset){
-  const res = [];
-  const detectList = model._asc(_idt);
-  model.emit("change", [currentData,prevData]);
-
-  if(detectList.length){
-    if(preset && _isString(preset)){
-      const currentPath = `change:${preset}`;
-      const testReg = new RegExp(`^${currentPath}\\.([a-zA-Z_$0-9])+`);
-
-      _eachArray(detectList, function(path){
-        if(currentPath === path || testReg.test(path)){
-          const spath = path.replace(replaceChangeReg,'');
-          const cv = _get(currentData,spath);
-          const pv = _get(prevData,spath);
-
-          if(!_eq(cv,pv)) res.push([path,[cv,pv]]);
-        }
-      });
-    }else{
-      _eachArray(detectList, function(path){
-        const spath = path.replace(replaceChangeReg,'');
-        const cv = _get(currentData,spath);
-        const pv = _get(prevData,spath);
-
-        if(!_eq(cv,pv)) res.push([path,[cv,pv]]);
-      });
-    }
-  }
-
-  _eachArray(res,function([event,args]){
-    model.emit(event,args);
-  });
-
-  return model;
-}
 
 model.prototype = {
   constructor: model,
@@ -181,10 +124,9 @@ model.prototype = {
     }
   },
 
-  off(type,callback){
+  off(type, callback){
     if (modelLockStatus(this)) return this;
 
-    off.apply(this,arguments);
     let changeDetect = this._asc(_idt);
     const findIndex = changeDetect.indexOf(type);
 
@@ -198,29 +140,32 @@ model.prototype = {
       changeDetect.splice(0,changeDetect.length);
     }
 
-    return this;
+    return off.apply(this,arguments);
   },
 
   lock() {
     this._l(true, _idt);
-    return this.emit('lock');
+    this.emit('lock');
+    return this;
   },
 
   unlock() {
     this._l(false, _idt);
-    return this.emit('unlock');
+    this.emit('unlock');
+    return this;
   },
 
   get(key, by) {
     const data = this._ast(_clone, _idt);
 
-    return (key || key === 0) ? (_isFn(key) ? key(this.get()) : _get(data, key, by)) : data;
+    return (key || key === 0) ?
+      (_isFn(key) ? key(this.get()) : _get(data, key, by)) :
+      data;
   },
 
   set(key, val, isStatic) {
     if (modelLockStatus(this)) return this;
 
-    let ref;
     const assert = this._ast(_cool, _idt);
     const assertram = this._ash(_idt);
     const argslength = arguments.length;
@@ -228,22 +173,27 @@ model.prototype = {
     const undefinedArgs = (key == null) || (useKeyword && val===void 0);
     const single = !useKeyword && (_isObject(key) || _isFn(key));
 
+    let ref;
+    let currentData = assert;
+
     if (argslength && !undefinedArgs) {
+
       if (single) {
         // single pointer select
         isStatic = val;
+
         key = key instanceof model ? key.get() : (_isFn(key) ? key(this.get()) : key);
 
         if (
           (ref = key) &&
-          !_eq(assert, ref) &&
-          modelMultipleVerify(ref, this)
+          !_eq(assert, ref)
+          // && modelMultipleVerify(ref, this)
         ) {
           // create history
           const prevData = _clone(assert);
 
           // save history
-          if (this.history) assertram.push(_clone(assert));
+          if (this._h) assertram.push(_clone(assert));
 
           // change data
           this._c(_clone(ref), _idt, (this.change = true));
@@ -252,39 +202,38 @@ model.prototype = {
           if (this._s) store.set(this.name, ref);
 
           if (!isStatic){
-            const currentData = _clone(ref);
-            modelChangeDetecter(this,currentData,prevData);
+            currentData = _clone(ref);
+            modelChangeDetector(this,currentData,prevData);
           }
         }
 
-      } else {
+      // multiple key,val
+      } else if (
+        !_eq(_get(assert, key), val)
+          // && modelSingleVerify(key, val, this)
+      ) {
+        // create history
+        const prevData = _clone(assert);
 
-        if (
-          !_eq(_get(assert, key), val) &&
-          modelSingleVerify(key, val, this)
-        ) {
-          // create history
-          const prevData = _clone(assert);
+        if (this._h) assertram.push(_clone(assert));
 
-          if (this.history) assertram.push(_clone(assert));
+        _set(assert, key, _clone(val), (this.change = true));
 
-          _set(assert, key, _clone(val), (this.change = true));
+        if (this._s) store.set(this.name, assert);
 
-          if (this._s) store.set(this.name, assert);
-
-          if (!isStatic) {
-            const currentData = _clone(assert);
-            modelChangeDetecter(this,currentData,prevData,key);
-          }
+        if (!isStatic) {
+          currentData = _clone(assert);
+          modelChangeDetector(this,currentData,prevData,key);
         }
-
       }
+
     }
 
-    return this;
+    return _clone(currentData);
   },
 
-  remove(prop, rmStatic) {
+
+  remove(prop, isStatic) {
     if (modelLockStatus(this)) return this;
 
     const assert = this._ast(_cool, _idt);
@@ -294,195 +243,21 @@ model.prototype = {
       // create history
       const prevData = _clone(assert);
 
-      if (this.history) assertram.push(_clone(assert));
+      if (this._h) assertram.push(_clone(assert));
 
       _rm(assert, prop);
 
       if (this._s) store.set(this.name, assert);
 
-      if (!rmStatic) {
+      if (!isStatic) {
         const currentData = _clone(assert);
-
-        modelChangeDetecter(this,currentData,prevData,prop);
-
+        modelChangeDetector(this,currentData,prevData,prop);
         this.emit('remove:' + prop, [currentData]);
       }
     }
 
-    return this;
+    return _clone(assert);
   },
-
-  clear(clearStatic) {
-    if (modelLockStatus(this)) return this;
-
-    const empty = {};
-
-    this.set(empty, clearStatic);
-
-    this.clearStore();
-
-    if (this._ast(_cool, _idt) === empty && !clearStatic)
-      this.emit('clear');
-
-    return this;
-  },
-
-  clearStore(){
-    if (modelLockStatus(this)) return this;
-
-    if(this._s) store.rm(this.name);
-
-    return this;
-  },
-
-  push(events){
-    if(_isString(events))
-      events = events.split(",");
-
-    if(_isArray(events)){
-      const data = this.get();
-
-      this.emit(events.join(","), [data,_clone(data)]);
-    }
-
-    return this;
-  },
-
-  back(isStatic) {
-    if (modelLockStatus(this) || !this.history) return this;
-
-    let ram = this._ash(_idt), source;
-
-    if (ram.length && (source = ram.pop())) {
-      let prevData = this.get();
-
-      this._c(source, _idt, (this.change = true));
-
-      if (!isStatic){
-        let currentData = _clone(source);
-        this.emit('back', [currentData,prevData]);
-        modelChangeDetecter(this,currentData,prevData);
-      }
-    }
-
-    return this;
-  },
-
-  toJSON() {
-    return JSON.stringify(this.get());
-  },
-
-  ajax(config = {}) {
-    let conf = _extend(
-      {
-        type: 'get',
-        async: true,
-        url: this.url || "/",
-        param: this.param || this.get(),
-        header: this.header,
-        success: _noop,
-        error: _noop,
-      },
-      config,
-    );
-
-    return modelPipe.call(
-      this,
-      conf.type,
-      conf.url,
-      conf.param,
-      conf.success,
-      conf.error,
-      conf.header,
-    );
-  },
-
-  fetch(param, header) {
-    param = param || this.param;
-
-    const actions = [];
-    const urls = _isArray(this.url)
-      ? this.url
-      : _isString(this.url)
-        ? [this.url]
-        : [];
-
-    const params = _isArray(param) ? param : _isObject(param) ? [param] : [];
-    const parse = makeParse((_isFn(this.parse) ? this.parse : defaultParse), this);
-
-    _eachArray(urls, (url, i) =>
-      actions.push(
-        modelFetch.call(this, 'fetch', url, _isArrayLike(params) ? params[i] : params, header)
-      )
-    );
-
-    (actions.length === 1 ?
-    // single fetch request
-    actions[0] :
-    // mutilple fetch request
-    Promise.all(actions)).then(
-    datas => {
-      const source = parse(datas);
-
-      if(source != null && _isObject(source)) {
-        this.emit('fetch:success', [source]);
-        this.set(source);
-      }
-    },
-    error => {
-      this.emit('fetch:error', [error]);
-      console.error(error);
-
-    }).catch(
-    error => {
-      this.emit('catch:request:fetch', [error]);
-      this.emit('catch', [error]);
-      console.error(error);
-    });
-
-    return this;
-  },
-
-  sync(url, header) {
-    if(url && _isObject(url) && _size(url)){
-      header = url;
-      url = this.url;
-    }
-
-    return modelPipe.call(
-      this,
-      'sync',
-      url || this.url,
-      this.get(),
-      _noop,
-      _noop,
-      header,
-    );
-  },
-
-  merge(data, isStatic) {
-    if (data instanceof model)
-      data = data.get();
-
-    if (data && _isObject(data))
-      this.set(_merge(this.get(), data), isStatic);
-
-    return this;
-  },
-
-  // transTo(md, isStatic, ft) {
-  //   if (_isFn(isStatic)) {
-  //     ft = isStatic;
-  //     isStatic = false;
-  //   }
-
-  //   let trans = _isFn(ft) ? ft : _cool;
-
-  //   if (md instanceof model)
-  //     md.set(trans(this.get()), isStatic);
-
-  //   return this;
-  // },
 
   seek(keys, needCombined){
     let res = {};
@@ -494,6 +269,79 @@ model.prototype = {
     }
 
     return res;
+  },
+
+  clearStore(){
+    if (modelLockStatus(this)) return this;
+
+    if(this._s) store.rm(this.name);
+
+    return this;
+  },
+
+  back(pos, isStatic) {
+    if (modelLockStatus(this) || !this._h) return this;
+
+    if(!_isNumber(pos)){
+      isStatic = !!pos;
+      pos = -1;
+    }
+
+    const ram = this._ash(_idt);
+    const existHistory = ram.length;
+    let source;
+    let index;
+
+    if(existHistory){
+      index = pos < 0 ?
+        Math.min(0, (existHistory+pos)) :
+        Math.max(pos, existHistory-1);
+      source = ram[index];
+      ram.splice(index);
+    }
+
+    if(source){
+      const prevData = this.get();
+
+      this._c(source, _idt, (this.change = true));
+
+      if (!isStatic){
+        const currentData = _clone(source);
+        modelChangeDetector(this,currentData,prevData);
+        this.emit('back', [currentData,prevData]);
+      }
+    }
+
+    return source ? _clone(source) : source;
+  },
+
+  link(proto){
+    if(proto && proto.name)
+      return createLink(this, proto.name);
+  },
+
+  // update model data from fetch request remote url
+  update(options, idt, runtimeLinks, solveLinks, catchLinks){
+    if(modelLockStatus(this))
+      return Promise.resolve([this.get(), {
+        httpCode: 0,
+        message:"model on lock, update interrupted"
+      }]);
+
+    solveLinks = idt === _idt ? (solveLinks || []) : null;
+    catchLinks = idt === _idt ? (catchLinks || []) : null;
+    runtimeLinks = idt === _idt ? (runtimeLinks || []) : null;
+
+    return modelUpdate(options, runtimeLinks, solveLinks, catchLinks);
+  },
+
+  // send request with model params
+  request(options, idt, runtimeLinks, solveLinks, catchLinks){
+    solveLinks = idt === _idt ? (solveLinks || []) : null;
+    catchLinks = idt === _idt ? (catchLinks || []) : null;
+    runtimeLinks = idt === _idt ? (runtimeLinks || []) : null;
+
+    return modelRequest(options, runtimeLinks, solveLinks, catchLinks);
   }
 };
 

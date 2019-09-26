@@ -11,6 +11,7 @@ import {
   _eachObject,
   _map,
   _eq,
+  _eqdom,
   _v8,
   _get,
   _idt,
@@ -633,7 +634,7 @@ const htmlDiff = {
         const renderNewView = slotRender({ root });
         renderNewView._assp(_idt, createParentProps(view));
         renderNewView.render(data);
-        return ()=>renderNewView.destroy(true);
+        return function(){ renderNewView.destroy(true); };
       };
     } else if (slotRender instanceof view.constructor && _isNumber(slotRender._vid)) {
       render = function() {
@@ -649,7 +650,7 @@ const htmlDiff = {
               root.parentNode.replaceChild(slotRender.root, root);
             else
               // when it root has not mount at document
-              _ayc(()=>root.parentNode.replaceChild(slotRender.root, root));
+              _ayc(function(){ root.parentNode.replaceChild(slotRender.root, root); });
           }
           slotRender.render(data);
         } else {
@@ -658,12 +659,12 @@ const htmlDiff = {
 
         if(!slotRender.__recycle){
           slotRender.__recycle = true;
-          return ()=>slotRender.destroy(true);
+          return function(){ slotRender.destroy(true); };
         }
       };
     } else if (_isFn(slotRender)) {
       render = function() {
-        const renderResult = slotRender.call(view, root, data, ()=>createParentProps(view));
+        const renderResult = slotRender.call(view, root, data, function(){ return createParentProps(view); });
 
         if(!renderResult || !_isFn(renderResult))
           console.warn("[cubec] case performance, the custom <slot> render component should return a recycle function()");
@@ -712,8 +713,9 @@ const htmlDiff = {
   },
 
   createPluginEvents: function(root, newProps, events) {
+    // remove event
     removeDomEvent(newProps);
-    // #TODO same as cubec.view event
+    // rebind events
     _eachObject(events, function(callback,event){
       event = event.split(eventNameSpace);
       const eventName = event[0];
@@ -728,8 +730,8 @@ const htmlDiff = {
       _axtc(pugOptions.template, createThis) :
       _axt(pugOptions.template, createThis);
 
-    return (root, props, view, args, isUpdate)=>{
-      if(_eq(root.prevProps, props)) return root;
+    return function(root, props, view, args, isUpdate){
+      if(_eqdom(root.prevProps, props)) return root;
 
       createThis.view = props;
 
@@ -761,7 +763,8 @@ const htmlDiff = {
       );
 
       return root;
-    };
+
+    }.bind(this);
   },
 
   // import plugin from view

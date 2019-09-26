@@ -1,8 +1,6 @@
 const MODEL = {
   DEFAULT_OPTION: {
     data: {},
-    verify: {},
-    emulateJSON: true
   },
   IGNORE_KEYWORDS: [
     'name',

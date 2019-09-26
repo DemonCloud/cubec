@@ -1,5 +1,5 @@
 import ATOM from '../constant/atom.define';
-import ERRORS from '../constant/errors.define';
+// import ERRORS from '../constant/errors.define';
 
 import store from '../lib/store';
 import model from './model';
@@ -60,11 +60,11 @@ const atom = function(option = {}) {
 
   defined(this, {
     _mid: "_at"+atid++,
-    _assert : (todo, v) => v === _idt ? todo(LIST) : [],
-    _transmit : v => v === _idt ? _transmit : _noop,
-    _connecty : v => v === _idt ? _isConnectivity : null,
-    _inFetchAll : v => v === _idt ? inFetchAll : null,
-    _setFetchState: (state, v) => v==_idt ? (inFetchAll=!!state) : null
+    _assert : (todo, v) => (v === _idt ? todo(LIST) : []),
+    _transmit : v => v === (_idt ? _transmit : _noop),
+    _connecty : v => v === (_idt ? _isConnectivity : null),
+    _inFetchAll : v => v === (_idt ? inFetchAll : null),
+    _setFetchState: (state, v) => (v==_idt ? (inFetchAll=!!state) : null)
   });
 
   _extend(this.use(config.use,true), config, ATOM.IGNORE_KEYWORDS);

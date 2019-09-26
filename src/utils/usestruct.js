@@ -32,6 +32,7 @@ import _map from './struct/tools/mapvalue';
 import _size from './struct/tools/size';
 import _merge from './struct/tools/merge';
 import _eq from './struct/tools/eq';
+import _eqdom from './struct/tools/eqdom';
 import _decode from './struct/tools/decode';
 import _combined from './struct/tools/combined';
 import _toString from './struct/tools/toString';
@@ -95,6 +96,7 @@ export {
   _isArray,
   _isBool,
   _isFn,
+  _isFn as _isFunction,
   _type,
   _cool,
   _some,
@@ -109,6 +111,7 @@ export {
   _rm,
   _merge,
   _eq,
+  _eqdom,
   _on,
   _off,
   _emit,
