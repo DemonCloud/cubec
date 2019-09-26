@@ -7,16 +7,18 @@ import defined from '../utils/defined';
 import {requestIdleCallback} from '../utils/view/requestIdleCallback';
 import {on, off, emit, registerEvent} from '../utils/universalEvent';
 import {bindDomEvent, removeDomEvent, triggerEmitDomEvent} from '../utils/view/domEventSystem';
-import createRender from '../utils/view/createRender';
 import polyfillimeInputEvent from '../utils/view/polyfillimeInputEvent';
 import {
   _idt,
   _axt,
   _axtc,
+  _ayc,
   _lock,
   _extend,
   _eachArray,
   _eachObject,
+  _fireEvent,
+  _some,
   _slice,
   _isFn,
   _isString,
@@ -26,7 +28,6 @@ import {
   _isDOM,
   _isArrayLike,
   _clone,
-  _define,
   _toString,
   _hasEvent,
   _trim,
@@ -80,6 +81,8 @@ const view = function(options = {}) {
   const id = vid++;
 
   let parentProps = {};
+  let renderData = {};
+  let renderIntime = false;
   const bounder = {};
   const slotQueue = [];
   const name = options.name || "v--"+id;
@@ -118,43 +121,61 @@ const view = function(options = {}) {
   // building the render function
   stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(stencil), name, this._vid), { view: this });
 
-  _define(this, "renderToString", {
-    value: stencil,
-    writable: false,
-    enumerable: false,
-    configurable: false,
-  });
+  defined(this, { renderToString: stencil });
 
   render = function(data){
+    // model format
+    if (data instanceof view.__instance[0]) data = data.get();
+    // atom format
+    else if (data instanceof view.__instance[1]) data = data.toChunk();
+
+    // before render
+    // check if should prevent render
+    const before = _fireEvent(this, 'beforeRender', [data]);
+    if(before && before.length && _some(before, v=>!v)) return false;
+
+    // render frame process
+    if(renderIntime) return (renderData = data);
+
+    renderIntime = true;
+    renderData = data;
+
+    // async render
     // directRender without virtual node render
-    try{
-      // model
-      if (data instanceof view.__instance[0]) data = data.get();
-      // atom
-      else if (data instanceof view.__instance[1]) data = data.toChunk();
+    _ayc(()=>{
+      try{
+        const renderString = this.renderToString(renderData);
 
-      const renderString = this.renderToString(data);
+        if(this.directRender){
+          this.axml = null; this.root.innerHTML = renderString;
+        }else{
+          $(this.root).render(renderString, this, props, renderData);
+        }
 
-      if(this.directRender){
-        this.axml = null; this.root.innerHTML = renderString;
-      }else{
-        $(this.root).render(renderString, this, props, data);
+        // emit complete render and write vid
+        this.emit("completeRender", [renderData, this.root._vid = this._vid],);
+
+        renderIntime = false;
+      }catch(e){
+        console.error(ERRORS.VIEW_RENDER, e, renderData);
+
+        renderIntime = false;
+
+        if(!_hasEvent(this,"catch")) throw e;
+        this.emit("catch", [renderData]);
       }
+    });
 
-      return data;
-    }catch(e){
-      console.error(ERRORS.VIEW_RENDER, e, data);
-
-      if(!_hasEvent(this,"catch")) throw e;
-    }
-  };
+  }.bind(this);
 
   // if userobj has more events
   if (vroot && checkElm(vroot)) {
     // bind events
     this.root = vroot;
 
-    _eachObject(events, registerEvent, createRender(this, render));
+    _eachObject(events, registerEvent, this);
+
+    defined(this, { render: render });
 
     this.connect.apply(this, models);
   } else {
@@ -170,7 +191,9 @@ const view = function(options = {}) {
         this.root = vroot = el;
 
         // bind events
-        _eachObject(events, registerEvent, createRender(this, render));
+        _eachObject(events, registerEvent, this);
+
+        defined(this, { render: render });
 
         this.connect.apply(this, models);
         // trigger render

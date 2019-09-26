@@ -29,16 +29,15 @@ import ERRORS from '../constant/errors.define';
 import store from '../lib/store';
 import defined from '../utils/defined';
 import modelLockStatus from '../utils/model/lockstatus';
-import modelSeek from '../utils/model/seek';
-import modelCombined from '../utils/model/combined';
 import modelChangeDetector from '../utils/model/changeDetector';
+import modelUpdate from '../utils/model/update';
 import { createLink } from '../utils/model/linkSystem';
 import {on, off, emit, registerEvent} from '../utils/universalEvent';
 import {
   _extend,
   _idt,
   _clone,
-  _every,
+  _toString,
   _isString,
   _isBool,
   _isObject,
@@ -155,11 +154,12 @@ model.prototype = {
     return this;
   },
 
-  get(key, by) {
+  get(key) {
     const data = this._ast(_clone, _idt);
 
     return (key || key === 0) ?
-      (_isFn(key) ? key(this.get()) : _get(data, key, by)) :
+      (_isFn(key) ? key(data) :
+      _get(data, _toString(key))) :
       data;
   },
 
@@ -259,17 +259,17 @@ model.prototype = {
     return _clone(assert);
   },
 
-  seek(keys, needCombined){
-    let res = {};
+//   seek(keys, needCombined){
+//     let res = {};
 
-    if(keys && (_isString(keys) || (_isArray(keys) && _every(keys, _isString)))){
-      const resource = modelSeek(this.get(),_isString(keys) ? [keys] : keys);
+//     if(keys && (_isString(keys) || (_isArray(keys) && _every(keys, _isString)))){
+//       const resource = modelSeek(this.get(),_isString(keys) ? [keys] : keys);
 
-      res = needCombined ? modelCombined(resource) : resource;
-    }
+//       res = needCombined ? modelCombined(resource) : resource;
+//     }
 
-    return res;
-  },
+//     return res;
+//   },
 
   clearStore(){
     if (modelLockStatus(this)) return this;
@@ -322,26 +322,21 @@ model.prototype = {
 
   // update model data from fetch request remote url
   update(options, idt, runtimeLinks, solveLinks, catchLinks){
-    if(modelLockStatus(this))
-      return Promise.resolve([this.get(), {
-        httpCode: 0,
-        message:"model on lock, update interrupted"
-      }]);
+    options = _isPlainObject(options) ? options : {};
+    solveLinks = idt === _idt ? (solveLinks || MODEL.LINKPERSET) : null;
+    catchLinks = idt === _idt ? (catchLinks || MODEL.LINKPERSET) : null;
+    runtimeLinks = idt === _idt ? (runtimeLinks || MODEL.LINKPERSET) : null;
 
-    solveLinks = idt === _idt ? (solveLinks || []) : null;
-    catchLinks = idt === _idt ? (catchLinks || []) : null;
-    runtimeLinks = idt === _idt ? (runtimeLinks || []) : null;
-
-    return modelUpdate(options, runtimeLinks, solveLinks, catchLinks);
+    return modelUpdate(this, options, runtimeLinks, solveLinks, catchLinks);
   },
 
   // send request with model params
   request(options, idt, runtimeLinks, solveLinks, catchLinks){
-    solveLinks = idt === _idt ? (solveLinks || []) : null;
-    catchLinks = idt === _idt ? (catchLinks || []) : null;
-    runtimeLinks = idt === _idt ? (runtimeLinks || []) : null;
+    solveLinks = idt === _idt ? (solveLinks || MODEL.LINKPERSET) : null;
+    catchLinks = idt === _idt ? (catchLinks || MODEL.LINKPERSET) : null;
+    runtimeLinks = idt === _idt ? (runtimeLinks || MODEL.LINKPERSET) : null;
 
-    return modelRequest(options, runtimeLinks, solveLinks, catchLinks);
+    return modelRequest(this, options, runtimeLinks, solveLinks, catchLinks);
   }
 };
 

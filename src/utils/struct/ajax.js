@@ -2,7 +2,6 @@ import noop from './constant/noop';
 import broken from './constant/broken';
 
 import isObject from './type/isObject';
-import isFunction from './type/isFunction';
 import isPlainObject from './type/isPlainObject';
 
 import keys from './tools/keys';
@@ -16,9 +15,10 @@ const MIME = {
   'application/x-www-form-urlencoded': 0,
   'application/json' : 1
 };
+
 const cacheAJAX = {};
 
-function dataMIME(enable,header,param){
+function dataMIME(enable, header, param){
   if(enable)
     switch(header){
       case 0:
@@ -53,12 +53,11 @@ export default function ajax(options={}, context=window){
     contentType : true
   } , options || broken);
 
-  if(isFunction(config.param)) config.param = config.param();
-
+  // check isObjisObjisObjif has ajax cache
+  // #TODO rewirte
   const cacheParam = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
   const cacheUrl = config.url + "$$" + cacheParam;
 
-  // check isObjisObjisObjif has ajax cache
   if(config.cache && config.url){
     let data;
     let item = cacheAJAX[cacheUrl];
@@ -77,7 +76,7 @@ export default function ajax(options={}, context=window){
         return config.error.call(context, data);
       }
 
-      return config.sucess.call(context, data, new XMLHttpRequest());
+      return config.success.call(context, data, new XMLHttpRequest());
     }
   }
 
@@ -91,11 +90,10 @@ export default function ajax(options={}, context=window){
   }
 
   //set Loading
-  if(xhr.addEventListener){
-    xhr.addEventListener('loadstart',config.loading);
-    xhr.addEventListener('loadend',config.loadend);
-  }
+  xhr.addEventListener('loadstart',config.loading);
+  xhr.addEventListener('loadend',config.loadend);
 
+  // xhr open
   xhr.open(
     config.type,
     config.url,
@@ -121,7 +119,7 @@ export default function ajax(options={}, context=window){
 
   if(config.type.toUpperCase() === 'POST' &&
     config.contentType === true &&
-    (cType||'').search('json')===-1)
+    cType.search('json') === -1)
     xhr.setRequestHeader('Content-Type',cType+';chartset='+config.charset);
 
   xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
@@ -129,7 +127,7 @@ export default function ajax(options={}, context=window){
   xhr.onreadystatechange = function(event){
     // response HTTP response header 200 or lower 300
     // 304 not modifined
-    if(xhr.readyState === 4 && xhr.responseText){
+    if(xhr.readyState === 4 && xhr.responseText != null){
       var status = xhr.status;
 
       if(( status >= 200 && status < 300) || status === 304){
@@ -145,11 +143,12 @@ export default function ajax(options={}, context=window){
         config.success.call(context, result,xhr,event);
 
         // if cache been set writeJSON in chache
+        // #TODO rewirte cache
         if(config.cache && config.url){
           cacheAJAX[cacheUrl] = xhr.responseText;
         }
       } else {
-        var errData = {};
+        var errData = '';
 
         try{
           errData = JSON.parse(xhr.responseText);
@@ -157,7 +156,7 @@ export default function ajax(options={}, context=window){
           console.error(e);
         }
 
-        config.error.call(context, errData,xhr,event);
+        config.error.call(context, errData, xhr, event);
       }
     }
   };
@@ -166,17 +165,16 @@ export default function ajax(options={}, context=window){
   if(toNumber(config.timeout)){
     xhr.timeout = toNumber(config.timeout);
     xhr.ontimeout = function(){
-      if(xhr.readyState !== 4 || !xhr.responseText)
-        config.error.call(context,{},xhr);
+      if(xhr.readyState !== 4 || xhr.responseText==null)
+        config.error.call(context, null, xhr, event);
       xhr.abort();
     };
   }
 
   // send request
   xhr.send(config.param ?
-    (isPlainObject(config.param) ?
-      dataMIME(config.contentType,MIME[cType],config.param) :
-      config.param) : null);
+    (isPlainObject(config.param) ? dataMIME(config.contentType, MIME[cType], config.param) : config.param)
+    : null);
 
   return xhr;
 }
