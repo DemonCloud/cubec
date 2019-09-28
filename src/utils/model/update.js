@@ -37,28 +37,31 @@ export default function(model, options, runtimeLinks, solveLinks, catchLinks){
     // create settings
     const settings = _merge(defaultOptions, options, {
       param: param,
-      url: model.url,
+      url: url,
       type: MODEL.EMULATEHTTP[requestType] || "GET",
       header: { 'X-HTTP-Method-Override': requestType }
     });
 
     // create Promise object type
     const singlePromiseObj = new Promise(function(resolve, reject){
+      const single = "single";
 
       settings.success = function(data, xhr, event){
         let exportData;
-        const catchArgs = ["single", xhr, event];
-        if(useRuntime && isSingle) data = linkCaller(runtimeLinks, [data]);
+        if(useRuntime && isSingle) data = linkCaller(runtimeLinks, [data, single]);
 
         if(data == null && isSingle){
-          if(useCatch) data = linkCatchCaller(catchLinks, catchArgs);
-
           const type = "catch links update [runtime] interrupted";
+          const catchError = { http: xhr.status, type: type, response: data };
+
+          if(useCatch) data = linkCatchCaller(catchLinks, [catchError, single]);
+
+          if(isSingle) model.emit("update:error", data, catchError);
           // console.warn(catchPreset + type, data, xhr, event);
 
           return resolve([
             data,
-            { http: xhr.status, type: type, response: data }
+            catchError
           ]);
         }
 
@@ -66,22 +69,25 @@ export default function(model, options, runtimeLinks, solveLinks, catchLinks){
 
         if(!invalidSetData){
           exportData = _clone(data);
-          exportData = (useSolve && isSingle) ? linkCaller(solveLinks, [exportData]) : exportData;
+          exportData = (useSolve && isSingle) ? linkCaller(solveLinks, [exportData, single]) : exportData;
         }
 
         const invalidExportData = (exportData == null);
 
         if(invalidExportData && isSingle) {
-          if(useCatch) exportData = linkCatchCaller(catchLinks, catchArgs);
-
           const type = invalidExportData ?
             "catch links update [solve] interrupted" :
             "catch update-data is not plainobject interrupted";
+          const catchError = { http: xhr.status, type: type, response: data };
+
+          if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
+
+          if(isSingle) model.emit("update:error", data, catchError);
           // console.warn(catchPreset + type, data, xhr, event);
 
           return resolve([
             exportData,
-            { http: xhr.status, type: type, response: data }
+            catchError
           ]);
         }
 
@@ -99,16 +105,16 @@ export default function(model, options, runtimeLinks, solveLinks, catchLinks){
 
       settings.error = function(errData, xhr, event){
         let exportData;
-        const catchArgs = ["single", xhr, event];
         const type = "catch update request http unexcept error";
+        const catchError = { http: xhr.status || -1, type: type, response: errData || xhr.response };
 
-        if(useCatch) exportData = linkCatchCaller(catchLinks, catchArgs);
+        if(useCatch && isSingle) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 
-        if(isSingle) model.emit("update:error", errData);
+        if(isSingle) model.emit("update:error", errData, catchError);
 
         return resolve([
           exportData,
-          { http: xhr.status || -1, type: type, response: errData || xhr.response }
+          catchError
         ]);
       };
 
@@ -128,21 +134,38 @@ export default function(model, options, runtimeLinks, solveLinks, catchLinks){
     });
 
     promiseObj = new Promise(function(resolve, reject) {
+      const multipSign = "multip";
+
       Promise.all(requestQueue).then(function(datas){
         let exportData;
-        const catchArgs = ["multip"].concat(datas);
+        const orgDatas = _clone(datas) || MODEL.LINKPERSET;
 
-        if(useRuntime) datas = linkCaller(runtimeLinks, datas);
+        if(useRuntime) datas = linkCaller(runtimeLinks, [datas, multipSign]);
 
-        if(datas == null){
-          if(useCatch) datas = linkCatchCaller(catchLinks, catchArgs);
-
+        // must use runtime
+        if(datas == null || !useRuntime){
           const type = "catch links update [runtime] interrupted";
+          const http = [];
+          const response = [];
+          _map(orgDatas, function(singlePromiseDatas){
+            const [data, err] = singlePromiseDatas;
+            http.push(data == null ? err.http : 200);
+            response.push(singlePromiseDatas);
+          });
+
+          const catchError = {
+            http: http,
+            type: type,
+            response: response
+          };
+
+          if(useCatch) datas = linkCatchCaller(catchLinks, [catchError, multipSign]);
           // console.warn(catchPreset + type, datas);
+          model.emit("update:error", datas, catchError);
 
           return resolve([
             datas,
-            { http: -1, type: type, response: datas }
+            catchError
           ]);
         }
 
@@ -150,32 +173,52 @@ export default function(model, options, runtimeLinks, solveLinks, catchLinks){
         const invalidSetData = !datas || !_isPlainObject(datas);
         if(!invalidSetData){
           exportData = _clone(datas);
-          exportData = useSolve ? linkCaller(solveLinks, [exportData]) : exportData;
+          exportData = useSolve ? linkCaller(solveLinks, [exportData, multipSign]) : exportData;
         }
         const invalidExportData = (exportData == null);
 
         if(invalidExportData) {
-          if(useCatch) exportData = linkCatchCaller(catchLinks, catchArgs);
-
           const type = invalidExportData ?
             "catch links update [solve] interrupted" :
             "catch update-data is not plainobject interrupted";
+          const http = [];
+          const response = [];
+          _map(orgDatas, function(singlePromiseDatas){
+            const [data, err] = singlePromiseDatas;
+            http.push(data == null ? err.http : 200);
+            response.push(singlePromiseDatas);
+          });
+
+          const catchError = {
+            http: http,
+            type: type,
+            response: response
+          };
+
+          if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, multipSign]);
           // console.warn(catchPreset + type, datas);
+
+          model.emit("update:error", datas, catchError);
 
           return resolve([
             exportData,
-            { http: -1, type: type, response: datas }
+            catchError
           ]);
         }
 
         model.set(datas);
         model.emit("update:success", datas);
+
+        return resolve([exportData]);
       });
 
       model.emit('update');
     });
+
+    return promiseObj;
   }
 
+  // single promise
   promiseObj = createPromiseUpdateTask(model.url, options.param);
 
   return promiseObj;

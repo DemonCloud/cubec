@@ -4,7 +4,6 @@
 //   runtime
 //   solve
 //   catch
-
 import {
   _has,
   _isString,
@@ -30,9 +29,7 @@ const {
 const modelLinkRecords = {
   get: {},
   set: {},
-  merge: {},
   remove: {},
-  seek: {},
   back: {},
   request: {},
   update: {},
@@ -40,11 +37,16 @@ const modelLinkRecords = {
 
 const registerLinkProto = function(modelAPI, linkProto, linkType, linkFunction){
   // register coll
-  modelLinkRecords[modelAPI][linkProto] = function(){
+  const connect = function(){
     const linkQueue = this[LINKTYPESPROXYMAPPING[linkType]](_idt);
-    linkQueue.push(linkFunction.apply(null, arguments));
+    linkQueue.push(linkFunction.apply(this, arguments));
     return this;
   };
+
+  connect.adaptor = modelAPI;
+  connect.type = linkType;
+
+  modelLinkRecords[modelAPI][linkProto] = connect;
 };
 
 // brefore arguments caller
@@ -55,7 +57,7 @@ const linkBeforeCaller = function(beforeQueue, args){
 
   for(; i<l; i++){
     const link = beforeQueue[i];
-    res = link.apply(null, res);
+    res = link.apply(link.core, res);
 
     if(res == null) break;
     else if(!_isArrayLike(res)) res = [res];
@@ -72,7 +74,7 @@ export const linkCaller = function(queue, args){
 
   for(; i<l; i++){
     const link = queue[i];
-    res = link.apply(null, res);
+    res = link.apply(link.core, res);
 
     if(res == null) break;
     else if(i!==(l-1) && !_isArrayLike(res)) res = [res];
@@ -82,20 +84,26 @@ export const linkCaller = function(queue, args){
 };
 
 // catch caller
-export const linkCatchCaller = function(catchQueue){
+export const linkCatchCaller = function(catchQueue, args){
   let l = catchQueue.length;
   let i = 0;
-  let res = LINKPERSET;
+  let res = args || LINKPERSET;
 
   for(; i<l; i++){
     const link = catchQueue[i];
-    res = link.apply(null, res);
+    res = link.apply(link.core, res);
 
     if(res == null) break;
-    else if(i!==l && !_isArrayLike(res)) res = [res];
+    else if(i!==(l-1) && !_isArrayLike(res)) res = [res];
   }
 
-  return res === LINKPERSET ? null : res;
+  return ( res === args || res === LINKPERSET ) ? null : res;
+};
+
+const createLinkProps = function(returnValue){
+  return function(idt){
+    return idt === _idt ? returnValue : LINKPERSET;
+  };
 };
 
 export const createLink = function(model, modelAPI, b, r, s, c){
@@ -105,6 +113,7 @@ export const createLink = function(model, modelAPI, b, r, s, c){
   const linkSolve = s ? _slice(s) : [];
   const linkBefore = b ? _slice(b) : [];
   const linkRuntime = r ? _slice(r) : [];
+
   const linkInstance = function(){
     const isAsync = ASYNCLINKAPIS[modelAPI];
     const useCatch = !!linkCatch.length;
@@ -112,38 +121,54 @@ export const createLink = function(model, modelAPI, b, r, s, c){
     const useBefore = !!linkBefore.length;
     const useRuntime = !!linkRuntime.length;
     let args = _slice(arguments);
+    let result;
 
-    // exist linkBefore
+    // exist linkBefore with arguments
     if(useBefore) args = linkBeforeCaller(linkBefore, args);
 
-    // check is sync api
-    if(!isAsync){
-      let result = model[modelAPI].apply(model, args);
-      if(useSolve) result = linkCaller(linkSolve, [result]);
-      if(result == null && useCatch) return linkCatchCaller(linkCatch);
+    if(args == null){
+      if(useCatch) result =  linkCatchCaller(linkCatch, args);
+      // async api interrupted
+      return isAsync ? [result] : result;
+    }
+
+    // check is async api
+    if(isAsync){
+      // async api
+      result = model[modelAPI].apply(model, args.concat([
+        _idt,
+        useRuntime ? linkRuntime : null,
+        useSolve ? linkSolve : null ,
+        useCatch ? linkCatch : null
+      ]));
+      // Promise API
       return result;
     }
 
-    // async api
-    return model[modelAPI].apply(model, args.concat([
-      _idt,
-      useRuntime ? linkRuntime : null,
-      useSolve ? linkSolve : null ,
-      useCatch ? linkCatch : null
-    ]));
+    result = model[modelAPI].apply(model, args);
+
+    if(useSolve) result = linkCaller(linkSolve, [result]);
+    if(result == null && useCatch) return linkCatchCaller(linkCatch);
+
+    return result;
   };
 
   // use coll
-  const makeInstanceLinkPrototype = _map(getLinkRecords, function(coll){
-    return coll.bind(linkInstance);
+  const makeInstanceLinkPrototype = _map(getLinkRecords, function(connect){
+    const adapter = connect.bind(linkInstance);
+    adapter.adaptor = connect.adaptor;
+    adapter.type = connect.type;
+    adapter.core = linkInstance;
+    return adapter;
   });
 
   // create prototype
   defined(linkInstance, _extend(makeInstanceLinkPrototype, {
-    _s : function(idt){ return (idt === _idt ? linkSolve : []); },
-    _c : function(idt){ return (idt === _idt ? linkCatch : []); },
-    _b : function(idt){ return (idt === _idt ? linkBefore : []); },
-    _r : function(idt){ return (idt === _idt ? linkRuntime : []); },
+    _s: createLinkProps(linkSolve),
+    _c: createLinkProps(linkCatch),
+    _b: createLinkProps(linkBefore),
+    _r: createLinkProps(linkRuntime),
+    _m: createLinkProps(model),
     extend(){ return createLink(model, modelAPI, linkBefore, linkRuntime, linkSolve, linkCatch); }
   }));
 
@@ -165,6 +190,8 @@ export const registerLink = function(modelAPI, linkProto, linkType, linkFunction
       return console.error(`[cubec model] [${linkType}] linkType is not allow for register to linkSystem`);
 
     return registerLinkProto(modelAPI, linkProto, linkType, linkFunction);
+    // registerLinkProto(modelAPI, linkProto, linkType, linkFunction);
+    // return console.log(modelLinkRecords)
   }
 
   return console.error("[cubec model] linkSystem not current format arguments", arguments);

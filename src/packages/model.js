@@ -23,9 +23,11 @@
 //   .parse(()=>{})
 //   .param(()=>{})
 //   .catch(()=>{})
+
 import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
 
+import '../utils/model/links';
 import store from '../lib/store';
 import defined from '../utils/defined';
 import modelLockStatus from '../utils/model/lockstatus';
@@ -316,13 +318,21 @@ model.prototype = {
   },
 
   link(proto){
-    if(proto && proto.name)
-      return createLink(this, proto.name);
+    if(proto && _isFn(proto) && proto.name) return createLink(this, proto.name);
   },
 
   // update model data from fetch request remote url
   update(options, idt, runtimeLinks, solveLinks, catchLinks){
+    if(options === _idt){
+      catchLinks = solveLinks;
+      solveLinks = runtimeLinks;
+      runtimeLinks = idt;
+      idt = _idt;
+      options = {};
+    }
+
     options = _isPlainObject(options) ? options : {};
+
     solveLinks = idt === _idt ? (solveLinks || MODEL.LINKPERSET) : null;
     catchLinks = idt === _idt ? (catchLinks || MODEL.LINKPERSET) : null;
     runtimeLinks = idt === _idt ? (runtimeLinks || MODEL.LINKPERSET) : null;
@@ -332,6 +342,8 @@ model.prototype = {
 
   // send request with model params
   request(options, idt, runtimeLinks, solveLinks, catchLinks){
+    options = _isPlainObject(options) ? options : {};
+
     solveLinks = idt === _idt ? (solveLinks || MODEL.LINKPERSET) : null;
     catchLinks = idt === _idt ? (catchLinks || MODEL.LINKPERSET) : null;
     runtimeLinks = idt === _idt ? (runtimeLinks || MODEL.LINKPERSET) : null;

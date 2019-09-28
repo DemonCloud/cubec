@@ -1,4 +1,5 @@
 import {bindDomEvent, removeDomEvent} from './domEventSystem';
+import {on, off, emit} from '../universalEvent';
 import {
   _set,
   _isString,
@@ -704,6 +705,7 @@ const htmlDiff = {
     return {
       view: view,
       root: elm,
+      name: obj.tagName,
       prefix: empty,
       props: _extend(
         htmlDiff.createDynamicProps(obj.attributes, view, args),
@@ -714,20 +716,24 @@ const htmlDiff = {
 
   createPluginEvents: function(root, newProps, events) {
     // remove event
+    off.call(root);
     removeDomEvent(newProps);
+
     // rebind events
     _eachObject(events, function(callback,event){
       event = event.split(eventNameSpace);
       const eventName = event[0];
       const eventSelector = event[1];
-      bindDomEvent(newProps, eventName, eventSelector, callback);
+      if(event.length === 1)
+        return on.call(root, eventName, callback.bind(newProps));
+      return bindDomEvent(newProps, eventName, eventSelector, callback);
     });
   },
 
   createPluginRender: function(name, pugOptions){
-    const createThis = { };
-    const renderToString = pugOptions.cache ?
-      _axtc(pugOptions.template, createThis) :
+    const createThis = {};
+    const renderToString = pugOptions.cache?
+      _axtc(pugOptions.template, createThis):
       _axt(pugOptions.template, createThis);
 
     return function(root, props, view, args, isUpdate){
@@ -750,6 +756,8 @@ const htmlDiff = {
         root.prevProps = props;
         const internal = this.createDOMElement((root.axml = target), view, args).firstElementChild;
         root.appendChild(internal, root.innerHTML='');
+
+        emit.call(root, "completeRender", args);
         return root;
       }
 
@@ -762,6 +770,7 @@ const htmlDiff = {
         (root.prevProps = props)
       );
 
+      emit.call(root, "completeRender", args);
       return root;
 
     }.bind(this);
