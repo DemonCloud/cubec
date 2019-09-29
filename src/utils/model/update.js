@@ -31,6 +31,7 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
   const requestType = _toString(options.type || defaultOptions.type).toLowerCase();
 
   const createPromiseUpdateTask = function(url, param, isSingle=true){
+
     // create settings
     const settings = _merge(defaultOptions, options, {
       param: param,
@@ -43,6 +44,8 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
     const singlePromiseObj = new Promise(function(resolve, reject){
       const single = "single";
 
+      if(isSingle) model.emit("update");
+
       settings.success = function(data, xhr, event){
         let exportData;
         if(useRuntime && isSingle) data = linkCaller(runtimeLinks, [data, single]);
@@ -51,15 +54,18 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
           const type = "catch links update [runtime] interrupted";
           const catchError = { http: xhr.status, type: type, response: data };
 
-          if(useCatch) data = linkCatchCaller(catchLinks, [catchError, single]);
+          if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 
-          if(isSingle) model.emit("update:error", data, catchError);
           // console.warn(catchPreset + type, data, xhr, event);
-
-          return resolve([
-            data,
+          resolve([
+            exportData,
             catchError
           ]);
+
+          if(isSingle)
+            model.emit("catch:update", data, catchError);
+
+          return model;
         }
 
         const invalidSetData = !data || !_isPlainObject(data);
@@ -71,7 +77,7 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
 
         const invalidExportData = (exportData == null);
 
-        if(invalidExportData && isSingle) {
+        if((invalidSetData || invalidExportData) && isSingle) {
           const type = invalidExportData ?
             "catch links update [solve] interrupted" :
             "catch update-data is not plainobject interrupted";
@@ -79,43 +85,48 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
 
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 
-          if(isSingle) model.emit("update:error", data, catchError);
-          // console.warn(catchPreset + type, data, xhr, event);
-
-          return resolve([
+          resolve([
             exportData,
             catchError
           ]);
+
+          if(isSingle)
+            model.emit("catch:update", data, catchError);
+          // console.warn(catchPreset + type, data, xhr, event);
+          return model;
         }
 
         // after runtime
         // after solve
         // is single request
         // set model data
+        resolve([exportData]);
+
         if(isSingle){
           model.set(data);
           model.emit("update:success", data);
         }
 
-        resolve([exportData]);
+        return model;
       };
 
       settings.error = function(errData, xhr, event){
         let exportData;
         const type = "catch update request http unexcept error";
-        const catchError = { http: xhr.status || -1, type: type, response: errData || xhr.response };
+        const catchError = { http: xhr.status || -1, type: type, response: errData || xhr.response || xhr.responseText };
 
         if(useCatch && isSingle) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 
-        if(isSingle) model.emit("update:error", errData, catchError);
-
-        return resolve([
+        resolve([
           exportData,
           catchError
         ]);
-      };
 
-      if(isSingle) model.emit("update");
+        if(isSingle)
+          model.emit("catch:update", errData, catchError);
+
+        return model;
+      };
 
       return _ajax(settings);
     });
@@ -133,6 +144,8 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
     promiseObj = new Promise(function(resolve, reject) {
       const multipSign = "multip";
 
+      model.emit('update');
+
       Promise.all(requestQueue).then(function(datas){
         let exportData;
         const orgDatas = _clone(datas) || MODEL.LINKPERSET;
@@ -144,6 +157,7 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
           const type = "catch links update [runtime] interrupted";
           const http = [];
           const response = [];
+
           _map(orgDatas, function(singlePromiseDatas){
             const [data, err] = singlePromiseDatas;
             http.push(data == null ? err.http : 200);
@@ -158,12 +172,12 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
 
           if(useCatch) datas = linkCatchCaller(catchLinks, [catchError, multipSign]);
           // console.warn(catchPreset + type, datas);
-          model.emit("update:error", datas, catchError);
-
-          return resolve([
+          resolve([
             datas,
             catchError
           ]);
+
+          return model.emit("catch:update", datas, catchError);
         }
 
         // solve values
@@ -174,7 +188,7 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
         }
         const invalidExportData = (exportData == null);
 
-        if(invalidExportData) {
+        if(invalidSetData || invalidExportData) {
           const type = invalidExportData ?
             "catch links update [solve] interrupted" :
             "catch update-data is not plainobject interrupted";
@@ -195,21 +209,19 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, multipSign]);
           // console.warn(catchPreset + type, datas);
 
-          model.emit("update:error", datas, catchError);
-
-          return resolve([
+          resolve([
             exportData,
             catchError
           ]);
+
+          return model.emit("catch:update", datas, catchError);
         }
 
+        resolve([exportData]);
+
         model.set(datas);
-        model.emit("update:success", datas);
-
-        return resolve([exportData]);
+        return model.emit("update:success", datas);
       });
-
-      model.emit('update');
     });
 
     return promiseObj;

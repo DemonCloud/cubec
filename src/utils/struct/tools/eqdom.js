@@ -26,7 +26,11 @@ export default function eq(x,y){
       var xkeys = keys(x), ykeys = keys(y), j=xkeys.length;
 
       if(xkeys.length === ykeys.length){
-        for(; j--; ) if(!eq(x[xkeys[j]],y[xkeys[j]])) return false;
+        for(; j--; ){
+          let xkey = xkeys[j];
+          if(xkey === "refs" || xkey === "ref") continue;
+          if(!eq(x[xkey],y[xkey])) return false
+        }
         return true;
       }
     }

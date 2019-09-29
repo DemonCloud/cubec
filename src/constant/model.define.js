@@ -6,6 +6,7 @@ const MODEL = {
     'name',
     'data',
     'store',
+    'history',
     'change',
     'events',
     'verify',
@@ -17,6 +18,7 @@ const MODEL = {
     '_asl',
     '_asv',
     '_asc',
+    '_ash',
     '_v',
     '_l',
     '_c',
@@ -32,6 +34,14 @@ const MODEL = {
     delete: 'POST',
     patch: 'POST',
     fetch: 'GET',
+  },
+  REQUEST_OPTIONS: {
+    type: "get",
+    async: true,
+    cache: false,
+    emulateJSON: false,
+    param: {},
+    header: {'X-HTTP-Request-From': 'cubec.model'}
   },
   UPDATE_OPTIONS: {
     type: "get",
