@@ -2,8 +2,9 @@ import { registerLink } from '../linkSystem';
 import {
   _merge,
   _isString,
-  _isNumber,
+  _isInt,
   _isPrim,
+  _isObject,
   _idt,
 } from '../../usestruct';
 
@@ -14,21 +15,27 @@ const linkType = {
 };
 
 const mergeLink = function(){
-  return function(key, value){
-    const model = this._m(_idt);
+  const model = this._m(_idt);
+  const linkAdapter = this._a;
 
-    if(key && (_isString(key) || _isNumber(key))){
+  return function(key, value, isStatic){
+    const useKey = (key && _isString(key)) || _isInt(key);
+
+    if(linkAdapter === "set", useKey && value != null){
       let targetValue = model.get(key);
 
-      targetValue = (!_isPrim(targetValue) && !_isPrim(value)) ? _merge(targetValue, value) : value;
+      targetValue = (_isPrim(targetValue) || _isPrim(value)) ? value : _merge(targetValue, value);
 
-      return [key, targetValue];
+      return [key, targetValue, isStatic];
     }
 
-    return _merge(model.get(), key);
-  }.bind(this);
+    if(!key || !_isObject(key)) return;
+
+    const result = _merge(model.get(), key);
+
+    return linkAdapter === "update" ? result : [result, value];
+  };
 };
 
 registerLink("update" , linkProto , linkType.runtime , mergeLink   , _idt);
 registerLink("set"    , linkProto , linkType.before  , mergeLink);
-

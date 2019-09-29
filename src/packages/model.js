@@ -11,7 +11,6 @@
 //     b: 2
 //   }
 // });
-
 import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
 
@@ -21,7 +20,8 @@ import defined from '../utils/defined';
 import modelLockStatus from '../utils/model/lockstatus';
 import modelChangeDetector from '../utils/model/changeDetector';
 import modelUpdate from '../utils/model/update';
-import { createLink } from '../utils/model/linkSystem';
+import modelRequest from '../utils/model/request';
+import {createLink} from '../utils/model/linkSystem';
 import {on, off, emit, registerEvent} from '../utils/universalEvent';
 import {
   _extend,
@@ -34,6 +34,7 @@ import {
   _isPlainObject,
   _isArray,
   _isNumber,
+  _isInt,
   _isFn,
   _eachObject,
   _cool,
@@ -164,7 +165,7 @@ model.prototype = {
     const single = !useKeyword && (_isObject(key) || _isFn(key));
 
     let ref;
-    let currentData = assert;
+    let currentData = _clone(assert);
 
     if (argslength && !undefinedArgs) {
 
@@ -191,10 +192,9 @@ model.prototype = {
           // save store
           if (this._s) store.set(this.name, ref);
 
-          if (!isStatic){
-            currentData = _clone(ref);
-            modelChangeDetector(this,currentData,prevData);
-          }
+          currentData = _clone(ref);
+
+          if (!isStatic) modelChangeDetector(this,currentData,prevData);
         }
 
       // multiple key,val
@@ -211,23 +211,23 @@ model.prototype = {
 
         if (this._s) store.set(this.name, assert);
 
-        if (!isStatic) {
-          currentData = _clone(assert);
-          modelChangeDetector(this,currentData,prevData,key);
-        }
+        currentData = _clone(assert);
+
+        if (!isStatic) modelChangeDetector(this,currentData,prevData,key);
       }
 
     }
 
-    return _clone(currentData);
+    return currentData;
   },
 
 
   remove(prop, isStatic) {
     if (modelLockStatus(this)) return;
 
-    const assert = this._ast(_cool, _idt);
     const assertram = this._ash(_idt);
+    const assert = this._ast(_cool, _idt);
+    let currentData = _clone(assert);
 
     if (_isPrim(prop) && prop != null) {
       // create history
@@ -240,69 +240,57 @@ model.prototype = {
       if (this._s) store.set(this.name, assert);
 
       if (!isStatic) {
-        const currentData = _clone(assert);
+        currentData = _clone(assert);
         modelChangeDetector(this,currentData,prevData,prop);
         this.emit('remove:' + prop, [currentData]);
       }
     }
 
-    return _clone(assert);
+    return currentData;
   },
-
-//   seek(keys, needCombined){
-//     let res = {};
-
-//     if(keys && (_isString(keys) || (_isArray(keys) && _every(keys, _isString)))){
-//       const resource = modelSeek(this.get(),_isString(keys) ? [keys] : keys);
-
-//       res = needCombined ? modelCombined(resource) : resource;
-//     }
-
-//     return res;
-//   },
 
   clearStore(){
     if (modelLockStatus(this)) return this;
-
     if(this._s) store.rm(this.name);
-
     return this;
   },
 
   back(pos, isStatic) {
     if (modelLockStatus(this) || !this._h) return;
 
-    if(!_isNumber(pos)){
+    if(!_isInt(pos)){
       isStatic = !!pos;
       pos = -1;
     }
 
     const ram = this._ash(_idt);
+    const assert = this._ast(_cool, _idt);
     const existHistory = ram.length;
+    let currentData = _clone(assert);
     let source;
     let index;
 
     if(existHistory){
       index = pos < 0 ?
-        Math.min(0, (existHistory+pos)) :
-        Math.max(pos, existHistory-1);
+        Math.max(0, (existHistory + pos)) :
+        Math.min(pos, existHistory-1);
       source = ram[index];
       ram.splice(index);
     }
 
     if(source){
       const prevData = this.get();
-
+      currentData = _clone(source);
       this._c(source, _idt, (this.change = true));
+      if (this._s) store.set(this.name, source);
 
       if (!isStatic){
-        const currentData = _clone(source);
         modelChangeDetector(this,currentData,prevData);
         this.emit('back', [currentData,prevData]);
       }
     }
 
-    return source ? _clone(source) : source;
+    return currentData;
   },
 
   link(proto){

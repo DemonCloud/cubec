@@ -13,7 +13,7 @@ import {
 
 // const catchPreset = "[cubec model] [update] ";
 
-export default function(model, options, runtimeLinks, solveLinks, catchLinks){
+export default function update(model, options, runtimeLinks, solveLinks, catchLinks){
   let promiseObj;
 
   if(modelLockStatus(model)){

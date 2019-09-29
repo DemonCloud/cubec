@@ -21,7 +21,7 @@ export default function(newData, model, verify) {
       error.push(key[i], value);
 
       console.error(
-        `model verify of key [ ${key[i]} ] except error with checker => ${_type(value).toUpperCase()} [ ${output(value)} ]`
+        `model verify of key [${key[i]}] except error with checker => ${_type(value).toUpperCase()} [ ${output(value)} ]`
       );
 
       errorKey = key[i];
