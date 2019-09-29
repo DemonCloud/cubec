@@ -1,5 +1,4 @@
 import {
-  _idt,
   _set,
   _get,
   _keys,
@@ -7,10 +6,9 @@ import {
 } from '../usestruct';
 import output from './outputFormaterVerify';
 
-export default function(key, val, model) {
-  if (!model._v) return true;
+export default function(key, val, model, verify) {
+  // if (!model._v) return true;
 
-  let verify = model._asv(_idt);
   let validData = _set(model.get(), key, val);
   let keys = _keys(verify);
   let parReg = new RegExp(

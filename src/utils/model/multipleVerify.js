@@ -1,19 +1,15 @@
 import {
-  _idt,
   _keys,
   _get,
   _type,
 } from '../usestruct';
 import output from './outputFormaterVerify';
 
-export default function(newData, model) {
-  if (!model._v) return true;
-
-  let verify = model._asv(_idt);
-  let error = [];
-  let key = _keys(verify);
+export default function(newData, model, verify) {
+  const error = [];
+  const key = _keys(verify);
+  const s = key.length;
   let i = 0;
-  let s = key.length;
   let isRequired, value, valid, errorKey;
 
   for (; i < s; i++) {

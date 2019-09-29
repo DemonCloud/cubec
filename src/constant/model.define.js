@@ -37,7 +37,7 @@ const MODEL = {
     type: "get",
     async: true,
     cache: false,
-    emulateJSON: true,
+    emulateJSON: false,
     param: {},
     header: {'X-HTTP-Request-From': 'cubec.model'}
   },

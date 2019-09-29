@@ -14,5 +14,17 @@ module.exports = {
 
   "GET=>/api/mock3": {
     c: 3
+  },
+
+  "POST=>/api/mock1": {
+    a: 1
+  },
+
+  "POST=>/api/mock2": {
+    b: 2
+  },
+
+  "POST=>/api/mock3": {
+    c: 3
   }
 };

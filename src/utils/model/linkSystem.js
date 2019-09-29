@@ -16,7 +16,6 @@ import {
 } from '../usestruct';
 import defined from '../defined';
 import MODEL from '../../constant/model.define';
-
 const {
   LINKPERSET,
   ALLOWLINKAPIS,
@@ -169,6 +168,7 @@ export const createLink = function(model, modelAPI, b, r, s, c){
     _b: createLinkProps(linkBefore),
     _r: createLinkProps(linkRuntime),
     _m: createLinkProps(model),
+    _a: modelAPI,
     extend(){ return createLink(model, modelAPI, linkBefore, linkRuntime, linkSolve, linkCatch); }
   }));
 

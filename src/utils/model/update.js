@@ -17,12 +17,9 @@ export default function(model, options, runtimeLinks, solveLinks, catchLinks){
   let promiseObj;
 
   if(modelLockStatus(model)){
-    promiseObj = Promise.resolve([model.get(), {
-      xhr: new XMLHttpRequest(),
-      http: -1,
-      type:"model on lock, update interrupted",
-      response: null
-    }]);
+    const type = "model on lock, update interrupted";
+    const catchError = { http: -1, type: type, response:model.get() };
+    promiseObj = Promise.resolve([null, catchError]);
 
     return promiseObj;
   }

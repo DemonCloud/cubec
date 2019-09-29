@@ -1,9 +1,7 @@
 import noop from './constant/noop';
 import broken from './constant/broken';
 
-import isObject from './type/isObject';
 import isPlainObject from './type/isPlainObject';
-
 import keys from './tools/keys';
 import extend from './tools/extend';
 import toNumber from './tools/toNumber';
@@ -16,7 +14,7 @@ const MIME = {
   'application/json' : 1
 };
 
-const cacheAJAX = {};
+// const cacheAJAX = {};
 
 function dataMIME(enable, header, param){
   if(enable)
@@ -33,7 +31,7 @@ function dataMIME(enable, header, param){
 
 export default function ajax(options={}, context=window){
 
-  let config = extend({
+  const config = extend({
     url       : '',
     type      : 'GET',
     param     : broken,
@@ -49,37 +47,36 @@ export default function ajax(options={}, context=window){
     password  : null,
     timeout   : 0,
     aysnc     : true,
-    emulateJSON : true,
+    emulateJSON : false,
     contentType : true
   } , options || broken);
 
   // check isObjisObjisObjif has ajax cache
   // #TODO rewirte
-  const cacheParam = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
-  const cacheUrl = config.url + "$$" + cacheParam;
+  // const cacheParam = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
+  // const cacheUrl = config.url + "$$" + cacheParam;
 
-  if(config.cache && config.url){
-    let data;
-    let item = cacheAJAX[cacheUrl];
+  // if(config.cache && config.url){
+  //   let data;
+  //   let item = cacheAJAX[cacheUrl];
 
-    // *Init set localStorage
-    if(!item){
-      item = '{}';
-      cacheAJAX[cacheUrl] = item;
-    }
+  //   // *Init set localStorage
+  //   if(!item){
+  //     item = '{}';
+  //     cacheAJAX[cacheUrl] = item;
+  //   }
 
-    if((data = item) != null){
-      try{
-        data = config.emulateJSON ? JSON.parse(data) : data;
-      }catch(e){
-        console.error("[cubec.struct] parse error with ajax cache data under emulateJSON");
-        return config.error.call(context, data);
-      }
+  //   if((data = item) != null){
+  //     try{
+  //       data = config.emulateJSON ? JSON.parse(data) : data;
+  //     }catch(e){
+  //       console.error("[cubec.struct] parse error with ajax cache data under emulateJSON");
+  //       return config.error.call(context, data);
+  //     }
 
-      return config.success.call(context, data, new XMLHttpRequest());
-    }
-  }
-
+  //     return config.success.call(context, data, new XMLHttpRequest());
+  //   }
+  // }
   const xhr = new XMLHttpRequest();
 
   // with GET method
@@ -89,9 +86,11 @@ export default function ajax(options={}, context=window){
     config.param = null;
   }
 
+  xhr.responseType = config.emulateJSON ? "json" : "text";
+
   //set Loading
-  xhr.addEventListener('loadstart',config.loading);
-  xhr.addEventListener('loadend',config.loadend);
+  if(config.loading !== noop) xhr.addEventListener('loadstart',config.loading);
+  if(config.loadend !== noop) xhr.addEventListener('loadend',config.loadend);
 
   // xhr open
   xhr.open(
@@ -103,55 +102,54 @@ export default function ajax(options={}, context=window){
   );
 
   // with POST method
-  let cType = isObject(config.header) ?
-    (config.header['Content-Type'] || 'application/x-www-form-urlencoded' ) :
-    'application/x-www-form-urlencoded';
+  let cType = config.header['Content-Type'] || 'application/x-www-form-urlencoded';
 
   // FormData support
-  if(window.FormData != null && config.param instanceof FormData){
+  if(window.FormData && config.param instanceof window.FormData){
     cType = '';
     config.contentType = false;
     delete config.header['Content-Type'];
   }
 
-  if(config.header !== broken && isPlainObject(config.header))
-    eachObject(config.header,function(val,key){ xhr.setRequestHeader(key,val); });
-
   if(config.type.toUpperCase() === 'POST' &&
     config.contentType === true &&
-    cType.search('json') === -1)
-    xhr.setRequestHeader('Content-Type',cType+';chartset='+config.charset);
+    cType.search('json') === -1){
+    config.header['Content-Type'] = (cType+'; chartset='+config.charset);
+  }
 
+  if(config.header !== broken && isPlainObject(config.header))
+    eachObject(config.header,function(val,key){ xhr.setRequestHeader(key,val); });
   xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
 
   xhr.onreadystatechange = function(event){
     // response HTTP response header 200 or lower 300
     // 304 not modifined
-    if(xhr.readyState === 4 && xhr.responseText != null){
+    if(xhr.readyState === 4){
       var status = xhr.status;
 
       if(( status >= 200 && status < 300) || status === 304){
         var result;
 
         try{
-          result = config.emulateJSON ? JSON.parse(xhr.responseText) : xhr.responseText;
+          const contentType = xhr.getResponseHeader("Content-Type");
+          result = (config.emulateJSON && contentType === "application/json" ) ? xhr.response :
+            (contentType === "application/json" ? JSON.parse(xhr.responseText) : xhr.responseText);
         }catch(e){
           console.error(e);
-          return config.error.call(context, xhr.responseText,xhr,event);
+          return config.error.call(context, config.emulateJSON ? xhr.response : xhr.responseText, xhr,event);
         }
 
-        config.success.call(context, result,xhr,event);
-
+        config.success.call(context, result, xhr, event);
         // if cache been set writeJSON in chache
         // #TODO rewirte cache
-        if(config.cache && config.url){
-          cacheAJAX[cacheUrl] = xhr.responseText;
-        }
+        // if(config.cache && config.url){
+        //   cacheAJAX[cacheUrl] = xhr.responseText;
+        // }
       } else {
         var errData = '';
 
         try{
-          errData = JSON.parse(xhr.responseText);
+          errData = xhr.response || JSON.parse(xhr.responseText);
         }catch(e){
           console.error(e);
         }
@@ -173,7 +171,9 @@ export default function ajax(options={}, context=window){
 
   // send request
   xhr.send(config.param ?
-    (isPlainObject(config.param) ? dataMIME(config.contentType, MIME[cType], config.param) : config.param)
+    (isPlainObject(config.param) ?
+      dataMIME(config.contentType, MIME[cType], config.param) :
+      config.param)
     : null);
 
   return xhr;

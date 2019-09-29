@@ -11,18 +11,6 @@
 //     b: 2
 //   }
 // });
-//
-// model.link;
-// linkRegister()
-//
-// model.link(model.set)
-//   .validate()
-//   .catch()
-
-// model.link(model.fetch)
-//   .parse(()=>{})
-//   .param(()=>{})
-//   .catch(()=>{})
 
 import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
@@ -166,7 +154,7 @@ model.prototype = {
   },
 
   set(key, val, isStatic) {
-    if (modelLockStatus(this)) return this;
+    if (modelLockStatus(this)) return;
 
     const assert = this._ast(_cool, _idt);
     const assertram = this._ash(_idt);
@@ -236,7 +224,7 @@ model.prototype = {
 
 
   remove(prop, isStatic) {
-    if (modelLockStatus(this)) return this;
+    if (modelLockStatus(this)) return;
 
     const assert = this._ast(_cool, _idt);
     const assertram = this._ash(_idt);
@@ -282,7 +270,7 @@ model.prototype = {
   },
 
   back(pos, isStatic) {
-    if (modelLockStatus(this) || !this._h) return this;
+    if (modelLockStatus(this) || !this._h) return;
 
     if(!_isNumber(pos)){
       isStatic = !!pos;
