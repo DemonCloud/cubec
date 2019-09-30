@@ -37,7 +37,7 @@ import {
 } from '../utils/usestruct';
 
 let vid = 0;
-const prefix = "__cubec-";
+const prefix = "cubec-";
 
 // cubec Template engine
 function checkElm(el) {
@@ -76,7 +76,6 @@ $.fn.render = function(newhtml, view, props, data) {
   });
 };
 
-// Selector.prototype.render = function(newhtml, view, props, args) {};
 const view = function(options = {}) {
   const id = vid++;
 
@@ -276,7 +275,7 @@ view.prototype = {
   },
 
   connect() {
-    let items = _isArrayLike(arguments[0]) ? arguments[0] : _slice(arguments);
+    let items = _isArray(arguments[0]) ? arguments[0] : _slice(arguments);
     let bounder = this._asb(_idt);
 
     if (items.length) {
@@ -297,7 +296,7 @@ view.prototype = {
   },
 
   disconnect() {
-    let items = _isArrayLike(arguments[0]) ? arguments[0] : _slice(arguments);
+    let items = _isArray(arguments[0]) ? arguments[0] : _slice(arguments);
     let bounder = this._asb(_idt);
 
     if (items.length) {

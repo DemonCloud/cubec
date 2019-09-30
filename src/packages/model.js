@@ -89,8 +89,6 @@ const model = function(option) {
     }),
   );
 
-  if (identify_existname) store.ram[config.name] = this;
-
   _extend(this, config, MODEL.IGNORE_KEYWORDS).emit('init').off('init');
 };
 

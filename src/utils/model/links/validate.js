@@ -3,7 +3,9 @@ import singleVerify from '../singleVerify';
 import multipleVerify from '../multipleVerify';
 import {
   _isString,
+  _isPlainObject,
   _isInt,
+  _isFn,
   _size,
   _idt
 } from '../../usestruct';
@@ -30,6 +32,11 @@ const validateLink = function(validate){
 
     if(useKey && value == null)
       return defaultData;
+
+    if(_isFn(key)){
+      key = key(model.get());
+      if(!_isPlainObject(key)) return;
+    }
 
     // true single / false multiple
     checker = useKey ?

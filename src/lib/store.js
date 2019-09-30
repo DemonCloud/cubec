@@ -13,8 +13,6 @@ const revs = function(str) {
 const store = {
   t: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 
-  ram: {},
-
   kAt(key, i) {
     return key.charCodeAt(~~(i % key.length));
   },

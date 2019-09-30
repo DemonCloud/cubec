@@ -9,8 +9,6 @@ const MODEL = {
     'history',
     'change',
     'events',
-    'verify',
-    'filter',
     'lock',
 
     '_ast',

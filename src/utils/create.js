@@ -14,7 +14,7 @@ export const createExtend = function(module) {
 };
 
 export const createC = function(module) {
-  return function(o) {
-    return new module(o || _idt);
+  return function(options) {
+    return new module(options || _idt);
   };
 };

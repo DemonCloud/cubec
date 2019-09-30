@@ -10,17 +10,17 @@ const path = require('path');
 const inputfile = path.resolve('./') + '/src/cubec.js';
 const outputfile = path.resolve('./') + '/dist/cubec.min.js';
 
-const modelfile = path.resolve('./') + '/src/model.js';
-const outputmodelfile = path.resolve('./') + '/dist/cubec.model.min.js';
+// const modelfile = path.resolve('./') + '/src/model.js';
+// const outputmodelfile = path.resolve('./') + '/dist/cubec.model.min.js';
 
-const viewfile = path.resolve('./') + '/src/view.js';
-const outputviewfile = path.resolve('./') + '/dist/cubec.view.min.js';
+// const viewfile = path.resolve('./') + '/src/view.js';
+// const outputviewfile = path.resolve('./') + '/dist/cubec.view.min.js';
 
-const routerfile = path.resolve('./') + '/src/router.js';
-const outputrouterfile = path.resolve('./') + '/dist/cubec.router.min.js';
+// const routerfile = path.resolve('./') + '/src/router.js';
+// const outputrouterfile = path.resolve('./') + '/dist/cubec.router.min.js';
 
-const atomfile = path.resolve('./') + '/src/atom.js';
-const outputatomfile = path.resolve('./') + '/dist/cubec.atom.min.js';
+// const atomfile = path.resolve('./') + '/src/atom.js';
+// const outputatomfile = path.resolve('./') + '/dist/cubec.atom.min.js';
 
 
 // 定义plugin
@@ -68,25 +68,25 @@ const builder = async function() {
     plugins,
   });
 
-  const model = await rollup.rollup({
-    input: modelfile,
-    plugins,
-  });
+  // const model = await rollup.rollup({
+  //   input: modelfile,
+  //   plugins,
+  // });
 
-  const view = await rollup.rollup({
-    input: viewfile,
-    plugins,
-  });
+  // const view = await rollup.rollup({
+  //   input: viewfile,
+  //   plugins,
+  // });
 
-  const router = await rollup.rollup({
-    input: routerfile,
-    plugins,
-  });
+  // const router = await rollup.rollup({
+  //   input: routerfile,
+  //   plugins,
+  // });
 
-  const atom = await rollup.rollup({
-    input: atomfile,
-    plugins,
-  });
+  // const atom = await rollup.rollup({
+  //   input: atomfile,
+  //   plugins,
+  // });
 
   await bundle.write({
     file: outputfile,
@@ -95,33 +95,33 @@ const builder = async function() {
     name: 'cubec',
   });
 
-  await model.write({
-    file: outputmodelfile,
-    sourcemap: false,
-    format: 'umd',
-    name: 'cubec',
-  });
+  // await model.write({
+  //   file: outputmodelfile,
+  //   sourcemap: false,
+  //   format: 'umd',
+  //   name: 'cubec',
+  // });
 
-  await view.write({
-    file: outputviewfile,
-    sourcemap: false,
-    format: 'umd',
-    name: 'cubec',
-  });
+  // await view.write({
+  //   file: outputviewfile,
+  //   sourcemap: false,
+  //   format: 'umd',
+  //   name: 'cubec',
+  // });
 
-  await atom.write({
-    file: outputatomfile,
-    sourcemap: false,
-    format: 'umd',
-    name: 'cubec',
-  });
+  // await atom.write({
+  //   file: outputatomfile,
+  //   sourcemap: false,
+  //   format: 'umd',
+  //   name: 'cubec',
+  // });
 
-  await router.write({
-    file: outputrouterfile,
-    sourcemap: false,
-    format: 'umd',
-    name: 'cubec',
-  });
+  // await router.write({
+  //   file: outputrouterfile,
+  //   sourcemap: false,
+  //   format: 'umd',
+  //   name: 'cubec',
+  // });
 
   return bundle;
 };

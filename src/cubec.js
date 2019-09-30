@@ -16,7 +16,6 @@ cubec.version = "2.0.0";
 
 _view.__instance[0] = _model;
 _view.__instance[1] = _atom;
-
 // verify utils functions
 // export usestruct for cubec plugin [cubec-jsform]
 // since version 1.7.0. struct is not a part of cubec module.
@@ -34,10 +33,11 @@ export const router = cubec.router = createC(_router);
 
 // create Extra option
 atom.extend = createExtend(_atom);
+
 model.extend = createExtend(_model);
 model.link = registerLink;
+
 view.extend = createExtend(_view);
 view.plugin = htmlDiff.pluginRegister;
-router.extend = createExtend(_router);
 
 export default Object.freeze(cubec);

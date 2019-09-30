@@ -4,8 +4,10 @@ import {
   _isString,
   _isInt,
   _isPrim,
+  _isPlainObject,
   _isObject,
   _idt,
+  _isFn,
 } from '../../usestruct';
 
 const linkProto = "merge";
@@ -16,26 +18,34 @@ const linkType = {
 
 const mergeLink = function(){
   const model = this._m(_idt);
-  const linkAdapter = this._a;
 
   return function(key, value, isStatic){
     const useKey = (key && _isString(key)) || _isInt(key);
 
-    if(linkAdapter === "set", useKey && value != null){
+    if(useKey && value != null){
       let targetValue = model.get(key);
-
-      targetValue = (_isPrim(targetValue) || _isPrim(value)) ? value : _merge(targetValue, value);
+      targetValue = (_isPrim(targetValue) || _isPrim(value)) ?
+        value : _merge(targetValue, value);
 
       return [key, targetValue, isStatic];
     }
 
-    if(!key || !_isObject(key)) return;
+    if(_isFn(key)) key = key(model.get());
 
-    const result = _merge(model.get(), key);
+    if(!key || !_isPlainObject(key)) return;
 
-    return linkAdapter === "update" ? result : [result, value];
+    return [_merge(model.get(), key), value];
   };
 };
 
-registerLink("update" , linkProto , linkType.runtime , mergeLink   , _idt);
+const mergeUpdateLink = function(){
+  const model = this._m(_idt);
+
+  return function(key){
+    if(!key || !_isObject(key)) return;
+    return _merge(model.get(), key);
+  };
+};
+
+registerLink("update" , linkProto , linkType.runtime , mergeUpdateLink , _idt);
 registerLink("set"    , linkProto , linkType.before  , mergeLink);

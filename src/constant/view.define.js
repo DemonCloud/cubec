@@ -4,7 +4,6 @@ const VIEW = {
     'name',
     'root',
     'render',
-    'model',
     'connect',
     'prefix',
     'events',
