@@ -28,7 +28,7 @@ export default function eq(x,y){
       if(xkeys.length === ykeys.length){
         for(; j--; ){
           let xkey = xkeys[j];
-          if(xkey === "refs" || xkey === "ref") continue;
+          if(xkey === "refs") continue;
           if(!eq(x[xkey],y[xkey])) return false
         }
         return true;

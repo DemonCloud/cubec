@@ -15,7 +15,6 @@ const MIME = {
 };
 
 // const cacheAJAX = {};
-
 function dataMIME(enable, header, param){
   if(enable)
     switch(header){

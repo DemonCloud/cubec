@@ -567,8 +567,12 @@ const htmlDiff = {
     const elm = isUpdateSlot || isUpdatePlugin || document.createElement(obj.tagName);
 
     // registered view.refs Update
-    if (view && obj.attributes && obj.attributes.ref)
+    if (obj.attributes && obj.attributes.ref){
       view.refs[obj.attributes.ref] = elm;
+
+      if(view.view && view.view.refs)
+        view.view.refs[obj.attributes.ref] = elm;
+    }
 
     // setAttribute
     _eachObject(obj.attributes, function(value, key) { attrSetter(elm, key, value); });
@@ -705,6 +709,7 @@ const htmlDiff = {
     return {
       view: view,
       root: elm,
+      refs: {},
       name: obj.tagName,
       prefix: empty,
       props: _extend(
@@ -737,12 +742,11 @@ const htmlDiff = {
       _axt(pugOptions.template, createThis);
 
     return function(root, props, view, args, isUpdate){
-      if(_eqdom(root.prevProps, props)) return root;
-
-      createThis.view = props;
+      const pluginWillRender = !_eqdom(root.prevProps, props);
+      if(!pluginWillRender) return root;
 
       const target = this.createTreeFromHTML(
-        renderToString(props),
+        renderToString(createThis.view = props),
         view.props,
         args
       );
@@ -751,26 +755,27 @@ const htmlDiff = {
       this.createPluginEvents(root, props, pugOptions.events);
 
       // new render
-      if(!root.axml || (root.pugName != name && isUpdate)){
+      if(!root.axml || (root.pugName !== name && isUpdate)){
         root.pugName = name;
         root.prevProps = props;
-        const internal = this.createDOMElement((root.axml = target), view, args).firstElementChild;
+        const internal = this.createDOMElement((root.axml = target), props, args).firstElementChild;
         root.appendChild(internal, root.innerHTML='');
 
-        emit.call(root, "completeRender", args);
+        _ayc(()=>emit.call(root, "completeRender", args));
         return root;
       }
 
       // diff render
       this.applyPatch(
         root,
-        this.treeDiff(root.axml, target, [], null, null, view, args),
+        this.treeDiff(root.axml, target, [], null, null, props, args),
         args,
         (root.axml = target),
         (root.prevProps = props)
       );
 
-      emit.call(root, "completeRender", args);
+      _ayc(()=>emit.call(root, "completeRender", args));
+
       return root;
 
     }.bind(this);
