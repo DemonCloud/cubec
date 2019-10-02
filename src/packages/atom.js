@@ -120,14 +120,12 @@ atom.prototype = {
   },
 
   subscribe(fn){
-    if(_isFn(fn))
-      on.call(this, "change", fn);
+    if(_isFn(fn)) on.call(this, "change", fn);
     return this;
   },
 
   unsubscribe(fn){
-    if(_isFn(fn))
-      off.call(this, "change", fn);
+    if(_isFn(fn)) off.call(this, "change", fn);
     return this;
   },
 

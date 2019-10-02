@@ -775,7 +775,6 @@ const htmlDiff = {
       );
 
       _ayc(()=>emit.call(root, "completeRender", args));
-
       return root;
 
     }.bind(this);
