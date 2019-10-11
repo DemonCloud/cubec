@@ -292,7 +292,11 @@ model.prototype = {
   },
 
   link(proto){
-    if(proto && _isFn(proto) && proto.name) return createLink(this, proto.name);
+    if(proto &&
+       _isFn(proto) &&
+       proto.name &&
+       this[proto.name] === proto)
+      return createLink(this, proto.name);
   },
 
   // update model data from fetch request remote url

@@ -79,7 +79,6 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
 
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 
-
           resolve([
             exportData,
             catchError

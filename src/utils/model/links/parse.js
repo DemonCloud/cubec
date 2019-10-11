@@ -25,10 +25,8 @@ const parseLink = function(parser){
   const linkAdapter = this._a;
   const useParser = _isFn(parser) ? parser : _cool;
 
-  return asyncLinkType[linkAdapter] ?
-  function(datas, types){
-    const parseData = useParser[types === runtimeRequestMultip ? "apply" : "call"](null, datas);
-    return parseData;
+  return asyncLinkType[linkAdapter] ? function(datas, types){
+    return useParser[types === runtimeRequestMultip ? "apply" : "call"](null, datas);
   } : useParser;
 };
 

@@ -1,8 +1,8 @@
 {
   "name": "cubec",
-  "version": "2.0.0",
+  "version": "1.8.0",
   "description": "[cubec] micro mvc framework",
-  "main": "src/cubec.js",
+  "main": "dist/cubec.min.js",
   "scripts": {
     "dev": "xcli dev",
     "build": "node rollup.config.js"
@@ -15,7 +15,7 @@
     "url": "git+https://github.com/DemonCloud/cubec.git"
   },
   "devDependencies": {
-    "@babel/core": "^7.6.3",
+    "@babel/core": "^7.6.4",
     "@babel/plugin-external-helpers": "^7.2.0",
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/preset-env": "^7.6.3",
