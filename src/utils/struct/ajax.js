@@ -131,7 +131,7 @@ export default function ajax(options={}, context=window){
 
         try{
           const contentType = xhr.getResponseHeader("Content-Type");
-          result = xhr.responseType ==="json" ? xhr.response :
+          result = (xhr.responseType === "json") ? xhr.response :
           ((config.emulateJSON ||
             contentType === "application/json" ||
             contentType.toUpperCase() === "application/json;charset=utf-8") ?
