@@ -98,7 +98,7 @@ model.prototype = {
 
   emit,
 
-  on(type){
+  on(type, callback){
     if (modelLockStatus(this)) return this;
 
     if(type && _isString(type)){
@@ -108,8 +108,9 @@ model.prototype = {
           changeDetect.push(type);
         }
       }
-      return on.apply(this,arguments);
+      return on.call(this, type, callback);
     }
+    return this;
   },
 
   off(type, callback){
@@ -128,7 +129,7 @@ model.prototype = {
       changeDetect.splice(0,changeDetect.length);
     }
 
-    return off.apply(this,arguments);
+    return off.call(this, type, callback);
   },
 
   lock() {
@@ -240,7 +241,8 @@ model.prototype = {
       if (!isStatic) {
         currentData = _clone(assert);
         modelChangeDetector(this,currentData,prevData,prop);
-        this.emit('remove:' + prop, [currentData]);
+        if(!_eq(currentData, prevData))
+          this.emit('remove:' + prop, [currentData]);
       }
     }
 

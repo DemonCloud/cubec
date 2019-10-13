@@ -12,7 +12,7 @@ const findFnCall = function(list, fn){
 };
 
 export default function removeEvent(obj,type,fn){
-  let id = obj.__eid || 0;
+  let id = obj.__eid;
 
   if(id && events[id]){
     if(events[id][type]){
@@ -21,7 +21,7 @@ export default function removeEvent(obj,type,fn){
       if(findCall != null)
         events[id][type].splice(findCall, 1);
 
-      if(!(events[id][type].length || !fn))
+      if(!events[id][type].length || !fn)
         delete events[id][type];
 
     }else if(!type && !fn){
