@@ -4,9 +4,8 @@ import _view from './packages/view';
 import _router from './packages/router';
 import _verify from './packages/verify';
 import htmlDiff from './utils/view/htmlDiff';
-import { registerLink } from './utils/model/linkSystem';
 import * as _struct from './utils/usestruct';
-
+import { registerLink } from './utils/model/linkSystem';
 import { createC, createExtend } from './utils/create';
 
 const cubec = Object.create(null);
@@ -20,7 +19,7 @@ _view.__instance[1] = _atom;
 // export usestruct for cubec plugin [cubec-jsform]
 // since version 1.7.0. struct is not a part of cubec module.
 // if you want to import struct
-// please ( import struct from "ax-struct-js" ) [ npm install ax-struct-js@latest  ]
+// please ( import struct from "ax-struct-js" ) [ npm install ax-struct-js@lat
 // export const struct = cubec.struct = _struct;
 export const struct = cubec.struct = _struct;
 export const verify = cubec.verify = _verify;
