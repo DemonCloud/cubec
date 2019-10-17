@@ -1,4 +1,5 @@
 type primitive = string|number|object|boolean|Array<string|number|object|boolean>;
+type func = ()=>any;
 
 interface Options {
   [propName: string]: any;
@@ -16,8 +17,42 @@ interface Refs {
   [propName: string]: HTMLElement;
 }
 
+interface Events {
+  [propName: string]: func;
+}
+
 declare class BaseInstance {
-  readonly name: string
+  readonly name: string|null|undefined
+}
+
+interface ModelOptions extends Options {
+  name?: string;
+  data?: ModelData;
+  url?: string;
+  lock?: boolean;
+  store?: boolean;
+  history?: boolean;
+  events?: Events;
+}
+
+interface ViewOptions extends Options {
+  name?: string;
+  props?: AnyObject;
+  events?: Events;
+  template: string;
+}
+
+interface AtomOptions extends Options {
+  name?: string;
+  use?: Array<ModelInstance>;
+  ignore?: Array<ModelInstance>;
+}
+
+interface RouterOptions extends Options {
+  target?: string;
+  routes: { [routePath: string]: Array<string> };
+  actions: { [actions: string]: func };
+  events?: Events;
 }
 
 interface VerifyInstance {
@@ -32,14 +67,15 @@ interface VerifyInstance {
   isRequired: (check: any) => boolean;
   isString: (check: any) => boolean;
 
-  isArrayOf: (...args: Array<() => any>) => (check: any) => boolean;
-  isObjectOf: (...args: Array<() => any>) => (check: any) => boolean;
-  isMultipleOf: (...args: Array<() => any>) => (check: any) => boolean;
+  isArrayOf: (...args: Array<func>) => (check: any) => boolean;
+  isObjectOf: (...args: Array<func>) => (check: any) => boolean;
+  isMultipleOf: (...args: Array<func>) => (check: any) => boolean;
 }
 
 declare class Model extends BaseInstance {
   readonly _mid: number;
-  readonly name: string|null|undefined;
+  readonly change: boolean;
+  readonly isLock: boolean;
 
   private _asc(): any;
   private _ash(): any;
@@ -50,10 +86,6 @@ declare class Model extends BaseInstance {
   private _s(): any;
   private _h(): any;
 
-  change?: boolean;
-
-  isLock: boolean;
-
   update(config: object): [any|ModelData, null|undefined|object];
 
   request(config: object): [any, null|undefined|object];
@@ -63,7 +95,7 @@ declare class Model extends BaseInstance {
   set(data: object|ModelData|ModelInstance, isStatic?: false|boolean): ModelData;
   set(key: string|number, value: primitive, isStatic?: false|boolean): ModelData;
 
-  get(key?: string|number|Function): ModelData;
+  get(key?: string|number|func): ModelData;
 
   remove(key: string|number, isStatic?: false|boolean): ModelData;
 
@@ -73,18 +105,18 @@ declare class Model extends BaseInstance {
 
   clearStore(): this;
 
-  link(proto: Function): any;
+  link(proto: func): any;
 
-  on(eventType: string, func: Function): this;
+  on(eventType: string, func: func): this;
 
-  off(eventType?: string, func?: Function): this;
+  off(eventType?: string, func?: func): this;
 
   emit(eventType: string, ...args: any): this;
 }
 
 declare class Atom extends BaseInstance {
   readonly _mid: number;
-  readonly name: string|null|undefined;
+  readonly length: number;
 
   private _asl(): any;
   private _asi(): any;
@@ -103,9 +135,9 @@ declare class Atom extends BaseInstance {
     isStatic?: false|boolean
   ): this;
 
-  subscribe(func: Function): this;
+  subscribe(func: func): this;
 
-  unsubscribe(func: Function): this;
+  unsubscribe(func: func): this;
 
   toData(): Array<ModelData>;
 
@@ -114,8 +146,9 @@ declare class Atom extends BaseInstance {
 
 declare class View extends BaseInstance {
   readonly _vid: number;
-  readonly name: string|null|undefined;
   readonly prefix: string;
+  readonly refs: Refs;
+  readonly props: AnyObject;
 
   private axml: object;
   private _asb: any;
@@ -123,13 +156,9 @@ declare class View extends BaseInstance {
   private _asp: any;
   private _assp: any;
 
-  root: HTMLElement;
+  root?: HTMLElement;
 
-  props: AnyObject;
-
-  refs: Refs;
-
-  getParentProps(parentViewName?: string): object;
+  getParentProps(parentViewName?: string): AnyObject;
 
   mount(root: HTMLElement, data: AnyObject|ModelInstance): this;
 
@@ -140,7 +169,6 @@ declare class View extends BaseInstance {
 
 declare class Router extends BaseInstance {
   readonly _rid: number;
-  readonly name: string|null|undefined;
 
   private _assert: any;
   private _status: any;
@@ -151,7 +179,7 @@ declare class Router extends BaseInstance {
 
   to(path: string, querys?: string|AnyObject, state?: AnyObject): this;
 
-  add(route: string, actions: string, newAction: Function|Function[]): this;
+  add(route: string, actions: string, newAction: func|func[]): this;
 
   remove(route: string): this;
 
@@ -162,35 +190,35 @@ declare class Router extends BaseInstance {
   stop(): this;
 }
 
+type ViewInstance = InstanceType<typeof View>;
+type AtomInstance = InstanceType<typeof Atom>;
 type ModelInstance = InstanceType<typeof Model>;
-type ViewInstance  = InstanceType<typeof View>;
-type AtomInstance  = InstanceType<typeof Atom>;
 type RouterInstance = InstanceType<typeof Router>;
 
-export function model(options?: Options): ModelInstance;
+export function model(options?: ModelOptions): ModelInstance;
 export namespace model {
-  function extend(options: Options): ((options: Options) => ModelInstance);
+  function extend(options: ModelOptions): ((options: Options)=> ModelInstance);
 }
 
-export function view(options?: Options): ViewInstance;
+export function view(options?: ViewOptions): ViewInstance;
 export namespace view {
-  function extend(options: Options): ((options: Options) => ViewInstance);
+  function extend(options: ViewOptions): ((options: Options)=> ViewInstance);
 }
 
-export function atom(options?: Options): AtomInstance;
+export function atom(options?: AtomOptions): AtomInstance;
 export namespace atom {
-  function extend(options: Options): ((options: Options) => AtomInstance);
+  function extend(options: Options): ((options: Options)=> AtomInstance);
 }
 
-export function router(options?: Options): RouterInstance;
+export function router(options?: RouterOptions): RouterInstance;
 
 export const verify: VerifyInstance;
 
 declare namespace cubec {
-  function model(options?: Options): ModelInstance;
-  function view(options?: Options): ViewInstance;
-  function atom(options?: Options): AtomInstance;
-  function router(options?: Options): RouterInstance;
+  function view(options?: ViewOptions): ViewInstance;
+  function atom(options?: AtomOptions): AtomInstance;
+  function model(options?: ModelOptions): ModelInstance;
+  function router(options?: RouterOptions): RouterInstance;
   const verify: VerifyInstance;
 }
 
