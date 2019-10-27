@@ -2,6 +2,12 @@
 
 Micro mvc framework [gzip 24k]
 
+## TODO [nearest]
+
+view support switch template
+model request & update support ajax cache
+atom api reference update
+
 ## TODO [2.0.0]
 
 1. Completely independent new DOM event system (jQuery 4.0 slim event version)

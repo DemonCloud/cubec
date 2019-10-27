@@ -367,6 +367,7 @@ const htmlDiff = {
   },
 
   applyPatch: function(oDOM, patchs, args) {
+    // console.log(patchs);
     _eachArray(
       _map(
         patchs,

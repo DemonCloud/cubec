@@ -2,7 +2,7 @@ import { registerLink } from '../linkSystem';
 
 const linkProto = "emulateJSON";
 const emulateJSONLink = function(emulate=true){
-  return function(options){
+  return function(options={}){
     options = options || {};
     options.emulateJSON = emulate;
 

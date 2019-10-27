@@ -23,6 +23,7 @@ import modelUpdate from '../utils/model/update';
 import modelRequest from '../utils/model/request';
 import {createLink} from '../utils/model/linkSystem';
 import {on, off, emit, registerEvent} from '../utils/universalEvent';
+import {isIE} from '../utils/adapter';
 import {
   _extend,
   _idt,
@@ -93,7 +94,7 @@ const model = function(option) {
 };
 
 
-model.prototype = {
+const modelProtoType = {
   constructor: model,
 
   emit,
@@ -331,5 +332,12 @@ model.prototype = {
     return modelRequest(this, options, runtimeLinks, solveLinks, catchLinks);
   }
 };
+
+// FUCK DEAD Internet Explorer!! FUCK FUCK FUCK
+// if is under IE<9. auto add function name
+if(isIE && Function.prototype.name === void 0)
+  _eachObject(modelProtoType, function(proto, keyName){ proto.name = keyName; });
+
+model.prototype = modelProtoType;
 
 export default model;

@@ -2,19 +2,22 @@ import noop from './constant/noop';
 import broken from './constant/broken';
 
 import isPlainObject from './type/isPlainObject';
+import isString from './type/isString';
 import keys from './tools/keys';
 import extend from './tools/extend';
 import toNumber from './tools/toNumber';
 import paramStringify from './tools/paramStringify';
+import { getCache, setCache } from './optimize/ajaxcache';
 
 import eachObject from './eachObject';
+import { isIE } from '../adapter';
 
+const contentIEsupported = !isIE || isIE > 9;
 const MIME = {
   'application/x-www-form-urlencoded': 0,
   'application/json' : 1
 };
 
-// const cacheAJAX = {};
 function dataMIME(enable, header, param){
   if(enable)
     switch(header){
@@ -29,7 +32,6 @@ function dataMIME(enable, header, param){
 }
 
 export default function ajax(options={}, context=window){
-
   const config = extend({
     url       : '',
     type      : 'GET',
@@ -54,34 +56,26 @@ export default function ajax(options={}, context=window){
   // #TODO rewirte
   // const cacheParam = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
   // const cacheUrl = config.url + "$$" + cacheParam;
+  const ajaxParams = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
+  const ajaxCache = config.cache && config.url && isString(ajaxParams);
 
-  // if(config.cache && config.url){
-  //   let data;
-  //   let item = cacheAJAX[cacheUrl];
+  // use ajax cache
+  // if success find cache
+  if(ajaxCache){
+    const cacheObject = getCache(config.url, ajaxParams);
 
-  //   // *Init set localStorage
-  //   if(!item){
-  //     item = '{}';
-  //     cacheAJAX[cacheUrl] = item;
-  //   }
+    if(cacheObject){
+      config.success.apply(context, cacheObject);
+      return cacheObject[1]; //cache xhr
+    }
+  }
 
-  //   if((data = item) != null){
-  //     try{
-  //       data = config.emulateJSON ? JSON.parse(data) : data;
-  //     }catch(e){
-  //       console.error("[cubec.struct] parse error with ajax cache data under emulateJSON");
-  //       return config.error.call(context, data);
-  //     }
 
-  //     return config.success.call(context, data, new XMLHttpRequest());
-  //   }
-  // }
   const xhr = new XMLHttpRequest();
 
   // with GET method
-  if(config.type.toUpperCase() === 'GET' && config.param){
-    config.url += (~config.url.search(/\?/g) ? '&' : (keys(config.param).length ? '?' : ''))+
-      paramStringify(config.param);
+  if(config.type.toUpperCase() === 'GET'){
+    config.url += (~config.url.search(/\?/g) ? '&' : (keys(config.param).length ? '?' : ''))+ajaxParams;
     config.param = null;
   }
 
@@ -121,43 +115,42 @@ export default function ajax(options={}, context=window){
   xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
 
   xhr.onreadystatechange = function(event){
+    const contentType = xhr.getResponseHeader("Content-Type");
+    const contentAsJSON = (contentType === "application/json" ||
+      contentType.toLowerCase() === "application/json; charset=utf-8" ||
+      contentType.toLowerCase() === "application/json;charset=utf-8");
+
     // response HTTP response header 200 or lower 300
     // 304 not modifined
     if(xhr.readyState === 4){
-      var status = xhr.status;
-
-      if(( status >= 200 && status < 300) || status === 304){
-        var result;
+      // success
+      if(( xhr.status >= 200 && xhr.status < 300) || xhr.status === 304){
+        let result;
 
         try{
-          const contentType = xhr.getResponseHeader("Content-Type");
-          result = (xhr.responseType === "json") ? xhr.response :
-          ((config.emulateJSON ||
-            contentType === "application/json" ||
-            contentType.toUpperCase() === "application/json;charset=utf-8") ?
-          JSON.parse(xhr.responseText) :
-          xhr.responseText);
+          result = (contentIEsupported && xhr.responseType === "json") ? xhr.response :
+          (config.emulateJSON && contentAsJSON ? JSON.parse(xhr.responseText) : xhr.responseText);
         }catch(e){
           console.error(e);
-          return config.error.call(context, config.emulateJSON ? xhr.response : xhr.responseText, xhr,event);
+          return config.error.call(context,
+            (contentIEsupported && config.emulateJSON && contentAsJSON) ? xhr.response : xhr.responseText, xhr, event);
         }
 
         config.success.call(context, result, xhr, event);
-        // if cache been set writeJSON in chache
-        // #TODO rewirte cache
-        // if(config.cache && config.url){
-        //   cacheAJAX[cacheUrl] = xhr.responseText;
-        // }
+
+        // if use ajaxCache, just set cache
+        if(ajaxCache) setCache(config.url, ajaxParams, [result, xhr, event]);
+
+      // error
       } else {
-        var errData = '';
+        let errData;
 
         try{
-          errData = xhr.response || JSON.parse(xhr.responseText);
-        }catch(e){
-          console.error(e);
-        }
+          errData = (contentIEsupported && xhr.responseType === "json") ? xhr.response : xhr.responseText;
+          if(isString(errData) && contentAsJSON) errData = JSON.parse(errData);
+        }catch(e){ }
 
-        config.error.call(context, errData, xhr, event);
+        config.error.call(context, errData||'', xhr, event);
       }
     }
   };
@@ -166,7 +159,7 @@ export default function ajax(options={}, context=window){
   if(toNumber(config.timeout)){
     xhr.timeout = toNumber(config.timeout);
     xhr.ontimeout = function(){
-      if(xhr.readyState !== 4 || xhr.responseText==null)
+      if(xhr.readyState !== 4)
         config.error.call(context, null, xhr, event);
       xhr.abort();
     };

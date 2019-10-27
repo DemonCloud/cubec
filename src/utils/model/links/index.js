@@ -4,5 +4,6 @@ import "./toJSON";
 import "./merge";
 import "./seek";
 import "./paramify";
+import "./cache";
 import "./emulateJSON";
 import "./validate";
