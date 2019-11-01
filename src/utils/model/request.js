@@ -46,12 +46,13 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
 
       settings.success = function(data, xhr, event){
         let exportData;
+        const backData = _clone(data);
 
         if(useRuntime) data = linkCaller(runtimeLinks, [data, single]);
 
         if(data == null){
           const type = "catch links request [runtime] interrupted";
-          const catchError = { http: xhr.status, type: type, response: data };
+          const catchError = { http: xhr.status, type: type, response: backData };
 
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
           // console.warn(catchPreset + type, data, xhr, event);
@@ -75,7 +76,7 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
 
         if(invalidExportData) {
           const type = "catch links request [solve] interrupted";
-          const catchError = { http: xhr.status, type: type, response: data };
+          const catchError = { http: xhr.status, type: type, response: backData };
 
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 

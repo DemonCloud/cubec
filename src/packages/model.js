@@ -6,10 +6,7 @@
 //   lock: true,
 //   store: true,
 //   history: true,
-//   data: {
-//     a: 1,
-//     b: 2
-//   }
+//   data: {}
 // });
 import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
@@ -221,7 +218,6 @@ const modelProtoType = {
     return currentData;
   },
 
-
   remove(prop, isStatic) {
     if (modelLockStatus(this)) return;
 
@@ -253,6 +249,11 @@ const modelProtoType = {
   clearStore(){
     if (modelLockStatus(this)) return this;
     if(this._s) store.rm(this.name);
+    return this;
+  },
+
+  extend(method={}){
+    if(method) _extend(this, method, MODEL.IGNORE_KEYWORDS);
     return this;
   },
 

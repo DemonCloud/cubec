@@ -23,7 +23,6 @@ const paramifyLink = function(useOptions){
       params = (params && _isObject(params)) ? params : {};
 
     let createOptions = {};
-
     if(useFn)
       createOptions = params;
     else

@@ -150,7 +150,7 @@ export default function ajax(options={}, context=window){
           if(isString(errData) && contentAsJSON) errData = JSON.parse(errData);
         }catch(e){ }
 
-        config.error.call(context, errData||'', xhr, event);
+        config.error.call(context, errData, xhr, event);
       }
     }
   };

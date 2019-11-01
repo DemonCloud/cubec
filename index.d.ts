@@ -1,5 +1,5 @@
 type primitive = string|number|object|boolean|Array<string|number|object|boolean>;
-type func = ()=>any;
+type func = Function;
 
 interface Options {
   [propName: string]: any;
@@ -23,6 +23,7 @@ interface Events {
 
 declare class BaseInstance {
   readonly name: string|null|undefined
+  [propName: string]: any;
 }
 
 interface ModelOptions extends Options {
@@ -55,6 +56,11 @@ interface RouterOptions extends Options {
   events?: Events;
 }
 
+interface PluginOptions extends Options {
+  events?: AnyObject;
+  template: string;
+}
+
 interface VerifyInstance {
   isArray: (check: any) => boolean;
   isArrayLike: (check: any) => boolean;
@@ -85,6 +91,10 @@ declare class Model extends BaseInstance {
   private _c(): any;
   private _s(): any;
   private _h(): any;
+
+  constructor(options?: ModelOptions)
+
+  extend(extender?: AnyObject): this;
 
   update(config: object): [any|ModelData, null|undefined|object];
 
@@ -195,30 +205,36 @@ type AtomInstance = InstanceType<typeof Atom>;
 type ModelInstance = InstanceType<typeof Model>;
 type RouterInstance = InstanceType<typeof Router>;
 
-export function model(options?: ModelOptions): ModelInstance;
-export namespace model {
-  function extend(options: ModelOptions): ((options: Options)=> ModelInstance);
+export interface model {
+  (options?: ModelOptions): ModelInstance;
+  extend(options: ModelOptions): ((options: Options)=> ModelInstance);
+  link(linkMethod: string, linkProto: string, linkRuntime: string, linkFunc: func, idt?: any): func;
 }
 
-export function view(options?: ViewOptions): ViewInstance;
-export namespace view {
-  function extend(options: ViewOptions): ((options: Options)=> ViewInstance);
+export interface view {
+  (options?: ViewOptions): ViewInstance;
+  extend(options: ViewInstance): ((options: Options)=> ViewInstance);
+  plugin(pluginName: string, options: PluginOptions): any;
 }
 
-export function atom(options?: AtomOptions): AtomInstance;
-export namespace atom {
-  function extend(options: Options): ((options: Options)=> AtomInstance);
+export interface atom {
+  (options?: AtomOptions): AtomInstance;
+  extend(options: AtomOptions): ((options: Options)=> AtomInstance);
 }
 
-export function router(options?: RouterOptions): RouterInstance;
+export interface router {
+  (options?: RouterOptions): RouterInstance;
+}
 
 export const verify: VerifyInstance;
+export const struct: AnyObject;
 
 declare namespace cubec {
-  function view(options?: ViewOptions): ViewInstance;
-  function atom(options?: AtomOptions): AtomInstance;
-  function model(options?: ModelOptions): ModelInstance;
-  function router(options?: RouterOptions): RouterInstance;
+  const model: model;
+  const view: view;
+  const atom: atom;
+  const router: router;
+  const struct: AnyObject;
   const verify: VerifyInstance;
 }
 

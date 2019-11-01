@@ -48,11 +48,13 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
 
       settings.success = function(data, xhr, event){
         let exportData;
+        const backData = _clone(data);
+
         if(useRuntime && isSingle) data = linkCaller(runtimeLinks, [data, single]);
 
         if(data == null && isSingle){
           const type = "catch links update [runtime] interrupted";
-          const catchError = { http: xhr.status, type: type, response: data };
+          const catchError = { http: xhr.status, type: type, response: backData };
 
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 
@@ -81,7 +83,7 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
           const type = invalidExportData ?
             "catch links update [solve] interrupted" :
             "catch update-data is not plainobject interrupted";
-          const catchError = { http: xhr.status, type: type, response: data };
+          const catchError = { http: xhr.status, type: type, response: backData };
 
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 
