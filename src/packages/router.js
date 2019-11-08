@@ -160,8 +160,8 @@ class Router {
       || ((!isPopState && !isResolve) &&
            (rootSign+path) === location.pathname &&
              _eq(query, _paramParse(location.search)))
-      || (isResolve && path !== pathfixer(location.pathname))
     )) return this;
+
 
     let matchId = false;
     let activepath = pathpatch(path, query);
@@ -317,6 +317,25 @@ class Router {
       true,  // isResolve
       false
     );
+  }
+
+  replace(path, query, state) {
+    if(_isFn(this.destory)) this._status(_idt, true);
+
+    if(!this.destory || path == null) return this;
+
+    query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};
+    query = _merge(_paramParse(path), query);
+    state = _isObject(state) ? state : {};
+
+    if(path && _isString(path)){
+      const usePath = pathfixer(path);
+      this.__match(usePath, query, state, true, false, false);
+    }else if(path === false){
+      this.__match(pathfixer(location.pathname), _paramParse(location.search), state, true, false, true);
+    }
+
+    return this;
   }
 
   start(path, query, state){

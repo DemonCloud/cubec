@@ -42,6 +42,7 @@ const attrNeedSetAttributes = [
   "cellSpacing",
   "cellPadding",
   "rowSpan",
+  "xlink:href",
   "colSpan",
   "contentEditable",
   "useMap",
@@ -746,6 +747,7 @@ const htmlDiff = {
       const pluginWillRender = !_eqdom(root.prevProps, props);
       if(!pluginWillRender) return root;
 
+
       const target = this.createTreeFromHTML(
         renderToString(createThis.view = props),
         view.props,
@@ -754,6 +756,10 @@ const htmlDiff = {
 
       // recreate events
       this.createPluginEvents(root, props, pugOptions.events);
+
+      // compact refs
+      if(root.prevProps && root.prevProps.refs)
+        _extend(props.refs, root.prevProps.refs);
 
       // new render
       if(!root.axml || (root.pugName !== name && isUpdate)){
@@ -765,6 +771,8 @@ const htmlDiff = {
         _ayc(()=>emit.call(root, "completeRender", args));
         return root;
       }
+
+      // console.log(createThis);
 
       // diff render
       this.applyPatch(

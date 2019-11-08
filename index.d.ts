@@ -50,7 +50,7 @@ interface AtomOptions extends Options {
 }
 
 interface RouterOptions extends Options {
-  target?: string;
+  targets?: string|Array<string>;
   routes: { [routePath: string]: Array<string> };
   actions: { [actions: string]: func };
   events?: Events;
@@ -195,7 +195,7 @@ declare class Router extends BaseInstance {
 
   resolve(state: AnyObject): this;
 
-  start(path?: string, querys?: string|AnyObject, state?: AnyObject): this;
+  start(path?: string|boolean, querys?: string|AnyObject, state?: AnyObject): this;
 
   stop(): this;
 }
