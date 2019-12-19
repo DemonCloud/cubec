@@ -69,7 +69,7 @@ const polyfillimeInputEvent = function(view, delegateSelector, callback){
   $(view.root).
     on('compositionstart', pida, compositionIn).
     on('compositionend', pida, compositionOut).
-    on('input', (delegateSelector[0] === idSign ? empty : this.prefix)+delegateSelector, pfn);
+    on('input', (delegateSelector[0] === idSign ? empty : view.prefix)+delegateSelector, pfn);
 };
 
 export default polyfillimeInputEvent;

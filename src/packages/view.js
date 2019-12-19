@@ -120,7 +120,17 @@ const view = function(options = {}) {
   // building the render function
   stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(stencil), name, this._vid), { view: this });
 
-  defined(this, { renderToString: stencil });
+  defined(this, {
+    renderToString: function(){
+      return stencil.apply(this, arguments);
+    },
+    switchTemplate: function(templateString){
+      if(templateString && _isString(templateString))
+        stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(stencil), name, this._vid), { view: this });
+      else
+        console.warn("[cubec view] switch template fail with error arguments", templateString);
+    }
+  });
 
   render = function(data){
     // model format
@@ -145,11 +155,10 @@ const view = function(options = {}) {
       try{
         const renderString = this.renderToString(renderData);
 
-        if(this.directRender){
-          this.axml = null; this.root.innerHTML = renderString;
-        }else{
+        if(this.directRender)
+          this.root.innerHTML = renderString;
+        else
           $(this.root).render(renderString, this, props, renderData);
-        }
 
         // emit complete render and write vid
         this.emit("completeRender", [renderData, this.root._vid = this._vid],);
@@ -161,6 +170,7 @@ const view = function(options = {}) {
         renderIntime = false;
 
         if(!_hasEvent(this,"catch")) throw e;
+
         this.emit("catch", [renderData]);
       }
     });

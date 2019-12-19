@@ -1,8 +1,8 @@
 {
   "name": "cubec",
-  "version": "1.8.8",
+  "version": "1.8.9",
   "description": "[cubec] micro mvc framework",
-  "main": "dist/cubec.min.js",
+  "main": "src/cubec.js",
   "scripts": {
     "dev": "xcli dev",
     "build": "node rollup.config.js"
@@ -15,16 +15,16 @@
     "url": "git+https://github.com/DemonCloud/cubec.git"
   },
   "devDependencies": {
-    "@babel/core": "^7.7.2",
-    "@babel/plugin-external-helpers": "^7.2.0",
-    "@babel/plugin-transform-runtime": "^7.6.2",
-    "@babel/preset-env": "^7.7.1",
-    "@babel/runtime": "^7.7.2",
-    "rollup": "^1.26.3",
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-external-helpers": "^7.7.4",
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/runtime": "^7.7.7",
+    "rollup": "^1.27.13",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-optimize-js": "^0.0.4",
-    "rollup-plugin-uglify": "^6.0.3"
+    "rollup-plugin-uglify": "^6.0.4"
   }
 }

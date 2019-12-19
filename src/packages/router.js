@@ -61,6 +61,7 @@ import {
   _isArray,
   _isFn,
   _paramParse,
+  _paramStringify,
   _combined,
   _every,
   _size,
@@ -321,7 +322,6 @@ class Router {
 
   replace(path, query, state) {
     if(_isFn(this.destory)) this._status(_idt, true);
-
     if(!this.destory || path == null) return this;
 
     query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};
@@ -333,6 +333,21 @@ class Router {
       this.__match(usePath, query, state, true, false, false);
     }else if(path === false){
       this.__match(pathfixer(location.pathname), _paramParse(location.search), state, true, false, true);
+    }
+
+    return this;
+  }
+
+  replaceOnly(path, query, state) {
+    if(_isFn(this.destory)) this._status(_idt, true);
+    if(!this.destory || path == null) return this;
+
+    query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};
+    query = _merge(_paramParse(path), query);
+    state = _isObject(state) ? state : {};
+
+    if(path && _isString(path)){
+      history.replaceState(null, null, pathfixer(path)+_paramStringify(query));
     }
 
     return this;
