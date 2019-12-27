@@ -253,7 +253,8 @@ const modelProtoType = {
   },
 
   extend(method={}){
-    if(method) _extend(this, method, MODEL.IGNORE_KEYWORDS);
+    if(method && _isPlainObject(method))
+      _extend(this, method, MODEL.IGNORE_KEYWORDS);
     return this;
   },
 

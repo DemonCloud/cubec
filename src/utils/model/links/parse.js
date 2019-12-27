@@ -31,8 +31,8 @@ const parseLink = function(parser){
 };
 
 registerLink("set"     , linkProto , linkType.before  , parseLink);
-registerLink("update"  , linkProto , linkType.runtime , parseLink , _idt);
-registerLink("request" , linkProto , linkType.runtime , parseLink , _idt);
+registerLink("update"  , linkProto , linkType.runtime , parseLink);
+registerLink("request" , linkProto , linkType.runtime , parseLink);
 registerLink("remove"  , linkProto , linkType.solve   , parseLink);
 registerLink("get"     , linkProto , linkType.solve   , parseLink);
 registerLink("back"    , linkProto , linkType.solve   , parseLink);

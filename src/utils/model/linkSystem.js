@@ -16,14 +16,7 @@ import {
 } from '../usestruct';
 import defined from '../defined';
 import MODEL from '../../constant/model.define';
-const {
-  LINKPERSET,
-  ALLOWLINKAPIS,
-  ALLOWLINKTYPES,
-  ALLOWLINKTYPESWITHRUNTIME,
-  ASYNCLINKAPIS,
-  LINKTYPESPROXYMAPPING
-} = MODEL;
+const { LINKPERSET, ALLOWLINKAPIS, ALLOWLINKTYPESWITHRUNTIME, ASYNCLINKAPIS, LINKTYPESPROXYMAPPING } = MODEL;
 
 const modelLinkRecords = {
   get: {},
@@ -47,6 +40,10 @@ const registerLinkProto = function(modelAPI, linkProto, linkType, linkFunction){
 
   modelLinkRecords[modelAPI][linkProto] = connect;
 };
+const registerNextRuntime = function(func){ return this.next(func, "runtime"); };
+const registerNextBefore = function(func){ return this.next(func, "before"); };
+const registerNextSolve = function(func){ return this.next(func, "solve"); };
+const registerNextCatch = function(func){ return this.next(func, "catch"); };
 
 // brefore arguments caller
 const linkBeforeCaller = function(beforeQueue, args){
@@ -113,6 +110,13 @@ export const createLink = function(model, modelAPI, b, r, s, c){
   const linkBefore = b ? _slice(b) : [];
   const linkRuntime = r ? _slice(r) : [];
 
+  const linkMaping = {
+    solve: linkSolve,
+    catch: linkCatch,
+    before: linkBefore,
+    runtime: linkRuntime,
+  };
+
   const linkInstance = function(){
     const isAsync = ASYNCLINKAPIS[modelAPI];
     const useCatch = !!linkCatch.length;
@@ -140,7 +144,8 @@ export const createLink = function(model, modelAPI, b, r, s, c){
         useSolve ? linkSolve : null ,
         useCatch ? linkCatch : null
       ]));
-      // Promise API
+
+      // return Promise API
       return result;
     }
 
@@ -168,8 +173,24 @@ export const createLink = function(model, modelAPI, b, r, s, c){
     _b: createLinkProps(linkBefore),
     _r: createLinkProps(linkRuntime),
     _m: createLinkProps(model),
-    _a: modelAPI,
-    extend(){ return createLink(model, modelAPI, linkBefore, linkRuntime, linkSolve, linkCatch); }
+    _a: modelAPI, // link adapter name
+
+    extend(){ return createLink(model, modelAPI, linkBefore, linkRuntime, linkSolve, linkCatch); },
+
+    next(func, runtime="solve"){
+      if(runtime &&
+        _isString(runtime) &&
+        linkMaping[runtime] &&
+        _isFn(func))
+        linkMaping[runtime].push(func);
+
+      return this;
+    },
+
+    nextRuntime: registerNextRuntime,
+    nextBefore: registerNextBefore,
+    nextSolve: registerNextSolve,
+    nextCatch: registerNextCatch,
   }));
 
   return linkInstance;
@@ -186,8 +207,9 @@ export const registerLink = function(modelAPI, linkProto, linkType, linkFunction
       return console.error(`[cubec model] [${linkProto}] is not format model.proto.api to register in model linkSystem`);
 
     // runtime path
-    if(!_has(idt === _idt ? ALLOWLINKTYPESWITHRUNTIME : ALLOWLINKTYPES, linkType))
-      return console.error(`[cubec model] [${linkType}] linkType is not allow for register to linkSystem`);
+    // if(!_has(idt === _idt ? ALLOWLINKTYPESWITHRUNTIME : ALLOWLINKTYPES, linkType))
+    if(!_has(ALLOWLINKTYPESWITHRUNTIME, linkType))
+      return console.error(`[cubec model] [${linkType}] linkType is not allow for register by linkSystem`);
 
     return registerLinkProto(modelAPI, linkProto, linkType, linkFunction);
     // registerLinkProto(modelAPI, linkProto, linkType, linkFunction);

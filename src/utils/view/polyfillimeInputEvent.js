@@ -51,18 +51,16 @@ const polyfillimeInputEvent = function(view, delegateSelector, callback){
   let pida = { iid: pid };
 
   let pfn = function(e){
-
-    if(ime[pid]) return false;
+    if(ime[pid]){ e.stopPropagation(); return false; }
 
     if(e.target && e.target.focus) e.target.focus();
 
     let pos = capCursor(e.target);
 
-    callback.apply(this, arguments);
+    callback.apply(view, arguments);
 
     if (pos) setCursor(e.target, pos);
-
-  }.bind(this);
+  };
 
   callback._fn = pfn;
 

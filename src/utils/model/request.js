@@ -65,7 +65,7 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
           return model.emit("catch:request", data, catchError);
         }
 
-        const invalidSetData = !data;
+        const invalidSetData = (data == null);
 
         if(!invalidSetData){
           exportData = _clone(data);

@@ -16,7 +16,7 @@
 // example:
 //
 // cubec.router({
-//   target: ".elmclass",
+//   targets: ".elmclass",
 //
 //   routes: {
 //     '/home': ['home'],
@@ -40,7 +40,6 @@
 //     catch: function
 //   }
 // });
-
 import ROUTER from '../constant/router.define';
 import defined from '../utils/defined';
 import $ from '../lib/jquery';
@@ -338,7 +337,7 @@ class Router {
     return this;
   }
 
-  replaceOnly(path, query, state) {
+  replaceOnly(path, query, state, usePush) {
     if(_isFn(this.destory)) this._status(_idt, true);
     if(!this.destory || path == null) return this;
 
@@ -347,7 +346,8 @@ class Router {
     state = _isObject(state) ? state : {};
 
     if(path && _isString(path)){
-      history.replaceState(null, null, pathfixer(path)+_paramStringify(query));
+      const api = usePush ? history.pushState : history.replaceState;
+      api(state, null, pathfixer(path) + _paramStringify(query));
     }
 
     return this;

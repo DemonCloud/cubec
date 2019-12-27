@@ -1,9 +1,11 @@
+const returnTrue = function(){ return true; };
+
 const ROUTER = {
   DEFAULT_OPTION: {
     routes: {},
     actions: {},
     events: {
-      beforeActions: ()=>true
+      beforeActions: returnTrue
     }
   },
 

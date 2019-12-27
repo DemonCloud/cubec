@@ -6,6 +6,7 @@ import "./seek";
 import "./paramify";
 import "./cache";
 import "./emulateJSON";
+import "./resultJSON";
 import "./emulateForm";
 import "./validate";
 import "./url";

@@ -4,9 +4,7 @@ Micro mvc framework [gzip 24k]
 
 ## TODO [nearest]
 
-view support switch template
 model request & update support ajax cache
-atom api reference update
 
 ## TODO [2.0.0]
 
@@ -14,7 +12,7 @@ atom api reference update
 2. powerful model linkSystem api
 3. Standard view slot and plugin (Component)
 4. Optimize view template compile
-5. recycle view slot render
+5. auto recycle view slot render
 6. Decide on the final atom API
 
 ## Documentation [v2]

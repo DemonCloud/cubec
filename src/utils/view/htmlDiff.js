@@ -572,8 +572,7 @@ const htmlDiff = {
     if (obj.attributes && obj.attributes.ref){
       view.refs[obj.attributes.ref] = elm;
 
-      if(view.view && view.view.refs)
-        view.view.refs[obj.attributes.ref] = elm;
+      if(view.view && view.view.refs) view.view.refs[obj.attributes.ref] = elm;
     }
 
     // setAttribute
@@ -617,13 +616,9 @@ const htmlDiff = {
     }
 
     if (obj.child.length) {
-      _eachArray(
-        obj.child,
-        function(child) {
-          elm.appendChild(this.createDOMElement(child, view, args));
-        },
-        this,
-      );
+      _eachArray(obj.child, function(child) {
+        elm.appendChild(this.createDOMElement(child, view, args));
+      }, this);
     }
 
     return elm;
@@ -674,7 +669,7 @@ const htmlDiff = {
         const renderResult = slotRender.call(view, root, data, function(){ return createParentProps(view); });
 
         if(!renderResult || !_isFn(renderResult))
-          console.warn("[cubec] case performance, the custom <slot> render component should return a recycle function()");
+          console.warn("[cubec view] case performance, the custom <slot> render component should return a recycle function");
 
         return renderResult;
       };

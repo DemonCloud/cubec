@@ -70,7 +70,7 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
           return model;
         }
 
-        const invalidSetData = !data || !_isPlainObject(data);
+        const invalidSetData = (data == null);
 
         if(!invalidSetData){
           exportData = _clone(data);

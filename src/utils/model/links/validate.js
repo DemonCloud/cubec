@@ -47,5 +47,5 @@ const validateLink = function(validate){
   };
 };
 
-registerLink("update" , linkProto , linkType.runtime , validateLink , _idt);
+registerLink("update" , linkProto , linkType.runtime , validateLink);
 registerLink("set"    , linkProto , linkType.before  , validateLink);

@@ -120,31 +120,41 @@ const view = function(options = {}) {
   // building the render function
   stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(stencil), name, this._vid), { view: this });
 
+  // defined view renderToString
+  // switchTemplate function
   defined(this, {
+
     renderToString: function(){
+      // console.log(stencil);
       return stencil.apply(this, arguments);
     },
+
     switchTemplate: function(templateString){
       if(templateString && _isString(templateString))
-        stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(stencil), name, this._vid), { view: this });
+        stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(templateString), name, this._vid), { view: this });
       else
         console.warn("[cubec view] switch template fail with error arguments", templateString);
     }
+
   });
 
   render = function(data){
-    // model format
+    // model data format
     if (data instanceof view.__instance[0]) data = data.get();
-    // atom format
+    // atom data format
     else if (data instanceof view.__instance[1]) data = data.toChunk();
 
-    // before render
+    // before render hook
     // check if should prevent render
     const before = _fireEvent(this, 'beforeRender', [data]);
+
     if(before && before.length && _some(before, v=>!v)) return false;
 
     // render frame process
-    if(renderIntime) return (renderData = data);
+    if(renderIntime){
+      renderData = data;
+      return true;
+    }
 
     renderIntime = true;
     renderData = data;
@@ -174,6 +184,8 @@ const view = function(options = {}) {
         this.emit("catch", [renderData]);
       }
     });
+
+    return true;
 
   }.bind(this);
 

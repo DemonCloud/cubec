@@ -47,5 +47,5 @@ const mergeUpdateLink = function(){
   };
 };
 
-registerLink("update" , linkProto , linkType.runtime , mergeUpdateLink , _idt);
+registerLink("update" , linkProto , linkType.runtime , mergeUpdateLink);
 registerLink("set"    , linkProto , linkType.before  , mergeLink);
