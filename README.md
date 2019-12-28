@@ -2,18 +2,9 @@
 
 Micro mvc framework [gzip 24k]
 
-## TODO [nearest]
+## TODO [nearest 2.0.0]
 
-model request & update support ajax cache
-
-## TODO [2.0.0]
-
-1. Completely independent new DOM event system (jQuery 4.0 slim event version)
-2. powerful model linkSystem api
-3. Standard view slot and plugin (Component)
-4. Optimize view template compile
-5. auto recycle view slot render
-6. Decide on the final atom API
+await jQuery upgrade 4.* version
 
 ## Documentation [v2]
 

@@ -6,6 +6,7 @@ import isString from './type/isString';
 import keys from './tools/keys';
 import extend from './tools/extend';
 import toNumber from './tools/toNumber';
+import toString from './tools/toString';
 import paramStringify from './tools/paramStringify';
 import { getCache, setCache } from './optimize/ajaxcache';
 
@@ -13,6 +14,7 @@ import eachObject from './eachObject';
 import { isIE } from '../adapter';
 
 const contentIEsupported = !isIE || isIE > 9;
+
 const MIME = {
   'application/x-www-form-urlencoded': 0,
   'application/json' : 1
@@ -53,10 +55,9 @@ export default function ajax(options={}, context=window){
   } , options || broken);
 
   // check isObjisObjisObjif has ajax cache
-  // #TODO rewirte
   // const cacheParam = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
   // const cacheUrl = config.url + "$$" + cacheParam;
-  const ajaxParams = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
+  const ajaxParams = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : toString(config.param)) : "";
   const ajaxCache = config.cache && config.url && isString(ajaxParams);
 
   // use ajax cache
@@ -71,6 +72,7 @@ export default function ajax(options={}, context=window){
   }
 
 
+  // create new XHR httprequest
   const xhr = new XMLHttpRequest();
 
   // with GET method
@@ -112,13 +114,15 @@ export default function ajax(options={}, context=window){
 
   if(config.header !== broken && isPlainObject(config.header))
     eachObject(config.header,function(val,key){ xhr.setRequestHeader(key,val); });
-  xhr.setRequestHeader('X-Requested-With','XMLHttpRequest');
+  xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
   xhr.onreadystatechange = function(event){
-    const contentType = xhr.getResponseHeader("Content-Type");
+    const contentType = xhr.getResponseHeader("Content-Type") || "";
+    const contentTypeLowerCase = contentType.toLowerCase();
     const contentAsJSON = (contentType === "application/json" ||
-      contentType.toLowerCase() === "application/json; charset=utf-8" ||
-      contentType.toLowerCase() === "application/json;charset=utf-8");
+      contentTypeLowerCase === "application/json" ||
+      contentTypeLowerCase === "application/json;charset=utf-8" ||
+      contentTypeLowerCase === "application/json; charset=utf-8" );
 
     // response HTTP response header 200 or lower 300
     // 304 not modifined
@@ -148,7 +152,7 @@ export default function ajax(options={}, context=window){
         try{
           errData = (contentIEsupported && xhr.responseType === "json") ? xhr.response : xhr.responseText;
           if(isString(errData) && contentAsJSON) errData = JSON.parse(errData);
-        }catch(e){ }
+        }catch(e){ /* eslint-disable */ }
 
         config.error.call(context, errData, xhr, event);
       }

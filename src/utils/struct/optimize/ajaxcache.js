@@ -6,7 +6,7 @@
 import get from '../props/get';
 import set from '../props/set';
 
-const cache = {};
+const cache = window.ajaxcache = {};
 
 export const getCache = function(url, paramString){
   const cacheUrl = cache[url];

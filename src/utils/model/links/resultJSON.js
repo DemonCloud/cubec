@@ -7,6 +7,7 @@ import {
 } from '../../usestruct';
 
 const linkProto = "resultJSON";
+
 const resultJSON = function(){
   return function(data, mode){
     let isMultiple = (mode === "multip");
@@ -40,7 +41,7 @@ const resultJSON = function(){
 
     // console.log(parseData);
 
-    return [parseData, mode];
+    return isMultiple ? [parseData, mode] : parseData;
   };
 };
 
