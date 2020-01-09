@@ -170,7 +170,7 @@ declare class View extends BaseInstance {
 
   getParentProps(parentViewName?: string): AnyObject;
 
-  mount(root: HTMLElement, data: AnyObject|ModelInstance): this;
+  mount?(root: HTMLElement, data: AnyObject|ModelInstance): this;
 
   render(data: AnyObject|ModelInstance): this;
 
@@ -188,6 +188,10 @@ declare class Router extends BaseInstance {
   private _s: any;
 
   to(path: string, querys?: string|AnyObject, state?: AnyObject): this;
+
+  replace(path: string, querys?: string|AnyObject, state?: AnyObject): this;
+
+  replaceOnly(path: string, querys?: string|AnyObject, state?: AnyObject, asPush?: boolean): this;
 
   add(route: string, actions: string, newAction: func|func[]): this;
 

@@ -57,11 +57,12 @@ $.fn.render = function(newhtml, view, props, data) {
     let target = htmlDiff.createTreeFromHTML(newhtml, props, data);
 
     if (elm._vid !== view._vid || !view.axml) {
-      elm._destory = () => view.destroy();
+      elm._destory = function(){ view.destroy(); };
 
       let internal = htmlDiff.createDOMElement((view.axml = target), view, data).firstElementChild;
 
       elm.appendChild(internal, (elm.innerHTML = ''));
+
       return view;
     }
 
@@ -109,12 +110,13 @@ const view = function(options = {}) {
     render,
     events = options.events,
     connect = options.connect,
-    stencil = options.template,
-    models = _isArray(connect)
-      ? connect
-      : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1])
-        ? [connect]
+    stencil = options.template || options.render,
+    models = _isArray(connect) ? connect
+      : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1]) ? [connect]
         : [];
+
+  // console.log(connect);
+  stencil = _toString(_isFn(stencil) ? stencil(props) : stencil);
 
   // parse template
   // building the render function
@@ -129,11 +131,14 @@ const view = function(options = {}) {
       return stencil.apply(this, arguments);
     },
 
-    switchTemplate: function(templateString){
-      if(templateString && _isString(templateString))
-        stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(templateString), name, this._vid), { view: this });
+    switchTemplate: function(newRender){
+      if(_isFn(newRender))
+        newRender = _toString(newRender(this.props));
+
+      if(newRender && _isString(newRender))
+        stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(newRender), name, this._vid), { view: this });
       else
-        console.warn("[cubec view] switch template fail with error arguments", templateString);
+        console.warn("[cubec view] switch template fail with error arguments", newRender);
     }
 
   });
