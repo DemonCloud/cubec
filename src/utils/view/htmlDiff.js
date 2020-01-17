@@ -1,5 +1,5 @@
 import {bindDomEvent, removeDomEvent} from './domEventSystem';
-import {on, off, emit} from '../universalEvent';
+import {on, off, emit, registerEvent} from '../universalEvent';
 import {
   _set,
   _isString,
@@ -231,7 +231,9 @@ const patchHack = [
   //6 removetext
   function(patch) {
     let t = patch.s;
-    t.innerHTML = patch.n.innerHTML;
+    t.innerHTML = '';
+    while(patch.n.childNodes.length)
+      t.appendChild(patch.n.firstChild);
   },
   //7 addattr
   function(patch) {
@@ -269,6 +271,7 @@ const patchHack = [
     }else{
       t.parentNode.replaceChild(htmlDiff.createDOMElement(patch.tag, patch.view, args),t);
     }
+
   },
   // 11 updateplugin
   function(patch, htmlDiff, args) {
@@ -325,6 +328,7 @@ const htmlDiff = {
         if (org.text && tag.text && org.text !== tag.text)
           patch.push(this.createPatch(org, tag, 4, view, args));
         else if (!org.text) patch.push(this.createPatch(org, tag, 5, view, args));
+        // if org has text, but tag not have text (maybe tag has child elements)
         else if (!tag.text) patch.push(this.createPatch(org, tag, 6, view, args));
         return patch;
       }
@@ -600,6 +604,12 @@ const htmlDiff = {
         // view._ass(_idt).push(slot);
       }
 
+      if(elm.__replaceToSlotRoot){
+        const slotElm = elm.__replaceToSlotRoot;
+        delete elm.__replaceToSlotRoot;
+        return slotElm;
+      }
+
       return elm;
     }
 
@@ -617,7 +627,8 @@ const htmlDiff = {
 
     if (obj.child.length) {
       _eachArray(obj.child, function(child) {
-        elm.appendChild(this.createDOMElement(child, view, args));
+        const newChild = this.createDOMElement(child, view, args)
+        elm.appendChild(newChild);
       }, this);
     }
 
@@ -650,14 +661,23 @@ const htmlDiff = {
             // ????
             if(root.parentNode)
               root.parentNode.replaceChild(slotRender.root, root);
-            else
-              // when it root has not mount at document
-              _ayc(function(){ root.parentNode.replaceChild(slotRender.root, root); });
+            else{
+              // when it root has not mount at document, it is new node at internal storage
+              // setTimeout(function(){ root.parentNode.replaceChild(slotRender.root, root); }, 60);
+              // const eventsHandlers = slotRender._ase(_idt);
+
+              // removeDomEvent(slotRender);
+              // _eachObject(eventsHandlers, registerEvent, slotRender);
+              root.__replaceToSlotRoot = slotRender.root;
+            }
+
           }
+
           slotRender.render(data);
         } else {
           slotRender.mount(root, data);
         }
+
 
         if(!slotRender.__recycle){
           slotRender.__recycle = true;

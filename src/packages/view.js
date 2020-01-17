@@ -66,9 +66,12 @@ $.fn.render = function(newhtml, view, props, data) {
       return view;
     }
 
+    // get diff patchs
+    const getPatchs = htmlDiff.treeDiff(view.axml, target, [], null, null, view, data);
+
     htmlDiff.applyPatch(
       elm,
-      htmlDiff.treeDiff(view.axml, target, [], null, null, view, data),
+      getPatchs,
       data,
       (view.axml = target),
     );
@@ -222,6 +225,7 @@ const view = function(options = {}) {
         defined(this, { render: render });
 
         this.connect.apply(this, models);
+
         // trigger render
         if(data&&_isObject(data)) this.render(data);
 
