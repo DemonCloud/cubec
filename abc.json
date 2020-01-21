@@ -1,6 +1,6 @@
 {
   "name": "cubec",
-  "type": "SPA",
+  "type": "SPA-xcli-plugin",
   "wap": true,
   "package": "yarn",
   "path": {
