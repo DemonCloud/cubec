@@ -1,5 +1,4 @@
 import {
-  _idt,
   _isFn,
   _eachArray,
   _fireEvent,
@@ -17,14 +16,14 @@ export default function(router, path, actions, args, isResolve, isPopState, isSt
       if(!isPopState && !isStart) history[isResolve ? 'replaceState' : 'pushState'](args[2], null, path);
 
       // use action
-      _eachArray(actions, function(action){ if(_isFn(action)) action.apply(router,args); });
+      _eachArray(actions, function(action){ if(_isFn(action)) action.apply(router, emitargs); });
 
       _emit(router,"completeActions",emitargs);
     }else{
       _emit(router,'preventActions', emitargs);
     }
   }catch(e){
-    console.error(e);
     _emit(router,"catch",emitargs);
+    console.error(e);
   }
 }

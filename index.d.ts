@@ -40,7 +40,8 @@ interface ViewOptions extends Options {
   name?: string;
   props?: AnyObject;
   events?: Events;
-  template: string;
+  template?: string;
+  render?: string;
 }
 
 interface AtomOptions extends Options {

@@ -40,6 +40,7 @@
 //     catch: function
 //   }
 // });
+
 import ROUTER from '../constant/router.define';
 import defined from '../utils/defined';
 import $ from '../lib/jquery';
@@ -345,10 +346,8 @@ class Router {
     query = _merge(_paramParse(path), query);
     state = _isObject(state) ? state : {};
 
-    if(path && _isString(path)){
-      const api = usePush ? history.pushState : history.replaceState;
-      api(state, null, pathfixer(path) + _paramStringify(query));
-    }
+    if(path && _isString(path))
+      history[usePush ? "pushState" : "replaceState"](state, null, path + _paramStringify(query));
 
     return this;
   }

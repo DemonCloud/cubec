@@ -11,7 +11,7 @@ import { createC, createExtend } from './utils/create';
 export const cubec = Object.create(null);
 
 // information
-cubec.version = "1.9.3";
+cubec.version = "1.9.4";
 
 _view.__instance[0] = _model;
 _view.__instance[1] = _atom;
