@@ -11,16 +11,12 @@ import { createC, createExtend } from './utils/create';
 export const cubec = Object.create(null);
 
 // information
-cubec.version = "1.9.4";
+cubec.version = "1.9.5";
 
 _view.__instance[0] = _model;
 _view.__instance[1] = _atom;
 
 // verify utils functions
-// export usestruct for cubec plugin [cubec-jsform]
-// since version 1.7.0. struct is not a part of cubec module.
-// if you want to import struct
-// please ( import struct from "ax-struct-js" ) [ npm install ax-struct-js@lat
 export const struct = cubec.struct = _struct;
 export const verify = cubec.verify = _verify;
 

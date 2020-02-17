@@ -1,3 +1,4 @@
+import MODEL from '../../../constant/model.define';
 import { registerLink } from '../linkSystem';
 import {
   _merge,
@@ -11,10 +12,6 @@ import {
 } from '../../usestruct';
 
 const linkProto = "merge";
-const linkType = {
-  before: "before",
-  runtime: "runtime",
-};
 
 const mergeLink = function(){
   const model = this._m(_idt);
@@ -47,5 +44,5 @@ const mergeUpdateLink = function(){
   };
 };
 
-registerLink("update" , linkProto , linkType.runtime , mergeUpdateLink);
-registerLink("set"    , linkProto , linkType.before  , mergeLink);
+registerLink("update" , linkProto , MODEL.LINKTYPES.runtime , mergeUpdateLink);
+registerLink("set"    , linkProto , MODEL.LINKTYPES.before  , mergeLink);

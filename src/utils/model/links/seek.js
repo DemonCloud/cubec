@@ -75,5 +75,5 @@ const seekLink = function(keys, combined=false){
 };
 
 _eachArray(MODEL.ALLOWLINKAPIS, function(modelAPI){
-  registerLink(modelAPI , linkProto , "solve" , seekLink);
+  registerLink(modelAPI , linkProto , MODEL.LINKTYPES.solve , seekLink);
 });

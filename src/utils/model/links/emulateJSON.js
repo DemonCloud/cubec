@@ -1,3 +1,4 @@
+import MODEL from '../../../constant/model.define';
 import { registerLink } from '../linkSystem';
 
 const linkProto = "emulateJSON";
@@ -15,5 +16,5 @@ const emulateJSONLink = function(emulate=true){
   };
 };
 
-registerLink("update",  linkProto, "before", emulateJSONLink);
-registerLink("request", linkProto, "before", emulateJSONLink);
+registerLink("update",  linkProto, MODEL.LINKTYPES.before, emulateJSONLink);
+registerLink("request", linkProto, MODEL.LINKTYPES.before, emulateJSONLink);

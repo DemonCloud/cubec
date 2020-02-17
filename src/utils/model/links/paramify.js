@@ -1,3 +1,4 @@
+import MODEL from '../../../constant/model.define';
 import { registerLink } from '../linkSystem';
 import {
   _merge,
@@ -32,5 +33,5 @@ const paramifyLink = function(useOptions){
   };
 };
 
-registerLink("update",  linkProto, "before", paramifyLink);
-registerLink("request", linkProto, "before", paramifyLink);
+registerLink("update",  linkProto, MODEL.LINKTYPES.before, paramifyLink);
+registerLink("request", linkProto, MODEL.LINKTYPES.before, paramifyLink);

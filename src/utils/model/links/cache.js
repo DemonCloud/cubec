@@ -1,4 +1,5 @@
 import { registerLink } from '../linkSystem';
+import MODEL from '../../../constant/model.define';
 
 const linkProto = "cache";
 const cacheLink = function(){
@@ -10,5 +11,5 @@ const cacheLink = function(){
   };
 };
 
-registerLink("update",  linkProto, "before", cacheLink);
-registerLink("request", linkProto, "before", cacheLink);
+registerLink("update",  linkProto, MODEL.LINKTYPES.before, cacheLink);
+registerLink("request", linkProto, MODEL.LINKTYPES.before, cacheLink);

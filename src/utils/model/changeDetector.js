@@ -3,14 +3,37 @@ import {
   _isString,
   _eachArray,
   _get,
+  _has,
   _eq,
 } from '../usestruct';
 
 const replaceChangeReg = /^change:/;
 
+// match set path parser
+const presetParser = function(setPath){
+   // setPath-> a.b.c => [a.b.c, a.b, a];
+   const paths = [];
+   if(setPath && setPath.length){
+     const getDotPath = setPath.split(".");
+     if(getDotPath.length > 1){
+       // first pop one sign
+       getDotPath.pop();
+       while(getDotPath.length){
+         // pop end path
+         paths.push(getDotPath.join("."));
+         getDotPath.pop();
+       }
+     }
+   }
+
+   return paths;
+};
+
 function changeDetector(model,currentData,prevData,preset){
   const res = [];
   const detectList = model._asc(_idt);
+
+  // first target change event
   model.emit("change", [currentData,prevData]);
 
   if(detectList.length){
@@ -23,21 +46,34 @@ function changeDetector(model,currentData,prevData,preset){
           const spath = path.replace(replaceChangeReg,'');
           const cv = _get(currentData,spath);
           const pv = _get(prevData,spath);
-
-          if(!_eq(cv,pv)) res.push([path,[cv,pv]]);
+          if(!_eq(cv,pv)) res.push([path, [cv, pv]]);
         }
       });
+
+      // if preset change
+      // then enter emit tasks [parent path]
+      _eachArray(presetParser(preset), function (ppath) {
+        const fixEvent = `change:${ppath}`;
+        // if preset parent in detectList
+        if (_has(detectList, fixEvent)) {
+          const cv = _get(currentData, ppath);
+          const pv = _get(prevData, ppath);
+          if (!_eq(cv, pv)) res.push([fixEvent, [cv, pv]]);
+        }
+      });
+
     }else{
+      // not preset, detect all
       _eachArray(detectList, function(path){
         const spath = path.replace(replaceChangeReg,'');
         const cv = _get(currentData,spath);
         const pv = _get(prevData,spath);
-
         if(!_eq(cv,pv)) res.push([path,[cv,pv]]);
       });
     }
   }
 
+  // emit tasks
   _eachArray(res,function([event,args]){ model.emit(event,args); });
 
   return model;

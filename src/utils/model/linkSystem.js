@@ -16,7 +16,7 @@ import {
 } from '../usestruct';
 import defined from '../defined';
 import MODEL from '../../constant/model.define';
-const { LINKPERSET, ALLOWLINKAPIS, ALLOWLINKTYPESWITHRUNTIME, ASYNCLINKAPIS, LINKTYPESPROXYMAPPING } = MODEL;
+const { LINKPERSET, ALLOWLINKAPIS, ALLOWLINKTYPES, ASYNCLINKAPIS, LINKTYPESPROXYMAPPING } = MODEL;
 
 const modelLinkRecords = {
   get: {},
@@ -208,7 +208,7 @@ export const registerLink = function(modelAPI, linkProto, linkType, linkFunction
 
     // runtime path
     // if(!_has(idt === _idt ? ALLOWLINKTYPESWITHRUNTIME : ALLOWLINKTYPES, linkType))
-    if(!_has(ALLOWLINKTYPESWITHRUNTIME, linkType))
+    if(!_has(ALLOWLINKTYPES, linkType))
       return console.error(`[cubec model] [${linkType}] linkType is not allow for register by linkSystem`);
 
     return registerLinkProto(modelAPI, linkProto, linkType, linkFunction);

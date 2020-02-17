@@ -31,9 +31,7 @@ export default function(key, val, model, verify) {
     if (!isRequired(value)) {
       error.push(parKey, value);
 
-      console.error(
-        `model verify of key -> [${validKeys[i]}] except error with checker => ${_type(value).toUpperCase()} [ ${output(value)} ]`,
-      );
+      console.error(`model verify of key -> [${validKeys[i]}] except error with checker => ${_type(value).toUpperCase()} [ ${output(value)} ]`);
 
       break;
     }

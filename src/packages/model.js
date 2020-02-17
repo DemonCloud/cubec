@@ -158,7 +158,8 @@ const modelProtoType = {
     const assertram = this._ash(_idt);
     const argslength = arguments.length;
     const useKeyword = argslength >= 2 && (_isNumber(key) || _isString(key));
-    const undefinedArgs = (key == null) || (useKeyword && val===void 0);
+    // 非法的设置值参数
+    const undefinedArgs = (key == null);
     const single = !useKeyword && (_isObject(key) || _isFn(key));
 
     let ref;
@@ -313,7 +314,6 @@ const modelProtoType = {
       idt = _idt;
       options = {};
     }
-
     options = _isPlainObject(options) ? options : {};
 
     solveLinks = idt === _idt ? (solveLinks || MODEL.LINKPERSET) : null;
@@ -337,7 +337,7 @@ const modelProtoType = {
 
 // FUCK DEAD Internet Explorer!! FUCK FUCK FUCK
 // if is under IE<9. auto add function name
-if(isIE && Function.prototype.name === void 0)
+if(isIE && Function.prototype.name == null)
   _eachObject(modelProtoType, function(proto, keyName){ proto.name = keyName; });
 
 model.prototype = modelProtoType;

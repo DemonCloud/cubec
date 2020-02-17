@@ -322,6 +322,7 @@ class Router {
 
   replace(path, query, state) {
     if(_isFn(this.destory)) this._status(_idt, true);
+
     if(!this.destory || path == null) return this;
 
     query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};
@@ -340,6 +341,7 @@ class Router {
 
   replaceOnly(path, query, state, usePush) {
     if(_isFn(this.destory)) this._status(_idt, true);
+
     if(!this.destory || path == null) return this;
 
     query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};

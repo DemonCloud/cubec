@@ -7,12 +7,6 @@ import {
 } from '../../usestruct';
 
 const linkProto = "catch";
-const linkType = {
-  // runtime: "runtime",
-  // before: "before",
-  // solve: "solve",
-  catch: "catch"
-};
 
 const catchLink = function(catcher){
   const useCatch = _isFn(catcher) ? catcher : function(){ return catcher; };
@@ -21,5 +15,5 @@ const catchLink = function(catcher){
 };
 
 _eachArray(MODEL.ALLOWLINKAPIS, function(modelAPI){
-  return registerLink(modelAPI, linkProto, linkType.catch, catchLink, _idt);
+  return registerLink(modelAPI, linkProto, MODEL.LINKTYPES.catch, catchLink, _idt);
 });

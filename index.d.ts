@@ -171,11 +171,11 @@ declare class View extends BaseInstance {
 
   getParentProps(parentViewName?: string): AnyObject;
 
-  mount?(root: HTMLElement, data: AnyObject|ModelInstance): this;
+  mount(root: HTMLElement, data: AnyObject|ModelInstance): this;
 
-  render(data: AnyObject|ModelInstance): this;
+  render(data: AnyObject|ModelInstance|AtomInstance): this;
 
-  renderToString(data: AnyObject|ModelInstance): string;
+  renderToString(data: AnyObject|ModelInstance|AtomInstance): string;
 }
 
 declare class Router extends BaseInstance {
@@ -218,7 +218,7 @@ export interface model {
 
 export interface view {
   (options?: ViewOptions): ViewInstance;
-  extend(options: ViewInstance): ((options: Options)=> ViewInstance);
+  extend(options: ViewOptions): ((options: Options)=> ViewInstance);
   plugin(pluginName: string, options: PluginOptions): any;
 }
 

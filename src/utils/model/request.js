@@ -1,4 +1,5 @@
 import MODEL from '../../constant/model.define';
+import ERRORS from '../../constant/errors.define';
 import modelLockStatus from './lockstatus';
 import { linkCaller, linkCatchCaller } from './linkSystem';
 import {
@@ -12,16 +13,16 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
   let promiseObj;
 
   if(modelLockStatus(model)){
-    const type = "model on lock, request interrupted";
-    const catchError = { http: -1, type: type, response: null };
+    const type = ERRORS.MODEL_LINK_REQUEST_LOCKED;
+    const catchError = { http: -1, type: type, response: null, request: options };
     promiseObj = Promise.resolve([null, catchError]);
     return promiseObj;
   }
 
   if(!options ||
      !options.url){
-    const type = "model request options without [url] param, request interrupted";
-    const catchError = { http: -1, type: type, response: null };
+    const type = ERRORS.MODEL_LINK_REQUEST_WITHOUT_URL;
+    const catchError = { http: -1, type: type, response: null, request: options };
     promiseObj = Promise.resolve([null, catchError]);
     return promiseObj;
   }
@@ -51,8 +52,8 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
         if(useRuntime) data = linkCaller(runtimeLinks, [data, single]);
 
         if(data == null){
-          const type = "catch links request [runtime] interrupted";
-          const catchError = { http: xhr.status, type: type, response: backData };
+          const type = ERRORS.MODEL_LINK_REQUEST_RUNTIME_CATCH;
+          const catchError = { http: xhr.status, type: type, response: backData, request: option };
 
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
           // console.warn(catchPreset + type, data, xhr, event);
@@ -75,8 +76,8 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
         const invalidExportData = (exportData == null);
 
         if(invalidExportData) {
-          const type = "catch links request [solve] interrupted";
-          const catchError = { http: xhr.status, type: type, response: backData };
+          const type = ERRORS.MODEL_LINK_REQUEST_SOLVE_CATCH;
+          const catchError = { http: xhr.status, type: type, response: backData, request: option };
 
           if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 
@@ -99,8 +100,8 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
 
       settings.error = function(errData, xhr, event){
         let exportData;
-        const type = "catch links request http unexcept error";
-        const catchError = { http: xhr.status || -1, type: type, response: errData || xhr.response };
+        const type = ERRORS.MODEL_LINK_REQUEST_HTTP_CATCH;
+        const catchError = { http: xhr.status || -1, type: type, response: errData || xhr.response || xhr.responseText || "", request: option };
 
         if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 

@@ -20,9 +20,7 @@ export default function(newData, model, verify) {
     if (!isRequired(value)) {
       error.push(key[i], value);
 
-      console.error(
-        `model verify of key [${key[i]}] except error with checker => ${_type(value).toUpperCase()} [ ${output(value)} ]`
-      );
+      console.error(`[cubec model] [${model.name || model._mid}] model verify of key [${key[i]}] except error with checker => ${_type(value).toUpperCase()} [ ${output(value)} ]`);
 
       errorKey = key[i];
 
@@ -32,8 +30,7 @@ export default function(newData, model, verify) {
 
   valid = !error.length;
 
-  if (!valid)
-    model.emit(`catch:verify,catch:verify:${errorKey}`, error);
+  if (!valid) model.emit(`catch:verify,catch:verify:${errorKey}`, error);
 
   return valid;
 }

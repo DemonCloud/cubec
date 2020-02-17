@@ -1,3 +1,4 @@
+import MODEL from '../../../constant/model.define';
 import { registerLink } from '../linkSystem';
 import {
   _map,
@@ -35,7 +36,7 @@ const resultJSON = function(){
         }catch(e){ /*eslint-disable*/ }
 
         return single === singleData ? singleData : [single];
-      })
+      });
     else if(_isPlainObject(data) || _isArrayLike(data))
       parseData = data;
 
@@ -45,5 +46,5 @@ const resultJSON = function(){
   };
 };
 
-registerLink("update",  linkProto, "runtime", resultJSON);
-registerLink("request", linkProto, "runtime", resultJSON);
+registerLink("update",  linkProto, MODEL.LINKTYPES.runtime, resultJSON);
+registerLink("request", linkProto, MODEL.LINKTYPES.runtime, resultJSON);

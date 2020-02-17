@@ -1,3 +1,4 @@
+import MODEL from '../../../constant/model.define';
 import { registerLink } from '../linkSystem';
 import { _slice, _trim } from '../../usestruct';
 
@@ -12,4 +13,4 @@ const urlLink = function(){
   };
 };
 
-registerLink("request", linkProto, "before", urlLink);
+registerLink("request", linkProto, MODEL.LINKTYPES.before, urlLink);

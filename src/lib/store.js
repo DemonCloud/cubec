@@ -18,7 +18,7 @@ const store = {
   },
 
   ecd(data) {
-    var o1,
+    let o1,
       o2,
       o3,
       h1,
@@ -52,7 +52,7 @@ const store = {
   },
 
   dcd(data) {
-    var o1,
+    let o1,
       o2,
       o3,
       h1,
@@ -85,7 +85,7 @@ const store = {
   },
 
   incry(s, key) {
-    var i = 0,
+    let i = 0,
       l = s.length,
       res = [];
     for (; i < l; i++) res[i] = s[i].charCodeAt(0) ^ this.kAt(key, i);
@@ -94,7 +94,7 @@ const store = {
 
   decyt(s, key) {
     s = this.dcd(s);
-    var i = 0,
+    let i = 0,
       l = s.length;
     for (; i < l; i++) s[i] = String.fromCharCode(s[i] ^ this.kAt(key, i));
     return s.join('');
@@ -108,7 +108,7 @@ const store = {
   },
 
   get(name) {
-    var str = LS.getItem(SN + this.incry(name, revs(name)));
+    let str = LS.getItem(SN + this.incry(name, revs(name)));
     return str ? JSON.parse(decodeURIComponent(this.decyt(str, name))) : 0;
   },
 

@@ -1,3 +1,4 @@
+import MODEL from '../../../constant/model.define';
 import { registerLink } from '../linkSystem';
 import singleVerify from '../singleVerify';
 import multipleVerify from '../multipleVerify';
@@ -11,10 +12,6 @@ import {
 } from '../../usestruct';
 
 const linkProto = "validate";
-const linkType = {
-  runtime: "runtime",
-  before: "before",
-};
 
 const validateLink = function(validate){
   const model = this._m(_idt);
@@ -23,6 +20,7 @@ const validateLink = function(validate){
 
   return function(key, value){
     let checker = true;
+
     const args = arguments;
     const defaultData = model.get();
     const useKey = (key && _isString(key)) || _isInt(key);
@@ -47,5 +45,5 @@ const validateLink = function(validate){
   };
 };
 
-registerLink("update" , linkProto , linkType.runtime , validateLink);
-registerLink("set"    , linkProto , linkType.before  , validateLink);
+registerLink("update" , linkProto , MODEL.LINKTYPES.runtime , validateLink);
+registerLink("set"    , linkProto , MODEL.LINKTYPES.before  , validateLink);

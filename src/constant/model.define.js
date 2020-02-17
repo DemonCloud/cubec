@@ -50,6 +50,12 @@ const MODEL = {
     header: {'X-HTTP-Request-From': 'cubec.model'}
   },
   LINKPERSET: [],
+  LINKTYPES: {
+    runtime: "runtime",
+    before: "before",
+    solve: "solve",
+    catch: "catch"
+  },
   ALLOWLINKAPIS: [
     "get",
     "set",
@@ -59,10 +65,10 @@ const MODEL = {
     "request",
   ],
   ALLOWLINKTYPES: [
-    "before", "solve", "catch"
-  ],
-  ALLOWLINKTYPESWITHRUNTIME: [
-    "before", "solve", "catch", "runtime"
+    "before",
+    "solve",
+    "catch",
+    "runtime"
   ],
   ASYNCLINKAPIS: {
     update: true,

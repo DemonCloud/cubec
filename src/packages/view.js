@@ -86,6 +86,7 @@ const view = function(options = {}) {
   let parentProps = {};
   let renderData = {};
   let renderIntime = false;
+
   const bounder = {};
   const slotQueue = [];
   const name = options.name || "v--"+id;
@@ -129,19 +130,24 @@ const view = function(options = {}) {
   // switchTemplate function
   defined(this, {
 
-    renderToString: function(){
+    renderToString: function(data){
+      if (data instanceof view.__instance[0]) data = data.get();
+      // atom data format
+      else if (data instanceof view.__instance[1]) data = data.toChunk();
       // console.log(stencil);
-      return stencil.apply(this, arguments);
+      return stencil.call(this, data || {});
     },
 
     switchTemplate: function(newRender){
-      if(_isFn(newRender))
-        newRender = _toString(newRender(this.props));
+      let switchRender = newRender;
 
-      if(newRender && _isString(newRender))
-        stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(newRender), name, this._vid), { view: this });
+      if(_isFn(switchRender))
+        switchRender = _toString(switchRender(this.props));
+
+      if(switchRender && _isString(switchRender))
+        stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(switchRender), name, this._vid), { view: this });
       else
-        console.warn("[cubec view] switch template fail with error arguments", newRender);
+        console.warn(ERRORS.VIEW_SWITCHTEMPLATE, newRender);
     }
 
   });
@@ -169,7 +175,7 @@ const view = function(options = {}) {
 
     // async render
     // directRender without virtual node render
-    _ayc(()=>{
+    const createRender = function(){
       try{
         const renderString = this.renderToString(renderData);
 
@@ -188,19 +194,20 @@ const view = function(options = {}) {
         renderIntime = false;
 
         if(!_hasEvent(this,"catch")) throw e;
-
-        this.emit("catch", [renderData]);
+        else this.emit("catch", [renderData]);
       }
-    });
+    };
+    // do render
+    _ayc(createRender.bind(this));
 
     return true;
-
   }.bind(this);
 
-  // if userobj has more events
+  // if useOptions has more events
   if (vroot && checkElm(vroot)) {
     // bind events
     this.root = vroot;
+    this.mount = _noop;
 
     _eachObject(events, registerEvent, this);
 
@@ -214,6 +221,7 @@ const view = function(options = {}) {
       delete events.init;
     }
 
+    // create mount method
     this.mount = function(el, data={}) {
       if (checkElm(el)) {
         // create Root Element
@@ -239,10 +247,9 @@ const view = function(options = {}) {
     };
   }
 
+  // create view complete
   _extend(this, options, VIEW.IGNORE_KEYWORDS).emit('init').off('init');
 };
-
-view.__instance = [_noop, _noop]; // model, atom
 
 view.prototype = {
 
@@ -386,5 +393,7 @@ view.prototype = {
   },
 
 };
+
+view.__instance = [_noop, _noop]; // model, atom
 
 export default view;
