@@ -9,6 +9,9 @@ import {
   _merge,
 } from '../usestruct';
 
+// import { isIE } from '../adapter';
+// const contentIEsupported = !isIE || isIE > 9;
+
 export default function request(model, options, runtimeLinks, solveLinks, catchLinks){
   let promiseObj;
 
@@ -101,7 +104,9 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
       settings.error = function(errData, xhr, event){
         let exportData;
         const type = ERRORS.MODEL_LINK_REQUEST_HTTP_CATCH;
-        const catchError = { http: xhr.status || -1, type: type, response: errData || xhr.response || xhr.responseText || "", request: option };
+        const response = errData != null ? errData :
+          (xhr.responseType === '' || xhr.responseType === 'text') ? xhr.responseText : xhr.response;
+        const catchError = { http: xhr.status || -1, type: type, response, request: option };
 
         if(useCatch) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 

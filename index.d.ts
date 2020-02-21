@@ -59,7 +59,8 @@ interface RouterOptions extends Options {
 
 interface PluginOptions extends Options {
   events?: AnyObject;
-  template: string;
+  render?: string;
+  template?: string;
 }
 
 interface VerifyInstance {

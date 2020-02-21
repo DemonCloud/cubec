@@ -9,7 +9,8 @@ const emulateJSONLink = function(emulate=true){
 
     if(emulate){
       if(!options.header){ options.header = {}; }
-      options.header['Content-Type'] = "application/json";
+      if(!options.type || (options.type && options.type.toLowerCase() !== "get"))
+        options.header['Content-Type'] = "application/json";
     }
 
     return options;

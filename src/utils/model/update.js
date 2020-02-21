@@ -119,7 +119,9 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
       settings.error = function (errData, xhr, event) {
         let exportData;
         const type = ERRORS.MODEL_LINK_UPDATE_HTTP_CATCH;
-        const catchError = { http: xhr.status || -1, type: type, response: errData || xhr.response || xhr.responseText || "", request: option };
+        const response = errData != null ? errData :
+          (xhr.responseType === '' || xhr.responseType === 'text') ? xhr.responseText : xhr.response;
+        const catchError = { http: xhr.status || -1, type: type, response, request: option };
 
         if (useCatch && isSingle) exportData = linkCatchCaller(catchLinks, [catchError, single]);
 

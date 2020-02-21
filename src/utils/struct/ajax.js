@@ -3,10 +3,12 @@ import broken from './constant/broken';
 
 import isPlainObject from './type/isPlainObject';
 import isString from './type/isString';
-import keys from './tools/keys';
+import size from './tools/size';
 import extend from './tools/extend';
+import merge from './tools/merge';
 import toNumber from './tools/toNumber';
-import toString from './tools/toString';
+import trim from './tools/trim';
+import paramParse from './tools/paramParse';
 import paramStringify from './tools/paramStringify';
 import { getCache, setCache } from './optimize/ajaxcache';
 
@@ -14,30 +16,47 @@ import eachObject from './eachObject';
 import { isIE } from '../adapter';
 
 const contentIEsupported = !isIE || isIE > 9;
+const EmptyAjaxParam = {};
 
 const MIME = {
   'application/x-www-form-urlencoded': 0,
   'application/json' : 1
 };
 
-function dataMIME(enable, header, param){
-  if(enable)
-    switch(header){
+function dataMIME(enableTrans, contentType, param){
+  if(enableTrans) {
+    switch (contentType) {
+      // 'application/x-www-form-urlencoded' form submit
       case 0:
         return paramStringify(param || broken);
+      //'application/json' post JSON Data
       case 1:
         return JSON.stringify(param || broken);
+      // default as paramString
       default:
         return paramStringify(param || broken);
     }
+  }
+  // not enableTrans (as FormData)
   return param;
+}
+
+function formatRequestUrl(url){
+  const splitArray = (url && isString(url) && url.length > 1) ? url.split("?") : ["/", ""];
+  const ajaxUrl = trim(splitArray[0]);
+  const ajaxParseParam = splitArray[1] ? paramParse(splitArray[1]) : EmptyAjaxParam;
+
+  return {
+    ajaxUrl,
+    ajaxParseParam
+  };
 }
 
 export default function ajax(options={}, context=window){
   const config = extend({
     url       : '',
     type      : 'GET',
-    param     : broken,
+    param     : EmptyAjaxParam,
     charset   : 'utf-8',
     vaild     : true,
     cache     : false,
@@ -45,7 +64,7 @@ export default function ajax(options={}, context=window){
     error     : noop,
     loading   : noop,
     loadend   : noop,
-    header    : broken,
+    header    : {},
     username  : null,
     password  : null,
     timeout   : 0,
@@ -54,68 +73,83 @@ export default function ajax(options={}, context=window){
     contentType : true
   } , options || broken);
 
-  // check isObjisObjisObjif has ajax cache
-  // const cacheParam = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : config.param) : "";
-  // const cacheUrl = config.url + "$$" + cacheParam;
-  const ajaxParams = config.param ? (isPlainObject(config.param) ? paramStringify(config.param) : toString(config.param)) : "";
-  const ajaxCache = config.cache && config.url && isString(ajaxParams);
+  // format Ajax URL and Default Params
+  const { ajaxUrl, ajaxParseParam } = formatRequestUrl(config.url);
+  const ajaxParams = config.param ?
+    ((isPlainObject(config.param) ? merge(ajaxParseParam, config.param) :
+    (isString(config.param) ? paramParse(config.param) :
+    (!config.contentType ? config.param : ajaxParseParam)))) :
+    ajaxParseParam;
 
+  // create [use] variable
+  let useUrl = ajaxUrl;
+  let useParams = ajaxParams;
+  let useType = config.type || 'GET';
+  let useHeader = config.header || {};
+  let useCharset = config.charset || 'utf-8';
+  let useTimeout = config.timeout || 0;
+  let useContentType = !!config.contentType;
+  let useHeaderContentType = (isPlainObject(useHeader) && useType !== 'GET') ?
+    config.header['Content-Type'] || 'application/x-www-form-urlencoded' :
+    false;
   // use ajax cache
   // if success find cache
-  if(ajaxCache){
-    const cacheObject = getCache(config.url, ajaxParams);
+  const useCache = !!config.cache;
 
-    if(cacheObject){
-      config.success.apply(context, cacheObject);
-      return cacheObject[1]; //cache xhr
+  if(useCache){
+    const getCacheData = getCache(ajaxUrl, ajaxParams);
+
+    if(getCacheData){
+      config.success.apply(context, getCacheData);
+      return getCacheData[1]; //cache xhr
     }
   }
-
 
   // create new XHR httprequest
   const xhr = new XMLHttpRequest();
 
   // with GET method
-  if(config.type.toUpperCase() === 'GET'){
-    config.url += (~config.url.search(/\?/g) ? '&' : (keys(config.param).length ? '?' : ''))+ajaxParams;
-    config.param = null;
+  // without request body content
+  if(useType.toUpperCase() === 'GET'){
+    useUrl = useUrl + "?" + paramStringify(useParams) ;
+    useParams = null;
   }
-
-  xhr.responseType = config.emulateJSON ? "json" : "text";
 
   //set Loading
   if(config.loading !== noop) xhr.addEventListener('loadstart',config.loading);
   if(config.loadend !== noop) xhr.addEventListener('loadend',config.loadend);
 
-  // xhr open
+  // set accept responseType
+  xhr.responseType = !!config.emulateJSON ? "json" : "text";
+  // xhr open ready to send
   xhr.open(
-    config.type,
-    config.url,
+    useType,
+    useUrl,
     config.aysnc,
     config.username,
     config.password
   );
 
-  // with POST method
-  let cType = config.header['Content-Type'] || 'application/x-www-form-urlencoded';
-
   // FormData support
-  if(window.FormData && config.param instanceof window.FormData){
-    cType = '';
-    config.contentType = false;
-    delete config.header['Content-Type'];
+  if(window.FormData && useParams instanceof window.FormData){
+    useContentType = false;
+    useHeaderContentType = false;
+    delete useHeader['Content-Type'];
   }
 
-  if(config.type.toUpperCase() === 'POST' &&
-    config.contentType === true &&
-    cType.search('json') === -1){
-    config.header['Content-Type'] = (cType+'; chartset='+config.charset);
+  // format POST request header [Content-Type] chartSet
+  if(useType.toUpperCase() === 'POST' &&
+    useContentType && useHeaderContentType &&
+    useHeaderContentType.search('application/json') === -1){
+    useHeader['Content-Type'] = (useHeaderContentType+'; chartset='+useCharset);
   }
 
-  if(config.header !== broken && isPlainObject(config.header))
-    eachObject(config.header,function(val,key){ xhr.setRequestHeader(key,val); });
+  // set http header
+  if(isPlainObject(useHeader) && size(useHeader))
+    eachObject(useHeader,function(val,key){ xhr.setRequestHeader(key,val); });
   xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
+  // ready event
   xhr.onreadystatechange = function(event){
     const contentType = xhr.getResponseHeader("Content-Type") || "";
     const contentTypeLowerCase = contentType.toLowerCase();
@@ -130,7 +164,6 @@ export default function ajax(options={}, context=window){
       // success
       if(( xhr.status >= 200 && xhr.status < 300) || xhr.status === 304){
         let result;
-
         try{
           result = (contentIEsupported && xhr.responseType === "json") ? xhr.response :
           (config.emulateJSON && contentAsJSON ? JSON.parse(xhr.responseText) : xhr.responseText);
@@ -139,11 +172,9 @@ export default function ajax(options={}, context=window){
           return config.error.call(context,
             (contentIEsupported && config.emulateJSON && contentAsJSON) ? xhr.response : xhr.responseText, xhr, event);
         }
-
+        // when useCache
+        if(useCache) setCache(ajaxUrl, ajaxParams, [result, xhr, event]);
         config.success.call(context, result, xhr, event);
-
-        // if use ajaxCache, just set cache
-        if(ajaxCache) setCache(config.url, ajaxParams, [result, xhr, event]);
 
       // error
       } else {
@@ -160,21 +191,19 @@ export default function ajax(options={}, context=window){
   };
 
   // setTimeout data of ajax
-  if(toNumber(config.timeout)){
-    xhr.timeout = toNumber(config.timeout);
-    xhr.ontimeout = function(){
-      if(xhr.readyState !== 4)
-        config.error.call(context, null, xhr, event);
+  if(toNumber(useTimeout)){
+    xhr.timeout = toNumber(useTimeout);
+    xhr.ontimeout = function(event){
+      if(xhr.readyState !== 4) config.error.call(context, null, xhr, event);
       xhr.abort();
     };
   }
 
   // send request
-  xhr.send(config.param ?
-    (isPlainObject(config.param) ?
-      dataMIME(config.contentType, MIME[cType], config.param) :
-      config.param)
-    : null);
+  xhr.send(isPlainObject(useParams) ?
+    dataMIME(useContentType, MIME[useHeaderContentType], useParams) :
+    useParams
+  );
 
   return xhr;
 }

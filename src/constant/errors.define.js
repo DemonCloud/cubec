@@ -45,6 +45,9 @@ const ERRORS = {
     '[cubec atom] can not find target modal with atom.swap method',
   VERIFY_ISCHECKER_UNEXCEPT:
     '[cubec verify] verify.is... checker [ArrayOf,ObjectOf, MultipleOf] generator is not function, please checkout the arguments',
+
+  CUBEC_AJAX_SETCACHE_FAILED:
+    '[cubec [ajax]] the ajax cache is not setAble',
 };
 
 export default ERRORS;

@@ -1,24 +1,62 @@
+
+// @Ajax Cache Data Struct
 // cache = {};
-// cahce[url] = {
-//   ":": [cachedata, xhr, event]
-//   param: [cachedata, xhr, event]
-// }
-import get from '../props/get';
-import set from '../props/set';
+// cache[url] = [
+//   // cache one
+//   { id, noParam:, data },
+//   { id, param, data },
+//   { id, param2, data }
+// ];
 
-const cache = window.ajaxcache = {};
+import ERRORS from '../../../constant/errors.define.js'
 
-export const getCache = function(url, paramString){
-  const cacheUrl = cache[url];
-  if(cacheUrl){
-    return get(cacheUrl, paramString || ":");
+import eq from '../tools/eq';
+import clone from '../tools/clone';
+import slice from '../tools/slice';
+
+let id = 0;
+const ajaxCache = window.ajaxCache = {};
+const EmptyAjaxParam = {};
+
+export const getCache = function(url, param){
+  let tapCache;
+  const cacheUrlPList = ajaxCache[url];
+
+  if(cacheUrlPList){
+    let i = 0;
+    const l = cacheUrlPList.length;
+
+    for(let cacheItem; i<l; i++){
+      cacheItem = cacheUrlPList[i];
+      if(eq(cacheItem.param, param)){
+        // create immutable data
+        tapCache = slice(cacheItem.data);
+        tapCache[0] = clone(tapCache[0]);
+        break;
+      }
+    }
   }
+
+  return tapCache;
 };
 
-export const setCache = function(url, paramString, dataObject){
-  paramString = paramString || ":";
-  if(url && dataObject){
-    if(!cache[url]) cache[url] = {};
-    set(cache[url], paramString, dataObject);
+export const setCache = function(url, param=EmptyAjaxParam, data){
+  let setAble = false;
+
+  if(url){
+    // first create ajaxCacheUrl Pointer List
+    if(!ajaxCache[url]) ajaxCache[url] = [];
+
+    const cacheItem = {
+      id: id++,
+      param: param,
+      data: data
+    };
+    setAble = true;
+    ajaxCache[url].push(cacheItem);
   }
+
+  if(!setAble) console.warn(ERRORS.CUBEC_AJAX_SETCACHE_FAILED, url, param, data);
+
+  return setAble;
 };

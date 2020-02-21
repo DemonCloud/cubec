@@ -789,8 +789,8 @@ const htmlDiff = {
   createPluginRender: function(name, pugOptions){
     const createThis = {};
     const renderToString = pugOptions.cache?
-      _axtc(pugOptions.template, createThis):
-      _axt(pugOptions.template, createThis);
+      _axtc(pugOptions.render || pugOptions.template, createThis):
+      _axt(pugOptions.render || pugOptions.template, createThis);
 
     return function(root, props, view, args, isUpdate){
       const pluginWillRender = !_eqdom(root.prevProps, props);

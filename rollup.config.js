@@ -93,6 +93,7 @@ const builder = async function() {
     sourcemap: false,
     format: 'umd',
     name: 'cubec',
+    named: 'cubec',
   });
 
   // await model.write({
