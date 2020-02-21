@@ -222,7 +222,7 @@ class Router {
       }
     }
 
-    if(matchId = _idmap[matchId]){
+    if((matchId = _idmap[matchId])){
       let tapactions = matchId.actions.map(key=>_actions[key]);
       let tapparams = _combined(matchId.param, paramValue);
       let tapargs = [tapparams, query, state];
@@ -347,9 +347,12 @@ class Router {
     query = (query && _isString(query)) ? _paramParse(query) : _isObject(query) ? query : {};
     query = _merge(_paramParse(path), query);
     state = _isObject(state) ? state : {};
+    path = path.split("?")[0]; // remove queryString
 
-    if(path && _isString(path))
-      history[usePush ? "pushState" : "replaceState"](state, null, path + _paramStringify(query));
+    let queryString = _paramStringify(query);
+    queryString = queryString ? ("?"+queryString) : "";
+
+    if(path && _isString(path)) history[usePush ? "pushState" : "replaceState"](state, null, path + queryString);
 
     return this;
   }
