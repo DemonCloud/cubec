@@ -37,3 +37,4 @@ view.extend = createExtend(_view);
 view.plugin = htmlDiff.pluginRegister;
 
 export default Object.freeze(cubec);
+

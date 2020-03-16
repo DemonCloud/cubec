@@ -65,6 +65,7 @@ const model = function(option) {
   const events = _isPlainObject(config.events) ? config.events : {};
   const initlize_data = identify_usestore ? store.get(config.name) || cdata : cdata;
 
+  // 不可变数据
   cdata = cdata === initlize_data ? cdata : _clone(initlize_data);
 
   _eachObject(
@@ -250,6 +251,19 @@ const modelProtoType = {
   clearStore(){
     if (modelLockStatus(this)) return this;
     if(this._s) store.rm(this.name);
+    return this;
+  },
+
+  syncStore(isStatic){
+    if (modelLockStatus(this)) return this;
+    if(this._s && this.name){
+      const syncStoreData = store.get(this.name);
+
+      if(syncStoreData){
+        this.set(syncStoreData, !!isStatic);
+      }
+    }
+
     return this;
   },
 

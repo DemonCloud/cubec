@@ -108,8 +108,21 @@ const store = {
   },
 
   get(name) {
-    let str = LS.getItem(SN + this.incry(name, revs(name)));
-    return str ? JSON.parse(decodeURIComponent(this.decyt(str, name))) : 0;
+    const key = SN + this.incry(name, revs(name));
+
+    let res;
+    let str = LS.getItem(key);
+
+    if(str){
+      try{
+        res = JSON.parse(decodeURIComponent(this.decyt(str, name)));
+      }catch(e){
+        // 为了安全考虑, 当localstorge被攻击时, 通过try catch转化, 如果不能被转化, 则默认安全返回
+        // 如果转化出错, 立即删除当前这个key, 说明可能被攻击过, 或者改版遗留的问题
+        LS.removeItem(key);
+      }
+    }
+    return res;
   },
 
   rm(name) {

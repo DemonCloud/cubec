@@ -4,8 +4,14 @@ Micro mvc framework [gzip 24k]
 
 ## TODO [nearest 2.0.0]
 
-await jQuery upgrade 4.* version
+upgrade store safe parser
+
+cubec.view support create svg xml element
+
+optimize performance
+
+wait jQuery upgrade 4.* version, use jQuery new event system
 
 ## Documentation [v2]
 
-[doc/v2] in development ...
+[doc/v2] in development...
