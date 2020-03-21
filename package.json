@@ -2,7 +2,7 @@
   "name": "cubec",
   "version": "1.9.9",
   "description": "[cubec] micro mvc framework",
-  "main": "src/cubec.js",
+  "main": "dist/cubec.min.js",
   "scripts": {
     "dev": "xcli dev",
     "build": "node rollup.config.js"
