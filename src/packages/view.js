@@ -1,12 +1,11 @@
 import VIEW from '../constant/view.define';
 import ERRORS from '../constant/errors.define';
 
-import $ from '../lib/jquery';
-import htmlDiff from '../utils/view/htmlDiff';
 import defined from '../utils/defined';
-import {requestIdleCallback} from '../utils/view/requestIdleCallback';
-import {on, off, emit, registerEvent} from '../utils/universalEvent';
-import {bindDomEvent, removeDomEvent, triggerEmitDomEvent} from '../utils/view/domEventSystem';
+import { requestIdleCallback } from '../utils/view/requestIdleCallback';
+import { on, off, emit, registerEvent } from '../utils/universalEvent';
+import { bindDomEvent, removeDomEvent, triggerEmitDomEvent } from '../utils/view/domEventSystem';
+import { renderDOOM, destroyDOOM } from '../utils/view/doom';
 import polyfillimeInputEvent from '../utils/view/polyfillimeInputEvent';
 import {
   _idt,
@@ -46,39 +45,10 @@ function checkElm(el) {
   return true;
 }
 
-function completeTemplate(stencil, name) {
+function completeFixedTemplate(stencil, name) {
+  // create cubec root, make template easy to use
   return `<cubec id="${prefix}${name}">${stencil||''}</cubec>`;
 }
-
-// extend render methods
-$.fn.render = function(newhtml, view, props, data) {
-
-  return this.each(function(i,elm) {
-    let target = htmlDiff.createTreeFromHTML(newhtml, props, data);
-
-    if (elm._vid !== view._vid || !view.axml) {
-      elm._destory = function(){ view.destroy(); };
-
-      let internal = htmlDiff.createDOMElement((view.axml = target), view, data).firstElementChild;
-
-      elm.appendChild(internal, (elm.innerHTML = ''));
-
-      return view;
-    }
-
-    // get diff patchs
-    const getPatchs = htmlDiff.treeDiff(view.axml, target, [], null, null, view, data);
-
-    htmlDiff.applyPatch(
-      elm,
-      getPatchs,
-      data,
-      (view.axml = target),
-    );
-
-    return view;
-  });
-};
 
 const view = function(options = {}) {
   const id = vid++;
@@ -93,6 +63,7 @@ const view = function(options = {}) {
 
   // create refs;
   this.refs = {};
+  this.directRender = false;
 
   defined(this, {
     name : name,
@@ -110,13 +81,13 @@ const view = function(options = {}) {
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options || _idt);
 
   let props = _lock(_extend({}, _isPlainObject(options.props) ? options.props : {})),
-    vroot = options.root,
-    render,
-    events = options.events,
-    connect = options.connect,
-    stencil = options.template || options.render,
-    models = _isArray(connect) ? connect
-      : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1]) ? [connect]
+      vroot = options.root,
+      render,
+      events = options.events,
+      connect = options.connect,
+      stencil = options.template || options.render,
+      models = _isArray(connect) ? connect
+        : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1]) ? [connect]
         : [];
 
   // console.log(connect);
@@ -124,7 +95,10 @@ const view = function(options = {}) {
 
   // parse template
   // building the render function
-  stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(stencil), name, this._vid), { view: this });
+  stencil = (options.cache ? _axtc : _axt)(
+    completeFixedTemplate(_trim(stencil), name, this._vid),
+    { view: this }
+  );
 
   // defined view renderToString
   // switchTemplate function
@@ -179,13 +153,17 @@ const view = function(options = {}) {
       try{
         const renderString = this.renderToString(renderData);
 
+        // use render to string
         if(this.directRender)
           this.root.innerHTML = renderString;
+        // use renderDOOM
         else
-          $(this.root).render(renderString, this, props, renderData);
+          renderDOOM(this.root, renderString, this, renderData);
+
+        this.root._vid = this._vid;
 
         // emit complete render and write vid
-        this.emit("completeRender", [renderData, this.root._vid = this._vid],);
+        this.emit("completeRender", [renderData, this._vid],);
 
         renderIntime = false;
       }catch(e){
@@ -196,9 +174,10 @@ const view = function(options = {}) {
         if(!_hasEvent(this,"catch")) throw e;
         else this.emit("catch", [renderData]);
       }
-    };
+    }.bind(this);
+
     // do render
-    _ayc(createRender.bind(this));
+    _ayc(createRender);
 
     return true;
   }.bind(this);
@@ -301,7 +280,7 @@ view.prototype = {
     let fixType = _toString(type);
     let emitKey = fixType.split(eventNameSpace);
 
-    if (emitKey.length == 2) {
+    if (emitKey.length === 2) {
       _eachArray(fixType.split(eventSplit), function(mk) {
         let param = mk.split(eventNameSpace);
         triggerEmitDomEvent(this, param[0], param[1], args);
@@ -364,31 +343,32 @@ view.prototype = {
     return _lock(_extend({}, target));
   },
 
-  destroy(withRoot) {
+  destroy(withRemoveRoot=false) {
     if(this.root){
       this.emit('beforeDestroy');
-      this.root._vid = void 0;
 
       let recycler;
       const recyclerList = this._ass(_idt);
 
-      const createDestory = ()=>{
-        removeDomEvent(this);
+      // remove event
+      removeDomEvent(this);
 
-        _eachObject(this._asb(_idt), item=>this.disconnect(item));
+      // disconnet model
+      _eachObject(this._asb(_idt), item=>this.disconnect(item));
 
-        while(recycler = recyclerList.pop()){
-          try{ requestIdleCallback(recycler); }catch(e){ }
+      while(recycler = recyclerList.pop()) {
+        try {
+          requestIdleCallback(recycler);
+        } catch (e) {
+
         }
+      }
 
-        if(this.root.parentNode && withRoot) this.root.parentNode.removeChild(this.root);
+      destroyDOOM(this.root, this, withRemoveRoot);
 
-        this.root.innerHTML = "";
+      this.emit('destroy', delete this.root);
 
-        this.emit('destroy', delete this.root);
-      };
-
-      return createDestory();
+      return this;
     }
   },
 

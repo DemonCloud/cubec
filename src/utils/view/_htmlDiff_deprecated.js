@@ -27,11 +27,57 @@ import {
   empty
 } from '../usestruct';
 
+// 拆分计划
+// 和view深度绑定, 不独立
+// doom/constant/... 收集固定变量和映射 拆分成多个文件并命名
+//      - svg svg 相关的变量定义
+//      - attributes 属性相关的变量定义 包括svg
+//      - tags 标签类相关的变量定义
+// doom/matcher/... 匹配的正则表达式, 匹配方法 多文件并命名
+//      - render 渲染解析相关的匹配正则和方法
+//      - attributes 属性将官的解析匹配正则方法
+//      - slot 额外的解析(slot)
+//      - plugin 额外的解析(plugin)
+// doom/utils/... 子方法, 类似于attrSetter这种原子操作
+//      - render 渲染相关的子方法
+//      - attributes 属性类子方法
+//        - set 设置属性方法
+//        - remove 移除属性方法
+//        - get 获取属方法
+//      - slot 额外的子方法 ()
+//        - 未知
+//      - plugin 额外的子方法 ()
+//
+// doom/core/... 核心方法, 调用各种子方法组合核心API
+//      - treeDiff    树状结构的差异化比较, 生成patches的基准数组
+//      - createPatch 根据treeDiff生成的基准数组,创建可使用的patch
+//      - applyPatch  应用树状结构的patches
+//      - parser(createTreeFromHTML) 解析HTML字符串生成对应的tree结构
+//      - createTreeNode(createObjElement) 创建单个树的节点, 完整的定义节点的对象信息
+//      - createElement(createDOMElement) 根据treeNode创建真实的dom节点
+//      - renderSlot 渲染slot插槽组件
+//      - renderPlugin 渲染plugin通配组件
+//      - registerPlugin 注册plugin组件
+
+// doom/index.js export导出的核心的render方法
+//      - render(view, renderToString, renderData)  渲染方法
+//      - destroy(view)  销毁视图注册的方法
+
+
+// 创建svg需要的名称空间
+const svgxmlns = "http://www.w3.org/2000/svg";
+
 // attr list mapping
+// 属性的映射
 const attrList = {
   for: 'htmlFor',
   class: 'className',
   style: 'style.cssText'
+};
+
+// 特殊的属性走特殊设置方法, svgElement
+const attrSvgNameSpaceMapping = {
+  "xlink:href": "http://www.w3.org/1999/xlink"
 };
 
 const attrNeedSetAttributes = [
@@ -84,7 +130,9 @@ const attrNeedSetAttributes = [
   "size",
   "rows",
   "cols",
-  "src"
+  "src",
+  "fill",
+  "d",
 ];
 
 const pluginList = {};
@@ -123,6 +171,7 @@ _eachArray(attrNeedSetAttributes, function(attr){
   attrList[prefix] = value;
 });
 
+// 需要设置为真值的属性
 _eachArray(attrBooleanValues, function(attr){
   const prefix = attr.toLowerCase();
   const value = "*"+prefix;
@@ -132,6 +181,7 @@ _eachArray(attrBooleanValues, function(attr){
   if(prefix !== attr) attrShortcut.push(prefix);
 });
 
+// 短路径标签(包含svg)
 const tagList = {
   input: 1,
   br: 1,
@@ -146,20 +196,116 @@ const tagList = {
   embed: 1,
   keygen: 1,
   link: 1,
-  head: 1,
   param: 1,
   source: 1,
   track: 1,
   wbr: 1,
-  path: 1,
-  circle: 1,
-  ellipse: 1,
-  line: 1,
-  rect: 1,
-  use: 1,
-  stop: 1,
-  polyline: 1,
-  polygon: 1,
+};
+
+// svg对应的标签映射
+const svgTagNameMapping = {
+  "svg-a": "a",
+  "animate": "animate",
+  "animatemotion": "animateMotion",
+  "animateMotion": "animateMotion",
+  "animatetransform": "animateTransform",
+  "animateTransform": "animateTransform",
+  "circle": "circle",
+  "clipPath": "clipPath",
+  "color-profile": "color-profile",
+  "defs": "defs",
+  "desc": "desc",
+  "discard": "discard",
+  "ellipse": "ellipse",
+  "feblend": "feBlend",
+  "feBlend": "feBlend",
+  "feColorMatrix": "feColorMatrix",
+  "fecolormatrix": "feColorMatrix",
+  "fecomponenttransfer": "feComponentTransfer",
+  "feComponentTransfer": "feComponentTransfer",
+  "fecomposite": "feComposite",
+  "feComposite": "feComposite",
+  "feconvolvematrix": "feConvolveMatrix",
+  "feConvolveMatrix": "feConvolveMatrix",
+  "fediffuselighting": "feDiffuseLighting",
+  "feDiffuseLighting": "feDiffuseLighting",
+  "fedistantlight": "feDistantLight",
+  "feDistantLight": "feDistantLight",
+  "fedropshadow": "feDropShadow",
+  "feDropShadow": "feDropShadow",
+  "feflood": "feFlood",
+  "feFlood": "feFlood",
+  "fefunca": "feFuncA",
+  "feFuncA": "feFuncA",
+  "fefuncb": "feFuncB",
+  "feFuncB": "feFuncB",
+  "fefuncg": "feFuncG",
+  "feFuncG": "feFuncG",
+  "fefuncr": "feFuncR",
+  "feFuncR": "feFuncR",
+  "fegaussianblur": "feGaussianBlur",
+  "feGaussianBlur": "feGaussianBlur",
+  "feimage": "feImage",
+  "feImage": "feImage",
+  "femerge": "feMerge",
+  "feMerge": "feMerge",
+  "femergenode": "feMergeNode",
+  "feMergeNode": "feMergeNode",
+  "femorphology": "feMorphology",
+  "feMorphology": "feMorphology",
+  "feoffset": "feOffset",
+  "feOffset": "feOffset",
+  "fepointlight": "fePointLight",
+  "fePointLight": "fePointLight",
+  "fespecularlighting": "feSpecularLighting",
+  "feSpecularLighting": "feSpecularLighting",
+  "fespotlight": "feSpotLight",
+  "feSpotLight": "feSpotLight",
+  "fetile": "feTile",
+  "feTile": "feTile",
+  "feturbulence": "feTurbulence",
+  "feTurbulence": "feTurbulence",
+  "filter": "filter",
+  "foreignobject": "foreignObject",
+  "foreignObject": "foreignObject",
+  "g": "g",
+  "hatch": "hatch",
+  "hatchpath": "hatchpath",
+  "svg-image": "image",
+  "line": "line",
+  "lineargradient": "linearGradient",
+  "linearGradient": "linearGradient",
+  "marker": "marker",
+  "mask": "mask",
+  "mesh": "mesh",
+  "meshgradient": "meshgradient",
+  "meshpatch": "meshpatch",
+  "meshrow": "meshrow",
+  "metadata": "metadata",
+  "mpath": "mpath",
+  "path": "path",
+  "pattern" : "pattern",
+  "polygon": "polygon",
+  "polyline": "polyline",
+  "radialgradient": "radialgradient",
+  "radialGradient": "radialGradient",
+  "rect": "rect",
+  "svg-script": "script",
+  "set": "set",
+  "solidcolor": "solidcolor",
+  "stop": "stop",
+  "svg-style": "style",
+  "svg": "svg",
+  "switch": "switch",
+  "symbol": "symbol",
+  "text": "text",
+  "textpath": "textPath",
+  "textPath": "textPath",
+  "svg-title": "title",
+  "tspan": "tspan",
+  "unknown": "unknown",
+  "use": "use",
+  "view": "view",
 };
 
 const slikReg = new RegExp(
@@ -190,30 +336,45 @@ let attrexec = /(\S+)=["'](.*?)["']|([\w-]+)/gi,
 
 const attrSetter = function(elm, attr, values) {
   let attrName = attrList[attr] || attr;
-  let val = _isString(values) ? _decode(values) : values;
+  const isSvgElement = elm instanceof (window.SVGElement || window.HTMLElement);
+  const val = _isString(values) ? _decode(values) : values;
 
   // if(attrName === "*checked"){
   //   console.log("*checked", val);
   // }
 
+  // with defaultValue, must redo default setting
   if (defaultAttr.test(attrName)) {
     // is defaultAttr
     attrName = attrName.slice(7).toLowerCase();
-    let inval = elm.getAttribute(attrName) || elm[attrName];
+    let notExistDefaultValue = elm.getAttribute(attrName) || elm[attrName];
 
-    if (inval == null || inval === '') attrSetter(elm, attrName, val);
+    if (notExistDefaultValue == null || notExistDefaultValue === '') attrSetter(elm, attrName, val);
   }
+  else if (attrName[0] === '*')
+    _set(elm, attrName.slice(1), (val === 'true' || val === true));
+  else if (attrName[0] === '@') {
+    const getAttrName = attrName.slice(1);
 
-  else if (attrName[0] === '*') _set(elm, attrName.slice(1), (val === 'true' || val === true));
-  else if (attrName[0] === '@') elm.setAttribute(attrName.slice(1), val);
-  else _set(elm, attrName, val);
+    if(isSvgElement){
+      const existNameSpace = attrSvgNameSpaceMapping[getAttrName];
+      existNameSpace ? elm.setAttributeNS(existNameSpace, getAttrName, val) : elm.setAttribute(getAttrName, val);
+    }else {
+      elm.setAttribute(getAttrName, val);
+    }
+  } else {
+    if(isSvgElement){
+      const existNameSpace = attrSvgNameSpaceMapping[attrName];
+      existNameSpace ? elm.setAttributeNS(existNameSpace, attrName, val) : _set(elm, attrName, val);
+    }else {
+      _set(elm, attrName, val);
+    }
+  }
 };
 
 const attrClear = function(elm, key, val) {
   if (elm[key] && !delete elm[key])
-    try { elm[key] = null; } catch (e) {
-      //empty
-    }
+    try { elm[key] = null; } catch (e) { /*empty*/ }
   else elm.removeAttribute(key);
 };
 
@@ -324,7 +485,7 @@ const createParentProps = function(view){
 
 // singe html parse and diff
 // with virtual dom algorithm
-const htmlDiff = {
+const _htmlDiff_deprecated = {
   treeDiff: function(org, tag, patch, orgParent, tagParent, view, args) {
     if (org === void 0)
       // new node
@@ -417,7 +578,7 @@ const htmlDiff = {
         }.bind(this),
       ),
       function(patch) {
-        patchHack[patch.t].call(oDOM, patch, htmlDiff, args);
+        patchHack[patch.t].call(oDOM, patch, _htmlDiff_deprecated, args);
       },
     );
   },
@@ -483,7 +644,7 @@ const htmlDiff = {
       case 'updateslot': //10
         patch = {t: 10, s: sl, c: tag.text, o: org.text, tag: tag, view: view };
         break;
-      case 'updateplugin':
+      case 'updateplugin':  // 11
         patch = {t: 11, s: sl, tag: tag, view: view };
         break;
       default:
@@ -576,8 +737,15 @@ const htmlDiff = {
       attributes = arr.join(' '),
       elm = {tagName, child: [], id};
 
-    if (tagName === 'slot') elm.isSlot = true;
-    else if(pluginList[tagName]) elm.isPlug = true;
+    // cubec slot tag
+    if (tagName === 'slot') elm.isSlot = true;  // define is view slot
+    // cubec plugin register
+    else if(pluginList[tagName]) elm.isPlug = true; // define is register view plugin
+    // svg element is not HTML Web Standard
+    else if(svgTagNameMapping[tagName]){
+      elm.tagName = svgTagNameMapping[tagName];
+      elm.isSvg = true;
+    }  // define is SVG Element
 
     if (attributes) {
       let attrs = {}, s, tg;
@@ -593,10 +761,12 @@ const htmlDiff = {
             tg = 0;
           }
         } else {
+          // 设置属性
           attrs[s[1]] = s[2];
         }
       }
 
+      // 嵌入属性
       elm.attributes = attrs;
     }
 
@@ -604,7 +774,11 @@ const htmlDiff = {
   },
 
   createDOMElement: function(obj, view, args, isUpdateSlot=false, isUpdatePlugin=false) {
-    const elm = isUpdateSlot || isUpdatePlugin || document.createElement(obj.tagName);
+    let elm = isUpdateSlot || isUpdatePlugin;
+
+    if(!elm) elm = obj.isSvg ?
+      document.createElementNS(svgxmlns, obj.tagName) :
+      document.createElement(obj.tagName);
 
     // registered view.refs Update
     if (obj.attributes && obj.attributes.ref){
@@ -613,8 +787,10 @@ const htmlDiff = {
       if(view.view && view.view.refs) view.view.refs[obj.attributes.ref] = elm;
     }
 
-    // setAttribute
-    _eachObject(obj.attributes, function(value, key) { attrSetter(elm, key, value); });
+    // set all Attribute
+    _eachObject(obj.attributes, function(value, key) {
+      attrSetter(elm, key, value);
+    });
 
     // parse if it's <slot>
     // slot is significative in [ax.view]
@@ -764,7 +940,7 @@ const htmlDiff = {
       name: obj.tagName,
       prefix: empty,
       props: _extend(
-        htmlDiff.createDynamicProps(obj.attributes, view, args),
+        _htmlDiff_deprecated.createDynamicProps(obj.attributes, view, args),
         { children: obj.children }
       )
     };
@@ -843,14 +1019,14 @@ const htmlDiff = {
   pluginRegister: function(name, pugOptions){
     if(!_isString(name) ||
        !_isPlainObject(pugOptions) ||
-       !_isString(pugOptions.template))
+       !_isString(pugOptions.render || pugOptions.template))
       return console.error(`[cubec view] [plugin] name of [${name}] is not plugin format`);
 
     if(name in tagList)
       return console.error(`[cubec view] [plugin] name of [${name}] register can not be HTML5 special tag keyword`);
 
-    pluginList[name] = htmlDiff.createPluginRender(name, pugOptions);
+    pluginList[name] = _htmlDiff_deprecated.createPluginRender(name, pugOptions);
   }
 };
 
-export default Object.freeze(_v8(htmlDiff));
+export default Object.freeze(_v8(_htmlDiff_deprecated));

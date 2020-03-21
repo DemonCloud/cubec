@@ -73,6 +73,7 @@ const idSign = hashSign;
 const empty = "";
 const eventSplit = "|";
 const eventNameSpace = paramSign;
+const _isFunction = _isFn;
 
 export {
   _extend,
@@ -96,7 +97,7 @@ export {
   _isArray,
   _isBool,
   _isFn,
-  _isFn as _isFunction,
+  _isFunction,
   _type,
   _cool,
   _some,

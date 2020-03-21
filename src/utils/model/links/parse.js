@@ -9,7 +9,7 @@ import {
 const linkProto = "parse";
 const runtimeRequestMultip = "multip";
 // update parse
-// m.link(m.update).parse(parser);
+// m.link(m.update).parse(matcher);
 const parseLink = function(parser){
   const linkAdapter = this._a;
   const useParser = _isFn(parser) ? parser : _cool;

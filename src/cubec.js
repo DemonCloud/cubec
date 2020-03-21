@@ -3,15 +3,15 @@ import _atom from './packages/atom';
 import _view from './packages/view';
 import _router from './packages/router';
 import _verify from './packages/verify';
-import htmlDiff from './utils/view/htmlDiff';
 import * as _struct from './utils/usestruct';
 import { registerLink } from './utils/model/linkSystem';
+import { registerDOOMPlugin } from './utils/view/doom';
 import { createC, createExtend } from './utils/create';
 
 export const cubec = Object.create(null);
 
 // information
-cubec.version = "1.9.8";
+cubec.version = "1.9.9";
 cubec.author = "YiJun";
 
 _view.__instance[0] = _model;
@@ -34,7 +34,8 @@ model.extend = createExtend(_model);
 model.link = registerLink;
 
 view.extend = createExtend(_view);
-view.plugin = htmlDiff.pluginRegister;
+view.plugin = registerDOOMPlugin;
 
-export default Object.freeze(cubec);
+Object.freeze(cubec);
 
+export default cubec;

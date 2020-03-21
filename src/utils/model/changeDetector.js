@@ -9,7 +9,7 @@ import {
 
 const replaceChangeReg = /^change:/;
 
-// match set path parser
+// match set path matcher
 const presetParser = function(setPath){
    // setPath-> a.b.c => [a.b.c, a.b, a];
    const paths = [];

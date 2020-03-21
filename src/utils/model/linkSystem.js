@@ -4,6 +4,8 @@
 //   runtime
 //   solve
 //   catch
+
+import MODEL from '../../constant/model.define';
 import {
   _has,
   _isString,
@@ -15,8 +17,14 @@ import {
   _map,
 } from '../usestruct';
 import defined from '../defined';
-import MODEL from '../../constant/model.define';
-const { LINKPERSET, ALLOWLINKAPIS, ALLOWLINKTYPES, ASYNCLINKAPIS, LINKTYPESPROXYMAPPING } = MODEL;
+
+const {
+  LINKPERSET,
+  ALLOWLINKAPIS,
+  ALLOWLINKTYPES,
+  ASYNCLINKAPIS,
+  LINKTYPESPROXYMAPPING
+} = MODEL;
 
 const modelLinkRecords = {
   get: {},
@@ -40,10 +48,11 @@ const registerLinkProto = function(modelAPI, linkProto, linkType, linkFunction){
 
   modelLinkRecords[modelAPI][linkProto] = connect;
 };
-const registerNextRuntime = function(func){ return this.next(func, "runtime"); };
-const registerNextBefore = function(func){ return this.next(func, "before"); };
-const registerNextSolve = function(func){ return this.next(func, "solve"); };
-const registerNextCatch = function(func){ return this.next(func, "catch"); };
+
+const registerNextRuntime = function(func){ return this.next("runtime", func); };
+const registerNextBefore = function(func){ return this.next("before", func); };
+const registerNextSolve = function(func){ return this.next("solve", func); };
+const registerNextCatch = function(func){ return this.next("catch", func); };
 
 // brefore arguments caller
 const linkBeforeCaller = function(beforeQueue, args){
@@ -109,8 +118,7 @@ export const createLink = function(model, modelAPI, b, r, s, c){
   const linkSolve = s ? _slice(s) : [];
   const linkBefore = b ? _slice(b) : [];
   const linkRuntime = r ? _slice(r) : [];
-
-  const linkMaping = {
+  const linkMapping = {
     solve: linkSolve,
     catch: linkCatch,
     before: linkBefore,
@@ -175,22 +183,22 @@ export const createLink = function(model, modelAPI, b, r, s, c){
     _m: createLinkProps(model),
     _a: modelAPI, // link adapter name
 
-    extend(){ return createLink(model, modelAPI, linkBefore, linkRuntime, linkSolve, linkCatch); },
-
-    next(func, runtime="solve"){
+    next: function(runtime="solve", func){
       if(runtime &&
         _isString(runtime) &&
-        linkMaping[runtime] &&
+        linkMapping[runtime] &&
         _isFn(func))
-        linkMaping[runtime].push(func);
-
+        linkMapping[runtime].push(func);
       return this;
     },
-
-    nextRuntime: registerNextRuntime,
     nextBefore: registerNextBefore,
+    nextRuntime: registerNextRuntime,
     nextSolve: registerNextSolve,
     nextCatch: registerNextCatch,
+
+    extend(){
+      return createLink(model, modelAPI, linkBefore, linkRuntime, linkSolve, linkCatch);
+    },
   }));
 
   return linkInstance;

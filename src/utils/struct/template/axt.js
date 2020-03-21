@@ -192,7 +192,7 @@ export default function axt(txt, binder={}){
   try{
     render = ev('(function(__tools__,__x__){ '+res+' })');
   }catch(e){
-    console.error("[cubec view] Template parser Error!", { template : res });
+    console.error("[cubec view] Template matcher Error!", { template : res });
     e.res = res;
     throw e;
   }
