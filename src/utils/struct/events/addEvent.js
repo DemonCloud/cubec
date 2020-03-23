@@ -16,5 +16,7 @@ export default function addEvent(obj,type,fn){
   if(!events[id]) events[id] = {};
   if(!events[id][type]) events[id][type] = [];
   if(!has(events[id][type],fn)) events[id][type].push(fn);
+
+  // console.log("addEvent", events, obj.__eid, fn);
   return obj;
 }

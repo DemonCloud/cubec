@@ -1,9 +1,9 @@
 import model from '../../packages/model';
 import { _has } from '../usestruct';
 
-const filters = function(models, existModels, reval=false){
+const filters = function(atomInstance, models, existModels, reval=false){
   const filterUnUsed = models.filter(function(m){
-    return m instanceof model;
+    return m instanceof model || m instanceof atomInstance;
   });
 
   return filterUnUsed.filter(function(m){

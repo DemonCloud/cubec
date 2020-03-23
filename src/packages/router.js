@@ -42,8 +42,8 @@
 // });
 
 import ROUTER from '../constant/router.define';
-import defined from '../utils/defined';
 import $ from '../lib/jquery';
+import defined from '../utils/defined';
 
 import pathfixer from '../utils/router/pathfixer';
 import pathpatch from '../utils/router/pathpatch';

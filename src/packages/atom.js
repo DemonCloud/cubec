@@ -12,6 +12,7 @@ import ATOM from '../constant/atom.define';
 // import ERRORS from '../constant/errors.define';
 import defined from '../utils/defined';
 import filters from '../utils/atom/filters';
+import model from './model';
 import {on, off, emit} from '../utils/universalEvent';
 import {
   _extend,
@@ -32,11 +33,16 @@ import {
 let amid = 0;
 const namePrefix = "__at";
 
+const createPushEmitter = function(){
+  return emit.call(this, "change", this.toChunk());
+};
+
 const atom = function(options){
   const config = _extend(_clone(ATOM.DEFAULT_OPTION), options);
-  const push = ()=>emit.call(this, "change", this.toChunk());
+
   const list = [];
   const listenList = [];
+  const push = createPushEmitter.bind(this);
 
   defined(this, {
     name: config.name,
@@ -71,45 +77,70 @@ atom.prototype = {
       ignores = [];
     }
 
-    const _atom = this;
-    const push = _atom._asp(_idt);
-    const list = _atom._asl(_idt);
-    const listenList = _atom._asi(_idt);
-    const useModels = filters(_isArray(models) ? models : [models], list);
-    const useIgnores = filters(_isArray(ignores) ? ignores : [ignores], useModels, true);
+    const push = this._asp(_idt);
+    const list = this._asl(_idt);
+    const listenList = this._asi(_idt);
+    const useModels = filters(
+      atom,
+      _isArray(models) ? models : [models],
+      list
+    );
+    const useIgnores = filters(
+      atom,
+      _isArray(ignores) ? ignores : [ignores],
+      useModels,
+      true
+    );
 
     if(useModels.length){
       list.push.apply(list, useModels);
 
-      const listenModels = useModels.filter(function(model){
-        const allow = !_has(useIgnores, model);
-        if(allow) model.on("change", push);
-        return allow;
+      const listenModels = useModels.filter(function(m){
+        const allowed = !_has(useIgnores, m);
+
+        if(allowed){
+          if(m instanceof model)
+            m.on("change", push);
+          else if(m instanceof atom)
+            m.subscribe(push);
+        }
+
+        return allowed;
       });
 
       listenList.push.apply(listenList, listenModels);
 
       if(!isStatic) push();
+
     }
 
     return this;
   },
 
   pop(models, isStatic=false){
-    const _atom = this;
-    const push = _atom._asp(_idt);
-    const list = _atom._asl(_idt);
-    const listenList = _atom._asi(_idt);
-    const useModels = filters(_isArray(models) ? models : [models], list, true);
+    const push = this._asp(_idt);
+    const list = this._asl(_idt);
+    const listenList = this._asi(_idt);
+    const useModels = filters(
+      atom,
+      _isArray(models) ? models : [models],
+      list,
+      true
+    );
 
     if(useModels.length){
-      useModels.forEach(function(model){
-        const findInList = _index(list, model);
-        const findInListenList = _index(listenList, model);
+      useModels.forEach(function(m){
+        const findInList = _index(list, m);
+        const findInListenList = _index(listenList, m);
 
         list.splice(findInList, 1);
+
         if(findInListenList != null){
-          model.off("change", push);
+          if(m instanceof model)
+            m.off("change", push);
+          else if(m instanceof atom)
+            m.unsubscribe(push);
+
           listenList.splice(findInListenList, 1);
         }
       });
@@ -121,27 +152,34 @@ atom.prototype = {
   },
 
   subscribe(fn){
-    if(_isFn(fn)) on.call(this, "change", fn);
+    if(_isFn(fn))
+      on.call(this, "change", fn);
     return this;
   },
 
   unsubscribe(fn){
-    if(_isFn(fn)) off.call(this, "change", fn);
+    if(_isFn(fn))
+      off.call(this, "change", fn);
     return this;
+  },
+
+  get(){
+    return this.toChunk();
   },
 
   toChunk(){
     const res = {};
-    _eachArray(this.all(), function(model){
-      res[model.name || model._mid] = model.get();
+
+    _eachArray(this.all(), function(m){
+      res[m.name || m._mid] = m.get();
     });
 
     return res;
   },
 
   toData(){
-    return _map(this.all(), function(model){
-      return model.get();
+    return _map(this.all(), function(m){
+      return m.get();
     });
   }
 

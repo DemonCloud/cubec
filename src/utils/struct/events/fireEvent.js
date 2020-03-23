@@ -3,7 +3,7 @@ import eachObject from '../eachObject';
 
 const { events } = _base;
 
-export default function fireEvent(obj,type,args){
+export default function fireEvent(obj, type, args){
   args = args || [];
   const res = [];
   const id = obj.__eid || 0;
