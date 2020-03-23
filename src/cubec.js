@@ -29,11 +29,10 @@ export const router = cubec.router = createC(_router);
 
 // create Extra option
 atom.extend = createExtend(_atom);
-
-model.extend = createExtend(_model);
-model.link = registerLink;
-
 view.extend = createExtend(_view);
+model.extend = createExtend(_model);
+
+model.link = registerLink;
 view.plugin = registerDOOMPlugin;
 
 Object.freeze(cubec);

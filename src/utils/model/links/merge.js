@@ -40,6 +40,7 @@ const mergeUpdateLink = function(){
 
   return function(key){
     if(!key || !_isObject(key)) return;
+
     return _merge(model.get(), key);
   };
 };

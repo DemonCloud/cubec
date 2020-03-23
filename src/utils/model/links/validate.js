@@ -15,7 +15,7 @@ const linkProto = "validate";
 
 const validateLink = function(validate){
   const model = this._m(_idt);
-  const validator = validate || model.validate || {};
+  const validator = _isPlainObject(validate) ? validate : {};
   const existValidate = !!_size(validator);
 
   return function(key, value){

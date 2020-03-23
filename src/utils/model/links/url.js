@@ -3,6 +3,7 @@ import { registerLink } from '../linkSystem';
 import { _slice, _trim } from '../../usestruct';
 
 const linkProto = "url";
+
 const urlLink = function(){
   const requestUrl = _trim(_slice(arguments).join(""));
 
