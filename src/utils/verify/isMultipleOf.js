@@ -17,3 +17,4 @@ export default function(){
     return _some(checkerQueue, fn=>fn(value));
   };
 }
+

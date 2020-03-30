@@ -1,5 +1,9 @@
 const VIEW = {
-  DEFAULT_OPTION: { props: {} },
+  DEFAULT_OPTION: {
+    slot: {},
+    props: {},
+    plugin: {}
+  },
   IGNORE_KEYWORDS: [
     'name',
     'root',
@@ -8,10 +12,15 @@ const VIEW = {
     'prefix',
     'events',
     'template',
+    'slot',
+    'plugin',
 
     '_vid',
     '_asb',
-    '_ass'
+    '_asp',
+    '_assu',
+    '_assr',
+    '_assp'
   ],
 };
 

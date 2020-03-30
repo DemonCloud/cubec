@@ -164,19 +164,21 @@ declare class View extends BaseInstance {
 
   private axml: object;
   private _asb: any;
-  private _ass: any;
   private _asp: any;
   private _assp: any;
+  private _aspu: any;
+  private _assu: any;
+  private _assr: any;
 
   root?: HTMLElement;
 
   getParentProps(parentViewName?: string): AnyObject;
 
-  mount(root: HTMLElement, data: AnyObject|ModelInstance): this;
+  mount(root: HTMLElement, data?: AnyObject|ModelInstance): this;
 
-  render(data: AnyObject|ModelInstance|AtomInstance): this;
+  render(data?: AnyObject|ModelInstance|AtomInstance): this;
 
-  renderToString(data: AnyObject|ModelInstance|AtomInstance): string;
+  renderToString(data?: AnyObject|ModelInstance|AtomInstance): string;
 }
 
 declare class Router extends BaseInstance {

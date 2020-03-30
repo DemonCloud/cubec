@@ -10,3 +10,4 @@ export default function(path=_idt, query={}){
 
   return _trim(rootSign + (path === _idt ? "" : path) + (querys ? `?${querys}` : ''));
 }
+

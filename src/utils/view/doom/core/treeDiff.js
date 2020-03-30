@@ -88,3 +88,4 @@ const treeDiff = function(org, tag, patch, orgParent, tagParent, view, args){
 };
 
 export default treeDiff;
+

@@ -71,3 +71,4 @@ const polyfillimeInputEvent = function(view, delegateSelector, callback){
 };
 
 export default polyfillimeInputEvent;
+

@@ -89,3 +89,4 @@ const parser = function(renderString, view, args) {
 };
 
 export default parser;
+

@@ -1,7 +1,7 @@
 import {
   _axt,
   _axtc,
-  _ayc,
+  // _ayc,
   _eachObject,
   _eqdom,
   _extend,
@@ -43,8 +43,7 @@ const createPluginRender = function(name, pugOptions){
 
   return function(root, props, view, args, isUpdate){
     const pluginWillRender = !_eqdom(root.prevProps, props);
-    if(!pluginWillRender) return root;
-
+    if(!pluginWillRender) return root; // prevent render
 
     const target = parser(
       renderToString(createThis.view = props),
@@ -65,8 +64,9 @@ const createPluginRender = function(name, pugOptions){
       root.prevProps = props;
       const internal = createElement((root.axml = target), props, args);
       root.appendChild(internal, root.innerHTML='');
-      // async run
-      _ayc(()=>emit.call(root, "completeRender", args));
+
+      // sync run completeRender event with Plugin
+      emit.call(root, "completeRender", args);
       return root;
     }
 
@@ -78,14 +78,15 @@ const createPluginRender = function(name, pugOptions){
       (root.axml = target),
       (root.prevProps = props)
     );
-    // async run
-    _ayc(()=>emit.call(root, "completeRender", args));
+
+    // sync run completeRender event with Plugin
+    emit.call(root, "completeRender", args);
 
     return root;
   };
 };
 
-export default function(name, pugOptions){
+export default function(name, pugOptions, existViewPluginList){
   if(!_isString(name) ||
     !_isPlainObject(pugOptions) ||
     !_isString(pugOptions.render || pugOptions.template))
@@ -94,6 +95,13 @@ export default function(name, pugOptions){
   if(name in DOCUMENT_TAGS_SHORTCUT)
     return console.error(`[cubec view] [plugin] name of [${name}] register can not be HTML5 special tag keyword`);
 
-  pluginList[name] = createPluginRender(name, pugOptions);
-};
+  // createPlugin
+  const createPlugin = createPluginRender(name, pugOptions);
+
+  if(_isPlainObject(existViewPluginList)){
+    existViewPluginList[name] = createPlugin;
+  }else{
+    pluginList[name] = createPlugin;
+  }
+}
 

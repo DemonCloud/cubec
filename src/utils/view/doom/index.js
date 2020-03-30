@@ -54,7 +54,7 @@ export const destroyDOOM = function(renderRoot, view, withRemoveRoot=false){
   view.axml = null;
 
   if(renderRoot.parentNode && withRemoveRoot)
-    renderRoot.parentNode.removeChild(this.root);
+    renderRoot.parentNode.removeChild(renderRoot);
 
   renderRoot.innerHTML = "";
 };

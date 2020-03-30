@@ -44,3 +44,4 @@ export const triggerEmitDomEvent = function(view, eventName, delegateSelector, a
     trigger(eventName, args);
   return view;
 };
+

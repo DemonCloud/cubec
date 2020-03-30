@@ -76,27 +76,26 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
   }
 
   // parse if it's <slot>
-  // slot is significative in [ax.view]
+  // slot is significative in [cubec.view.createSlot]
   if (view && obj.isSlot && obj.text) {
     const slotStr = _isString(obj.text) ? obj.text : '';
 
     if(slotStr){
-      const slotParse = _trim(slotStr).split('::');
-      const slotName = _trim(slotParse[0] || "");
-      const slotDataPath = _trim(slotParse[1] || "");
-      const getSlotRender = _get(view, slotName);
+      const slot = _trim(slotStr).split('::');
+      const slotName = _trim(slot[0] || "");
+      const slotDataPath = _trim(slot[1] || "");
+      const viewSlotRender = _get(view._assu(_idt), slotName);
+      const viewSlotRecycler = view._assr(_idt);
 
-      if(getSlotRender){
-        const slotData =
-          (slotDataPath && _isObject(args)) ?
-          _get(args, slotDataPath) : args;  // dell with slotData shortcut
-        const recycler = renderSlot(getSlotRender, elm, view, slotData);
+      if(viewSlotRender){
+        const renderData = (slotDataPath && _isObject(args)) ? _get(args, slotDataPath) : args;
+        const renderRecycler = renderSlot(viewSlotRender, elm, view, renderData);
 
-        if(_isFn(recycler)) view._ass(_idt).push(recycler);
+        if(_isFn(renderRecycler)) viewSlotRecycler[slotName] = renderRecycler;
       }
-      // view._ass(_idt).push(slot);
     }
 
+    // replace to slot.root
     if(elm.__replaceToSlotRoot){
       const slotElm = elm.__replaceToSlotRoot;
       delete elm.__replaceToSlotRoot;
@@ -106,9 +105,11 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
     return elm;
   }
 
-  // parse if it's [cubec.view.plugin] register
+  // parse if it's [cubec.view.createPlugin] register
   if (view && obj.isPlug){
-    const getPluginRender = pluginList[obj.tagName];
+    const getPluginRender =
+      _get(view._aspu(_idt), obj.tagName) ||
+      _get(pluginList, obj.tagName);
 
     return getPluginRender(elm, createPluginProps(elm, obj, view, args), view, args, isUpdatePlugin);
   }
@@ -116,6 +117,8 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
   if (obj.text) {
     // pureText content
     elm.textContent = _decode(obj.text);
+
+  // deep create child elements
   }else if (obj.child.length) {
     _eachArray(obj.child, function(child) {
       const newChild = createElement(child, view, args);

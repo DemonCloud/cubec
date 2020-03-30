@@ -44,3 +44,4 @@ export default function(key, val, model, verify) {
 
   return valid;
 }
+

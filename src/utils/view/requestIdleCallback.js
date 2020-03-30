@@ -17,3 +17,4 @@ export const cancelIdleCallback =
   function(id) {
     clearTimeout(id);
   };
+

@@ -1,3 +1,4 @@
+import { _idt } from '../../../usestruct';
 import { SVG_TAGNAMES_MAPPING } from '../constant/svg';
 import { ATTRIBUTES_SHORTCUT_NAME } from '../constant/attr';
 import pluginList from "../constant/pluginList";
@@ -12,9 +13,13 @@ const createTreeNode = function(str, view, id, args) {
     elm = {tagName, child: [], id};
 
   // cubec slot tag
-  if (tagName === 'slot') elm.isSlot = true;  // define is view slot
+  if (tagName === 'slot')
+    elm.isSlot = true;  // define is view slot
   // cubec plugin register
-  else if(pluginList[tagName]) elm.isPlug = true; // define is register view plugin
+  else if(
+    (view._aspu && view._aspu(_idt)[tagName]) ||
+    pluginList[tagName])
+    elm.isPlug = true; // define is register view plugin
   // svg element is not HTML Web Standard
   else if(SVG_TAGNAMES_MAPPING[tagName]){
     elm.tagName = SVG_TAGNAMES_MAPPING[tagName];

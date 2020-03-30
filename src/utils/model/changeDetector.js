@@ -80,3 +80,4 @@ function changeDetector(model,currentData,prevData,preset){
 }
 
 export default changeDetector;
+

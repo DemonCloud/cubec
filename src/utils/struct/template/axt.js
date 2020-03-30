@@ -4,7 +4,6 @@ import encode from '../tools/encode';
 import est from '../tools/est';
 import each from '../each';
 
-const ev = eval;
 const escaper = /\\|'|\r|\n|\u2028|\u2029/g;
 const cmExec = /^([\S]+)\s?([\s\S]+)?/;
 const agExec = /[\[\]]*/g;
@@ -41,7 +40,7 @@ const tools = {
 function c_escape(et){ return '\\' + escapes[et]; }
 
 function compiLing(usestruct,who,useargs){
-  return '\'; __tools__.'+usestruct+'('+who+','+
+  return '\'; __t__.'+usestruct+'('+who+','+
     'function('+useargs.replace(agExec,'')+'){ _p+=\'';
 }
 
@@ -132,7 +131,8 @@ function makeComand(command){
 }
 
 export default function axt(txt, binder={}){
-  let _, render, position = 0,
+
+  let renderToString, render, position = 0,
     res = '_p+=\'',
 
     exp = new RegExp(
@@ -184,15 +184,16 @@ export default function axt(txt, binder={}){
   // End wrap res@ String
   // use default paramKey to compline
   res = 'with(__x__||{}){ ' + res + '\'; }';
-  res = 'var _t,_d,_est=__tools__.est,_=__tools__.encode,__=__tools__.extend,_p=\'\'; ' + res + ' return _p;';
+  res = '\n var _t,_d,_est=__t__.est,_=__t__.encode,__=__t__.extend,_p=\'\'; ' + res + ' return _p; \n';
 
   // Complete building Function string
   // try to build anmousyous function
   // console.warn(res);
   try{
-    render = ev('(function(__tools__,__x__){ '+res+' })');
+    // render = ev('(function(__tools__,__x__){ '+res+' })');
+    render = new Function("__t__", "__x__", res);
   }catch(e){
-    console.error("[cubec view] Template matcher Error!", { template : res });
+    console.error("[cubec view] render template parser Error!", { render : res });
     e.res = res;
     throw e;
   }
@@ -200,16 +201,10 @@ export default function axt(txt, binder={}){
   // @ Precomplete JavaScript Template Function
   // @ the you build once template that use diff Data, not use diff to build function again
   // @ protect your template code other can observe it?
+  renderToString = function(data){ return trim(render.call(binder.view, tools, data)); };
 
-  // _ = function(data){ return eq(arguments,render.pre) ? (render.complete) :
-  //   (render.pre=arguments, render.complete = trim(render.apply(this,
-  //     [data,methods,struct].concat(slice(arguments,1))
-  //   )));
-  // };
+  return renderToString;
 
-  _ = function(data){ return trim(render.call(binder.view, tools, data)); };
-
-  return _;
-
-  eval(_); //eslint-disable-line
+  // class hidden in v8
+  eval(res); //eslint-disable-line
 }

@@ -23,12 +23,12 @@ const forkClearAttributes = function(elm, attr) {
       getAttrName = ATTRIBUTES_SVG_EXTRA_FORK_RENDER_TEMPLATE[getAttrName] || getAttrName;
     }
 
-    existNameSpace ? elm.removeAttributeNS(existNameSpace, getAttrName) : elm.removeAttribute(getAttrName);
+    return existNameSpace ? elm.removeAttributeNS(existNameSpace, getAttrName) : elm.removeAttribute(getAttrName);
   }else if(attrName[0] === "*"){
     let getAttrName = attrName.slice(1);
     const existNameSpace = ATTRIBUTES_SVG_NEED_USENAMESPACE[getAttrName];
 
-    existNameSpace ? elm.removeAttributeNS(existNameSpace, getAttrName) : elm.removeAttribute(getAttrName);
+    return existNameSpace ? elm.removeAttributeNS(existNameSpace, getAttrName) : elm.removeAttribute(getAttrName);
   } else if(elm[attrName] && !delete elm[attrName]) {
     try { elm[attrName] = null; } catch (e) { /*empty*/ }
   }else if (_get(elm, attrName) != null)

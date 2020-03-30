@@ -6,6 +6,8 @@ Micro modal-view framework [gzip 27k]
 
 optimize performance
 
+format [slot] and [plugin] standard
+
 wait jQuery upgrade 4.* version, use jQuery new event system
 
 ## Documentation [v2]

@@ -111,7 +111,7 @@ export default function ajax(options={}, context=window){
   // with GET method
   // without request body content
   if(useType.toUpperCase() === 'GET'){
-    useUrl = useUrl + "?" + paramStringify(useParams) ;
+    useUrl = useUrl + "?" + paramStringify(useParams);
     useParams = null;
   }
 
@@ -120,7 +120,7 @@ export default function ajax(options={}, context=window){
   if(config.loadend !== noop) xhr.addEventListener('loadend',config.loadend);
 
   // set accept responseType
-  xhr.responseType = !!config.emulateJSON ? "json" : "text";
+  xhr.responseType = config.emulateJSON ? "json" : "text";
   // xhr open ready to send
   xhr.open(
     useType,
@@ -168,7 +168,7 @@ export default function ajax(options={}, context=window){
           result = (contentIEsupported && xhr.responseType === "json") ? xhr.response :
           (config.emulateJSON && contentAsJSON ? JSON.parse(xhr.responseText) : xhr.responseText);
         }catch(e){
-          console.error(e);
+          console.error("[cubec struct] [ajax] try parser response data except error", e);
           return config.error.call(context,
             (contentIEsupported && config.emulateJSON && contentAsJSON) ? xhr.response : xhr.responseText, xhr, event);
         }

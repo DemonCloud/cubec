@@ -18,10 +18,10 @@ export default function(route, actions=[], id){
     route = (route.split(querySign)[0].split(hashSign)[0]).replace(rootfixer,'');
 
     const routeParam = [];
-    const routePointer = route
-      .split(rootSign)
-      .filter(function(part){ return part; })
-      .map(function(part){
+    const routePointer = route.
+      split(rootSign).
+      filter(function(part){ return part; }).
+      map(function(part){
         if(part && part[0] === paramSign){
           routeParam.push(part.substr(1));
           return paramSign;
@@ -40,3 +40,4 @@ export default function(route, actions=[], id){
 
   return routeSource;
 }
+

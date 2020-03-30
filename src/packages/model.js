@@ -18,7 +18,7 @@ import modelLockStatus from '../utils/model/lockstatus';
 import modelChangeDetector from '../utils/model/changeDetector';
 import modelUpdate from '../utils/model/update';
 import modelRequest from '../utils/model/request';
-import {createLink} from '../utils/model/linkSystem';
+import {createLink, registerLink} from '../utils/model/linkSystem';
 import {on, off, emit, registerEvent} from '../utils/universalEvent';
 import {isIE} from '../utils/adapter';
 import {
@@ -355,5 +355,7 @@ if(isIE && Function.prototype.name == null)
   _eachObject(modelProtoType, function(proto, keyName){ proto.name = keyName; });
 
 model.prototype = modelProtoType;
+
+model.link = registerLink;
 
 export default model;

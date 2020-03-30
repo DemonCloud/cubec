@@ -238,3 +238,4 @@ export default function update(model, options, runtimeLinks, solveLinks, catchLi
 
   return promiseObj;
 }
+

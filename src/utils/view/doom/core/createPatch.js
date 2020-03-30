@@ -67,3 +67,4 @@ const createPatch = function(org, tag, type, view, args) {
 };
 
 export default createPatch;
+

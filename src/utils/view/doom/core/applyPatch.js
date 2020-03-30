@@ -143,3 +143,4 @@ const applyPatch = function(orgTargetElement, patches, args) {
 };
 
 export default applyPatch;
+

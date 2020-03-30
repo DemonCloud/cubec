@@ -27,3 +27,4 @@ export default function(router, path, actions, args, isResolve, isPopState, isSt
     console.error(e);
   }
 }
+

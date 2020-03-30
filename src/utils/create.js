@@ -1,20 +1,26 @@
-import { _merge, _idt } from './usestruct';
+import { _merge, _extend, _idt, } from './usestruct';
 
+// create module extend
 export const createExtend = function(module) {
-  return function(malloc) {
-    const extender = function(o) {
+  return function(malloc={}) {
+    const Extender = function(o) {
       return new module(_merge(malloc, o || _idt));
     };
+    Extender.constructor = module;
+    Extender._isExtender = true;
 
-    extender.constructor = module;
-    extender._isExtender = true;
-
-    return extender;
+    return Extender;
   };
 };
 
+// create core
 export const createC = function(module) {
-  return function(options) {
+  const create = function(options) {
     return new module(options || _idt);
   };
+
+  // create static props
+  _extend(create, module, ["__instance"]);
+
+  return create;
 };

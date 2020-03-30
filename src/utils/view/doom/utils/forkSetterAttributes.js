@@ -40,7 +40,7 @@ const forkSetterAttributes = function(elm, attr, values) {
       getAttrName = ATTRIBUTES_SVG_EXTRA_FORK_RENDER_TEMPLATE[getAttrName] || getAttrName;
     }
 
-    existNameSpace ? elm.setAttributeNS(existNameSpace, getAttrName, val) : elm.setAttribute(getAttrName, val);
+    return existNameSpace ? elm.setAttributeNS(existNameSpace, getAttrName, val) : elm.setAttribute(getAttrName, val);
   } else {
     const existNameSpace = ATTRIBUTES_SVG_NEED_USENAMESPACE[attrName];
 
@@ -49,7 +49,7 @@ const forkSetterAttributes = function(elm, attr, values) {
       attrName = ATTRIBUTES_SVG_EXTRA_FORK_RENDER_TEMPLATE[attrName] || attrName;
     }
 
-    existNameSpace ? elm.setAttributeNS(existNameSpace, attrName, val) : _set(elm, attrName, val);
+    return existNameSpace ? elm.setAttributeNS(existNameSpace, attrName, val) : _set(elm, attrName, val);
   }
 };
 

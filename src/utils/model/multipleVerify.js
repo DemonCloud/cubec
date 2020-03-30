@@ -34,3 +34,4 @@ export default function(newData, model, verify) {
 
   return valid;
 }
+

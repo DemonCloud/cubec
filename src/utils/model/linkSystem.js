@@ -226,3 +226,4 @@ export const registerLink = function(modelAPI, linkProto, linkType, linkFunction
 
   return console.error("[cubec model] linkSystem not current format arguments", arguments);
 };
+

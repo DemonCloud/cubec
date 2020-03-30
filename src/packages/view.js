@@ -5,10 +5,11 @@ import defined from '../utils/defined';
 import { requestIdleCallback } from '../utils/view/requestIdleCallback';
 import { on, off, emit, registerEvent } from '../utils/universalEvent';
 import { bindDomEvent, removeDomEvent, triggerEmitDomEvent } from '../utils/view/domEventSystem';
-import { renderDOOM, destroyDOOM } from '../utils/view/doom';
+import { registerDOOMPlugin, renderDOOM, destroyDOOM } from '../utils/view/doom';
 import polyfillimeInputEvent from '../utils/view/polyfillimeInputEvent';
 import {
   _idt,
+  _map,
   _axt,
   _axtc,
   _ayc,
@@ -30,6 +31,7 @@ import {
   _toString,
   _hasEvent,
   _trim,
+  _cool,
   _noop,
   eventSplit,
   eventNameSpace,
@@ -51,15 +53,17 @@ function completeFixedTemplate(stencil, name) {
 }
 
 const view = function(options = {}) {
-  const id = vid++;
+  let id = vid++;
 
   let parentProps = {};
   let renderData = {};
   let renderIntime = false;
 
-  const bounder = {};
-  const slotQueue = [];
   const name = options.name || "v--"+id;
+  const bounder = {};
+  const usePlugins = {}; // { pluginName: pluginView }
+  const useSlot = {}; // { slotName:  slotView }
+  const useSlotRecycler = {};  // { slotName: slotRecycler }
 
   // create refs;
   this.refs = {};
@@ -70,8 +74,10 @@ const view = function(options = {}) {
     prefix : ("#"+ prefix + name + " "),
     _vid : id,
     _asb : v => (v===_idt ? bounder : {}),
-    _ass : v => (v===_idt ? slotQueue : []),
     _asp : v => (v===_idt ? parentProps : {}),
+    _aspu : v => (v===_idt ? usePlugins : {}),
+    _assu : v => (v===_idt ? useSlot : {}),
+    _assr : v => (v===_idt ? useSlotRecycler : {}),
     _assp : (v, newProps) => {
       if(v === _idt && newProps && _isPlainObject(newProps))
         parentProps = _lock(newProps);
@@ -80,15 +86,31 @@ const view = function(options = {}) {
 
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options || _idt);
 
+  // define property
   let props = _lock(_extend({}, _isPlainObject(options.props) ? options.props : {})),
+      slots = _isPlainObject(options.slot) ? options.slot : {},
       vroot = options.root,
       render,
       events = options.events,
+      plugins = _isPlainObject(options.plugin) ? options.plugin : {},
       connect = options.connect,
       stencil = options.template || options.render,
       models = _isArray(connect) ? connect
         : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1]) ? [connect]
         : [];
+
+  // format slots as cubecView
+  _eachObject(slots, function(viewExtend, key){
+    if(viewExtend._isExtender && viewExtend.constructor === view.constructor)
+      useSlot[key] = viewExtend();
+    if(viewExtend instanceof view || _isFn(viewExtend))
+      useSlot[key] = viewExtend;
+  });
+
+  // create self plugins
+  _eachObject(plugins, function(pluginOptions, pluginName){
+    view.createGlobalPlugin(pluginName, pluginOptions, usePlugins);
+  });
 
   // console.log(connect);
   stencil = _toString(_isFn(stencil) ? stencil(props) : stencil);
@@ -119,11 +141,13 @@ const view = function(options = {}) {
         switchRender = _toString(switchRender(this.props));
 
       if(switchRender && _isString(switchRender))
-        stencil = (options.cache ? _axtc : _axt)(completeTemplate(_trim(switchRender), name, this._vid), { view: this });
+        stencil = (options.cache ? _axtc : _axt)(
+          completeFixedTemplate(_trim(switchRender), name, this._vid),
+          { view: this }
+        );
       else
         console.warn(ERRORS.VIEW_SWITCHTEMPLATE, newRender);
     }
-
   });
 
   render = function(data){
@@ -139,6 +163,7 @@ const view = function(options = {}) {
     if(before && before.length && _some(before, v=>!v)) return false;
 
     // render frame process
+    // async render process
     if(renderIntime){
       renderData = data;
       return true;
@@ -346,27 +371,18 @@ view.prototype = {
   destroy(withRemoveRoot=false) {
     if(this.root){
       this.emit('beforeDestroy');
-
-      let recycler;
-      const recyclerList = this._ass(_idt);
-
       // remove event
       removeDomEvent(this);
-
       // disconnet model
       _eachObject(this._asb(_idt), item=>this.disconnect(item));
 
-      while(recycler = recyclerList.pop()) {
-        try {
-          requestIdleCallback(recycler);
-        } catch (e) {
-
-        }
-      }
-
+      _eachObject(this._assr(_idt), function(recycler){
+        try { requestIdleCallback(recycler); } catch(e) { /**/ }
+      });
+      // destroy DOOM html elements
       destroyDOOM(this.root, this, withRemoveRoot);
 
-      this.emit('destroy', delete this.root);
+      this.emit('destroy');
 
       return this;
     }
@@ -374,6 +390,28 @@ view.prototype = {
 
 };
 
-view.__instance = [_noop, _noop]; // model, atom
+//include instance [model, atom]
+view.__instance = [_noop, _noop];
+
+// create Global Plugin
+view.createGlobalPlugin = registerDOOMPlugin;
+// create View Self Plugin
+view.createPlugin = function(pugOptions){
+  return _isPlainObject(pugOptions) ? pugOptions : {};
+};
+// create Slot view
+view.createSlot = function(options={}){
+  const slotOptions = _isPlainObject(options) ? options : {};
+
+  if(slotOptions.root)
+    delete slotOptions.root;
+  if(!slotOptions.name)
+    slotOptions.name = "_slot-"+(vid++);
+  if(!slotOptions.slotWillAcceptChange || _isFn(slotOptions.slotWillAcceptChange))
+    slotOptions.slotWillAcceptChange = _cool;
+
+  return view.extend(slotOptions);
+};
 
 export default view;
+
