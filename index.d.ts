@@ -40,14 +40,16 @@ interface ViewOptions extends Options {
   name?: string;
   props?: AnyObject;
   events?: Events;
+  slot?: { [x: string]: ViewInstance|ExportExtendViewInstance|func }
+  plugin?: { [x: string]: PluginOptions }
   template?: string;
   render?: string;
 }
 
 interface AtomOptions extends Options {
   name?: string;
-  use?: Array<ModelInstance>;
-  ignore?: Array<ModelInstance>;
+  use?: Array<ModelInstance|AtomInstance>;
+  ignore?: Array<ModelInstance|AtomInstance>;
 }
 
 interface RouterOptions extends Options {
@@ -213,25 +215,33 @@ type AtomInstance = InstanceType<typeof Atom>;
 type ModelInstance = InstanceType<typeof Model>;
 type RouterInstance = InstanceType<typeof Router>;
 
+type ExportExtendAtomInstance = ((options: Options)=> AtomInstance);
+type ExportExtendViewInstance = ((options: Options)=> ViewInstance);
+type ExportExtendModelInstance = ((options: Options)=> ModelInstance);
+type ExportExtendRouterInstance = ((options: Options)=> RouterInstance);
+
 export interface model {
   (options?: ModelOptions): ModelInstance;
-  extend(options: ModelOptions): ((options: Options)=> ModelInstance);
+  extend(options: ModelOptions): ExportExtendModelInstance;
   link(linkMethod: string, linkProto: string, linkRuntime: string, linkFunc: func, idt?: any): func;
 }
 
 export interface view {
   (options?: ViewOptions): ViewInstance;
-  extend(options: ViewOptions): ((options: Options)=> ViewInstance);
-  plugin(pluginName: string, options: PluginOptions): any;
+  extend(options: ViewOptions): ExportExtendViewInstance;
+  createPlugin(options: PluginOptions): PluginOptions;
+  createGlobalPlugin(pluginName: string, options: PluginOptions): PluginOptions;
+  createSlot(options: ViewOptions): ExportExtendViewInstance;
 }
 
 export interface atom {
   (options?: AtomOptions): AtomInstance;
-  extend(options: AtomOptions): ((options: Options)=> AtomInstance);
+  extend(options: AtomOptions): ExportExtendAtomInstance;
 }
 
 export interface router {
   (options?: RouterOptions): RouterInstance;
+  extend(options: RouterOptions): ExportExtendRouterInstance;
 }
 
 export const verify: VerifyInstance;
