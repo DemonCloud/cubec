@@ -53,6 +53,9 @@ import _lock from './struct/optimize/lock';
 import _ayc from './struct/optimize/ayc';
 import _link from './struct/optimize/link';
 import _v8 from './struct/optimize/v8';
+import _createPrivate from './struct/optimize/createPrivateValue';
+import broken_array from './struct/optimize/broken_array';
+import broken_object from './struct/optimize/broken_object';
 
 import _axt from './struct/template/axt';
 import _axtc from './struct/template/axtc';
@@ -106,7 +109,6 @@ export {
   _eachObject,
   _map,
   _size,
-  _idt,
   _get,
   _set,
   _rm,
@@ -131,8 +133,15 @@ export {
   _link,
   _decode,
   _v8,
+  _createPrivate,
   _noop,
 
+  // brokens
+  _idt,
+  broken_array,
+  broken_object,
+
+  // constant
   rootSign,
   paramSign,
   leafSign,

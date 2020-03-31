@@ -35,6 +35,7 @@ import {
   _isInt,
   _isFn,
   _eachObject,
+  _createPrivate,
   _cool,
   _get,
   _set,
@@ -42,13 +43,16 @@ import {
   _hasEvent,
   _isPrim,
   _eq,
+
+  broken_array,
+  broken_object,
 } from '../utils/usestruct';
 
 let mid = 0;
 const changeReg = /^change:([\w\S]+)$/;
 
-const model = function(option) {
-  const config = _extend(_clone(MODEL.DEFAULT_OPTION), option || {});
+const model = function(option=broken_object) {
+  const config = _extend(_clone(MODEL.DEFAULT_OPTION), option);
 
   if (!_isPlainObject(config.data) && !_isArray(config.data))
     throw new Error(ERRORS.MODEL_UNEXPECT);
@@ -60,12 +64,12 @@ const model = function(option) {
   const identify_usehistory = _isBool(config.history) && config.history;
   let identify_lock = (this.isLock = !!config.lock);
 
-  let historyRAM = [];
-  let changeDetect = [];
-  const events = _isPlainObject(config.events) ? config.events : {};
+  const historyRAM = [];
+  const changeDetect = [];
+  const events = _isPlainObject(config.events) ? config.events : broken_object;
   const initlize_data = identify_usestore ? store.get(config.name) || cdata : cdata;
 
-  // 不可变数据
+  // create immutable data
   cdata = cdata === initlize_data ? cdata : _clone(initlize_data);
 
   _eachObject(
@@ -74,15 +78,15 @@ const model = function(option) {
     defined(this, {
       name: identify_existname ? config.name : void 0,
       _mid: mid++,
-      _ast: (todo, v) => {
+      _ast: function(todo, v){
         const pass = _isFn(todo) ? todo : _cool;
-        return v === _idt ? pass(cdata) : {};
+        return v === _idt ? pass(cdata) : broken_object;
       },
-      _asl: v => (v === _idt ? identify_lock : null),
-      _ash: v => (v === _idt ? historyRAM : []),
-      _asc: v => (v === _idt ? changeDetect : []),
-      _l: (state, v) => (v === _idt ? (this.isLock = identify_lock = !!state) : void 0),
-      _c: (newdata, v) => (v === _idt ? (cdata = newdata) : {}),
+      _asl: function(v){ return v === _idt ? identify_lock : null; },
+      _ash: _createPrivate(historyRAM, broken_array),
+      _asc: _createPrivate(changeDetect, broken_array),
+      _l: function(state, v){ return v === _idt ? (this.isLock = identify_lock = !!state) : void 0; },
+      _c: function(newdata, v){ return v === _idt ? (cdata = newdata) : broken_object; },
       _s: identify_usestore,
       _h: identify_usehistory
     }),

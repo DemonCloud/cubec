@@ -27,7 +27,10 @@ import {
   _eachArray,
   _map,
   _idt,
-  _noop
+  _noop,
+  _createPrivate,
+  broken_array,
+  broken_object,
 } from '../utils/usestruct';
 
 let amid = 0;
@@ -37,7 +40,7 @@ const createPushEmitter = function(){
   return emit.call(this, "change", this.toChunk());
 };
 
-const atom = function(options){
+const atom = function(options=broken_object){
   const config = _extend(_clone(ATOM.DEFAULT_OPTION), options);
 
   const list = [];
@@ -47,9 +50,9 @@ const atom = function(options){
   defined(this, {
     name: config.name,
     _mid: namePrefix+amid++,
-    _asl: v => (v === _idt ? list : []),
-    _asi: v => (v === _idt ? listenList : []),
-    _asp: v => (v === _idt ? push : _noop),
+    _asl: _createPrivate(list, broken_array),
+    _asi: _createPrivate(listenList, broken_array),
+    _asp: _createPrivate(push, _noop),
   });
 
   _define(this, "length", {

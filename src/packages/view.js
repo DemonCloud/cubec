@@ -9,7 +9,7 @@ import { registerDOOMPlugin, renderDOOM, destroyDOOM } from '../utils/view/doom'
 import polyfillimeInputEvent from '../utils/view/polyfillimeInputEvent';
 import {
   _idt,
-  _map,
+  // _map,
   _axt,
   _axtc,
   _ayc,
@@ -33,6 +33,11 @@ import {
   _trim,
   _cool,
   _noop,
+  _createPrivate,
+
+  broken_object,
+  broken_array,
+
   eventSplit,
   eventNameSpace,
 } from '../utils/usestruct';
@@ -49,20 +54,20 @@ function checkElm(el) {
 
 function completeFixedTemplate(stencil, name) {
   // create cubec root, make template easy to use
-  return `<cubec id="${prefix}${name}">${stencil||''}</cubec>`;
+  return `<cubec id="${prefix}${name}">${_toString(stencil)}</cubec>`;
 }
 
-const view = function(options = {}) {
+const view = function(options=broken_object) {
   let id = vid++;
 
   let parentProps = {};
-  let renderData = {};
+  let renderData = broken_object;
   let renderIntime = false;
 
   const name = options.name || "v--"+id;
   const bounder = {};
-  const usePlugins = {}; // { pluginName: pluginView }
-  const useSlot = {}; // { slotName:  slotView }
+  const usePlugins = {};       // { pluginName: pluginView }
+  const useSlot = {};          // { slotName:  slotView }
   const useSlotRecycler = {};  // { slotName: slotRecycler }
 
   // create refs;
@@ -73,31 +78,31 @@ const view = function(options = {}) {
     name : name,
     prefix : ("#"+ prefix + name + " "),
     _vid : id,
-    _asb : v => (v===_idt ? bounder : {}),
-    _asp : v => (v===_idt ? parentProps : {}),
-    _aspu : v => (v===_idt ? usePlugins : {}),
-    _assu : v => (v===_idt ? useSlot : {}),
-    _assr : v => (v===_idt ? useSlotRecycler : {}),
-    _assp : (v, newProps) => {
+    _asb :  _createPrivate(bounder, broken_object),
+    _aspu : _createPrivate(usePlugins, broken_object),
+    _assu : _createPrivate(useSlot, broken_object),
+    _assr : _createPrivate(useSlotRecycler, broken_object),
+    _asp : function(v){ return v === _idt ? parentProps : broken_object; },
+    _assp : function(v, newProps){
       if(v === _idt && newProps && _isPlainObject(newProps))
         parentProps = _lock(newProps);
     }
   });
 
-  options = _extend(_clone(VIEW.DEFAULT_OPTION), options || _idt);
+  options = _extend(_clone(VIEW.DEFAULT_OPTION), options);
 
   // define property
-  let props = _lock(_extend({}, _isPlainObject(options.props) ? options.props : {})),
-      slots = _isPlainObject(options.slot) ? options.slot : {},
+  let props = _lock(_extend({}, _isPlainObject(options.props) ? options.props : broken_object)),
+      slots = _isPlainObject(options.slot) ? options.slot : broken_object,
       vroot = options.root,
       render,
       events = options.events,
-      plugins = _isPlainObject(options.plugin) ? options.plugin : {},
+      plugins = _isPlainObject(options.plugin) ? options.plugin : broken_object,
       connect = options.connect,
       stencil = options.template || options.render,
       models = _isArray(connect) ? connect
         : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1]) ? [connect]
-        : [];
+        : broken_array;
 
   // format slots as cubecView
   _eachObject(slots, function(viewExtend, key){
@@ -109,7 +114,8 @@ const view = function(options = {}) {
 
   // create self plugins
   _eachObject(plugins, function(pluginOptions, pluginName){
-    view.createGlobalPlugin(pluginName, pluginOptions, usePlugins);
+    // inject pluginRender into view
+    view.createGlobalPlugin(pluginName, pluginOptions, _idt, usePlugins);
   });
 
   // console.log(connect);
@@ -131,7 +137,7 @@ const view = function(options = {}) {
       // atom data format
       else if (data instanceof view.__instance[1]) data = data.toChunk();
       // console.log(stencil);
-      return stencil.call(this, data || {});
+      return stencil.call(this, data || broken_object);
     },
 
     switchTemplate: function(newRender){
@@ -226,7 +232,7 @@ const view = function(options = {}) {
     }
 
     // create mount method
-    this.mount = function(el, data={}) {
+    this.mount = function(el, data=broken_object) {
       if (checkElm(el)) {
         // create Root Element
         this.root = vroot = el;
@@ -282,7 +288,6 @@ view.prototype = {
   },
 
   off(type, fn) {
-
     if (type && _isString(type)) {
       _eachArray(type.split(eventSplit), function(mk) {
         let param = mk.split(eventNameSpace);
@@ -360,10 +365,11 @@ view.prototype = {
 
   getParentProps(name){
     const parentProps = this._asp(_idt);
+
     let target = parentProps;
 
     if(name && _isString(name))
-      target = parentProps[name] || {};
+      target = parentProps[name] || broken_object;
 
     return _lock(_extend({}, target));
   },
@@ -397,18 +403,19 @@ view.__instance = [_noop, _noop];
 view.createGlobalPlugin = registerDOOMPlugin;
 // create View Self Plugin
 view.createPlugin = function(pugOptions){
-  return _isPlainObject(pugOptions) ? pugOptions : {};
+  return _isPlainObject(pugOptions) ? pugOptions : broken_object;
 };
 // create Slot view
 view.createSlot = function(options={}){
-  const slotOptions = _isPlainObject(options) ? options : {};
+  const slotOptions = _isPlainObject(options) ? options : broken_object;
 
   if(slotOptions.root)
     delete slotOptions.root;
   if(!slotOptions.name)
     slotOptions.name = "_slot-"+(vid++);
-  if(!slotOptions.slotWillAcceptChange || _isFn(slotOptions.slotWillAcceptChange))
-    slotOptions.slotWillAcceptChange = _cool;
+  // next version 1.9.12
+  // if(!slotOptions.slotWillAcceptChange || _isFn(slotOptions.slotWillAcceptChange))
+  //   slotOptions.slotWillAcceptChange = _cool;
 
   return view.extend(slotOptions);
 };

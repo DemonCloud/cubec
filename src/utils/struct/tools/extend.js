@@ -12,5 +12,6 @@ export default function extend(o1,o2,nothisproperty){
     });
   else
     each(o2,function(v,k){ o1[k] = v; });
+
   return o1;
 }

@@ -69,7 +69,10 @@ import {
   _eq,
   _on,
   _off,
+  // _createPrivate,
   _emit,
+
+  broken_object,
 } from '../utils/usestruct';
 
 let rid = 0;
@@ -80,7 +83,7 @@ const rootSign = '/';
 
 // Router Class
 class Router {
-  constructor(config={}){
+  constructor(config=broken_object){
     config = _merge(ROUTER.DEFAULT_OPTION, config);
 
     let cache = {};

@@ -1,4 +1,5 @@
 import {
+  _idt,
   _axt,
   _axtc,
   // _ayc,
@@ -86,22 +87,26 @@ const createPluginRender = function(name, pugOptions){
   };
 };
 
-export default function(name, pugOptions, existViewPluginList){
+export default function(name, pugOptions, idt, existViewPluginList){
   if(!_isString(name) ||
     !_isPlainObject(pugOptions) ||
     !_isString(pugOptions.render || pugOptions.template))
     return console.error(`[cubec view] [plugin] name of [${name}] is not plugin format`);
 
-  if(name in DOCUMENT_TAGS_SHORTCUT)
-    return console.error(`[cubec view] [plugin] name of [${name}] register can not be HTML5 special tag keyword`);
+  if(name in DOCUMENT_TAGS_SHORTCUT){
+    console.error(`[cubec view] [plugin] name of [${name}] register can not be HTML5 special tag keyword`);
+    return null;
+  }
 
   // createPlugin
   const createPlugin = createPluginRender(name, pugOptions);
 
-  if(_isPlainObject(existViewPluginList)){
+  if(idt === _idt && _isPlainObject(existViewPluginList)){
     existViewPluginList[name] = createPlugin;
   }else{
     pluginList[name] = createPlugin;
   }
+
+  return pugOptions;
 }
 
