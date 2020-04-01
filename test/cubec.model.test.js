@@ -79,6 +79,8 @@ test("model off event binding", ()=>{
   model.on("add", ()=>(value+=1));
   model.off("add");
   model.emit("add");
+
+  console.log(value);
   expect(value).toBe(1);
 });
 

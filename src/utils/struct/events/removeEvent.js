@@ -23,11 +23,12 @@ export default function removeEvent(obj,type,fn){
     if(events[id][type]){
       if(existFn){
         const findCallIndex = findFnCall(events[id][type], fn);
-
-        if(findCallIndex != null)
-          events[id][type].splice(findCallIndex, 1);
-      }else if(!events[id][type].length)
+        if(findCallIndex != null) events[id][type].splice(findCallIndex, 1);
+      }else if(!events[id][type].length){
         delete events[id][type];
+      }else{
+        delete events[id][type];
+      }
 
     }else if(!type && !existFn){
       delete obj.__eid;
@@ -36,8 +37,6 @@ export default function removeEvent(obj,type,fn){
       delete events[id][type];
     }
   }
-
-  // console.log("removeEvent", events, obj.__eid, fn);
 
   return obj;
 }
