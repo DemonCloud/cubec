@@ -1,8 +1,8 @@
 {
   "name": "cubec",
-  "version": "1.9.15",
+  "version": "1.9.16",
   "description": "[cubec] Micro Model-View Framework",
-  "main": "src/cubec.js",
+  "main": "dist/cubec.min.js",
   "scripts": {
     "dev": "xcli dev",
     "build": "node rollup.config.js"
