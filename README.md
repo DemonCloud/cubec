@@ -4,12 +4,24 @@ Micro modal-view framework [gzip 27k]
 
 ## TODO [nearest 2.0.0]
 
-optimize performance
+1. optimize performance
 
-format [slot] and [plugin] standard
+2. [slot] and [plugin] format standard
 
-wait jQuery upgrade 4.* version, use jQuery new event system
+3. [mddel API upgrade]
+
+   - model.get(filterFunc(modelData))
+
+   - model.set(filterFunc(modelData))
+
+4. [atom API upgrade]
+
+   - atom.toChunk("path.path"|filterFunc(dataChunk));
+
+   - atom.toData(useName|[useName,...]|filterFunc(dataList));
+
+5. wait jQuery upgrade 4.* version, use jQuery new event system
 
 ## Documentation [v2]
 
-[doc/v2] in development...
+[doc/v2] in development... will publish with version 2.0.0

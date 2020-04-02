@@ -166,6 +166,7 @@ atom.prototype = {
     return this;
   },
 
+  // alias with toChunk() no arguments;
   get(){
     return this.toChunk();
   },
