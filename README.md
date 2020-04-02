@@ -20,7 +20,9 @@ Micro modal-view framework [gzip 27k]
 
    - atom.toData(useName|[useName,...]|filterFunc(dataList));
 
-5. wait jQuery upgrade 4.* version, use jQuery new event system
+5. [build] use with (terser) replace (babel)
+
+6. wait jQuery upgrade 4.* version, use jQuery new event system
 
 ## Documentation [v2]
 

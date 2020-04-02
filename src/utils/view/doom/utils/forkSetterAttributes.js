@@ -11,7 +11,7 @@ const REGEXP_ATTRIBUTES_DEFAULT_ATTR = /^default[^\s]+/i;
 const forkSetterAttributes = function(elm, attr, values) {
   let attrName = ATTRIBUTES_FORK_RENDER_TEMPLATE[attr] || attr;
 
-  const isSvgElement = window.SVGElement ? elm instanceof SVGElement : false;
+  const isSvgElement = window.SVGElement ? elm instanceof window.SVGElement : false;
   const val = _isString(values) ? _decode(values) : values;
 
   // if(attrName === "*checked"){

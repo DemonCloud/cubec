@@ -11,7 +11,7 @@ import {
 // adapter attribute clearer
 const forkClearAttributes = function(elm, attr) {
   let attrName = ATTRIBUTES_FORK_RENDER_TEMPLATE[attr] || attr;
-  const isSvgElement = window.SVGElement ? elm instanceof SVGElement : false;
+  const isSvgElement = window.SVGElement ? elm instanceof window.SVGElement : false;
 
   // need attrNeedSetAttributes
   if(attrName[0] === "@"){

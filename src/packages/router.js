@@ -115,7 +115,7 @@ class Router {
     let gfn;
     let gevent;
 
-    addEventListener("popstate", gfn = (event)=>{
+    window.addEventListener("popstate", gfn = (event)=>{
       this.__match(
         pathfixer(location.pathname),
         _paramParse(location.search),
@@ -138,7 +138,7 @@ class Router {
 
       _off.call(this, this);
 
-      removeEventListener('popstate', gfn);
+      window.removeEventListener('popstate', gfn);
 
       if(gevent)
         $(document.documentElement).off("click", targets, gevent);

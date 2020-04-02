@@ -4,7 +4,16 @@
 // localStorage with micro encryption
 // store.js
 
-const LS = localStorage;
+if(window.localStorage == null){
+  console.warn("browser not support localStorage");
+}
+
+// 如果浏览器不支持localStorage. 则伪装一个代理
+const LS = window.localStorage || {
+  setItem(){},
+  getItem(){},
+  removeItem(){}
+};
 const SN = 'CUBEC@';
 const revs = function(str) {
   return str.split('').reverse().join('');

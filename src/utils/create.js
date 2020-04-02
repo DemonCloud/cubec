@@ -6,6 +6,7 @@ export const createExtend = function(module) {
     const Extender = function(o) {
       return new module(_merge(malloc, o || _idt));
     };
+
     Extender.constructor = module;
     Extender._isExtender = true;
 

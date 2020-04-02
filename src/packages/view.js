@@ -62,6 +62,7 @@ const view = function(options=broken_object) {
 
   let parentProps = {};
   let renderData = broken_object;
+  // let renderString = "";
   let renderIntime = false;
 
   const name = options.name || "v--"+id;
@@ -106,11 +107,13 @@ const view = function(options=broken_object) {
 
   // format slots as cubecView
   _eachObject(slots, function(viewExtend, key){
-    if(viewExtend._isExtender && viewExtend.constructor === view.constructor)
+
+    if(viewExtend._isExtender && viewExtend.constructor === view)
       useSlot[key] = viewExtend();
-    if(viewExtend instanceof view || _isFn(viewExtend))
+    else if(viewExtend instanceof view || _isFn(viewExtend))
       useSlot[key] = viewExtend;
   });
+
 
   // create self plugins
   _eachObject(plugins, function(pluginOptions, pluginName){
@@ -182,14 +185,20 @@ const view = function(options=broken_object) {
     // directRender without virtual node render
     const createRender = function(){
       try{
-        const renderString = this.renderToString(renderData);
+        const newRenderString = this.renderToString(renderData);
+
+        // if is same string, not need render
+        // if(renderString === newRenderString) return;
+
+        // cache renderString
+        // renderString = newRenderString;
 
         // use render to string
         if(this.directRender)
-          this.root.innerHTML = renderString;
+          this.root.innerHTML = newRenderString;
         // use renderDOOM
         else
-          renderDOOM(this.root, renderString, this, renderData);
+          renderDOOM(this.root, newRenderString, this, renderData);
 
         this.root._vid = this._vid;
 
@@ -197,11 +206,13 @@ const view = function(options=broken_object) {
         this.emit("completeRender", [renderData, this._vid],);
 
         renderIntime = false;
+
       }catch(e){
         console.error(ERRORS.VIEW_RENDER, e, renderData);
 
         renderIntime = false;
 
+        // send catch event
         if(!_hasEvent(this,"catch")) throw e;
         else this.emit("catch", [renderData]);
       }
@@ -381,7 +392,7 @@ view.prototype = {
       removeDomEvent(this);
       // disconnet model
       _eachObject(this._asb(_idt), item=>this.disconnect(item));
-
+      // remove recycler slot render
       _eachObject(this._assr(_idt), function(recycler){
         try { requestIdleCallback(recycler); } catch(e) { /**/ }
       });
@@ -396,8 +407,10 @@ view.prototype = {
 
 };
 
+
 //include instance [model, atom]
 view.__instance = [_noop, _noop];
+
 
 // create Global Plugin
 view.createGlobalPlugin = registerDOOMPlugin;
@@ -409,15 +422,15 @@ view.createPlugin = function(pugOptions){
 view.createSlot = function(options={}){
   const slotOptions = _isPlainObject(options) ? options : broken_object;
 
-  if(slotOptions.root)
+  if(slotOptions.root != null)
     delete slotOptions.root;
   if(!slotOptions.name)
-    slotOptions.name = "_slot-"+(vid++);
-  // next version 1.9.12
-  // if(!slotOptions.slotWillAcceptChange || _isFn(slotOptions.slotWillAcceptChange))
-  //   slotOptions.slotWillAcceptChange = _cool;
+    slotOptions.name = "cubec-slot-"+(vid++);
+  if(!slotOptions.slotAcceptRender || _isFn(slotOptions.slotAcceptRender))
+    slotOptions.slotAcceptRender = _cool;
 
-  return view.extend(slotOptions);
+  // createC (this)
+  return this.extend(slotOptions);
 };
 
 export default view;

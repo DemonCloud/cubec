@@ -1,4 +1,4 @@
-import {_extend, _idt, _isFn, _isNumber} from "../../../usestruct";
+import {_noop, _extend, _idt, _isFn, _isNumber} from "../../../usestruct";
 
 // get parents props
 const createParentProps = function(view){
@@ -11,10 +11,17 @@ const createParentProps = function(view){
 
 // call SLOT render
 const renderSlot = function(slotRender, root, view, data){
-  let render;
+  let render = _noop;
+
+  if(_isFn(slotRender.slotAcceptRender)){
+    const renderData = slotRender.slotAcceptRender(data);
+    if(renderData === false || renderData == null) return;
+  }
 
   // view to render;
-  if (slotRender instanceof view.constructor && _isNumber(slotRender._vid)) {
+  if (slotRender instanceof view.constructor &&
+      _isNumber(slotRender._vid)) {
+
     // render
     render = function() {
       // createParentProps
@@ -27,7 +34,8 @@ const renderSlot = function(slotRender, root, view, data){
           if(root.parentNode)
             root.parentNode.replaceChild(slotRender.root, root);
           else{
-            // when it root has not mount at document, it is new node at internal storage
+            // when it root has not mount at document,
+            // it is new node at internal storage
             root.__replaceToSlotRoot = slotRender.root;
           }
         }
@@ -43,7 +51,12 @@ const renderSlot = function(slotRender, root, view, data){
 
   } else if (_isFn(slotRender)) {
     render = function() {
-      const renderRecycler = slotRender.call(view, root, data, function(){ return createParentProps(view); });
+      const renderRecycler = slotRender.call(
+        view,
+        root,
+        data,
+        function(){ return createParentProps(view); }
+      );
 
       if(!_isFn(renderRecycler))
         console.warn("[cubec view] case performance, the custom <slot> render function component should return a recycle function");
@@ -53,7 +66,7 @@ const renderSlot = function(slotRender, root, view, data){
   }
 
   // execute render
-  return (render && render());
+  return render();
 };
 
 export default renderSlot;

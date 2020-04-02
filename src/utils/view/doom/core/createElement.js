@@ -20,7 +20,7 @@ import forkSetterAttributes from "../utils/forkSetterAttributes";
 const CREATE_PLUGIN_FORK_VIEWPROPS = "this.";
 const REGEXP_CREATE_PLUGIN_FORK_VIEWPROPS = /^this\./;
 
-const createPluginDynamicProps = function(attrs, view, data) {
+const parserPluginProps = function(attrs, view, data) {
   let props = {};
 
   _eachObject(attrs, function(v,k){
@@ -38,13 +38,14 @@ const createPluginDynamicProps = function(attrs, view, data) {
 
 const createPluginProps = function(elm, obj, view, args){
   return {
-    view: view,
+    __cubec_plugin__: true,
+    __cubec_parent_view__: view,
     root: elm,
     refs: {},
     name: obj.tagName,
     prefix: empty,
     props: _extend(
-      createPluginDynamicProps(obj.attributes, view, args),
+      parserPluginProps(obj.attributes, view, args),
       { children: obj.children }
     )
   };
@@ -53,6 +54,7 @@ const createPluginProps = function(elm, obj, view, args){
 // create new DOM Element
 const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlugin=false) {
   let elm = isUpdateSlot || isUpdatePlugin;
+  const createPlugin = view.__cubec_plugin__ && view.__cubec_parent_view__;
 
   // is not SLOT or PLUGIN
   if(!elm) {
@@ -62,18 +64,36 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
   }
 
   // registered view.refs Update
-  if (obj.attributes && obj.attributes.ref){
-    view.refs[obj.attributes.ref] = elm;
-
-    if(view.view && view.view.refs) view.view.refs[obj.attributes.ref] = elm;
-  }
-
-  // set all Attribute
-  if(obj.attributes) {
+  if (obj.attributes){
+    // set attributes
     _eachObject(obj.attributes, function (value, key) {
       forkSetterAttributes(elm, key, value);
     });
+
+    // set ref
+    if(obj.attributes.ref){
+      const refName = obj.attributes.ref;
+
+      // set in refs at orgView
+      view.refs[refName] = elm;
+
+      // in cubec.plugin.scope
+      // exist refs scope
+      if(createPlugin){
+        const children = view.props.children;
+        // check plugin childrens [exist this refs]
+        if(children &&
+          _isString(children) &&
+          (children.indexOf(`'${refName}'`) > -1 ||
+           children.indexOf(`"${refName}"`) > -1 )){
+          // childrens exist should write in ParentCubecView
+          view.__cubec_parent_view__.refs[refName] = elm;
+        }
+      }
+
+    }
   }
+
 
   // parse if it's <slot>
   // slot is significative in [cubec.view.createSlot]
@@ -111,7 +131,14 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
       _get(view._aspu(_idt), obj.tagName) ||
       _get(pluginList, obj.tagName);
 
-    return getPluginRender(elm, createPluginProps(elm, obj, view, args), view, args, isUpdatePlugin);
+    // start plugin render;
+    return getPluginRender(
+      elm,
+      createPluginProps(elm, obj, view, args),
+      view,
+      args,
+      isUpdatePlugin
+    );
   }
 
   if (obj.text) {

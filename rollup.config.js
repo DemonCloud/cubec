@@ -2,8 +2,10 @@ const rollup = require('rollup');
 
 const commonjs = require('rollup-plugin-commonjs');
 const resolve = require('rollup-plugin-node-resolve');
-const uglify = require('rollup-plugin-uglify');
-const babel = require('rollup-plugin-babel');
+// const uglify = require('rollup-plugin-uglify');
+// const babel = require('rollup-plugin-babel');
+const terser = require('rollup-plugin-terser');
+const compiler = require('@ampproject/rollup-plugin-closure-compiler');
 const optimizeJs = require('rollup-plugin-optimize-js');
 
 const path = require('path');
@@ -34,31 +36,61 @@ const plugins = [
     // }
   }),
 
-  babel({
-    exclude: ['node_modules/**','src/lib/jquery.js'], // only transpile our source code,
-    runtimeHelpers: true,
-    externalHelpers: true,
-    presets: [
-      [
-        '@babel/preset-env',
-        {
-          modules: false,
-        },
-      ],
-    ],
-    plugins: [
-      '@babel/external-helpers',
-      [
-        '@babel/transform-runtime',
-        {
-          regenerator: false
-        },
-      ],
-    ],
+  // ES_NEXT -> ES6
+  terser.terser({
+    parse: {
+      ecma: 8,
+    },
+    // compress: {
+    //   ecma: 5,
+    //   warnings: false,
+    //   comparisons: false,
+    //   inline: 2,
+    // },
+    output: {
+      ecma: 5,
+      comments: false,
+      ascii_only: true,
+    },
   }),
-  // 压缩
-  uglify.uglify(),
 
+  // ES6 -> ES5
+  // babel({
+  //   exclude: ['node_modules/**'], // only transpile our source code,
+  //   runtimeHelpers: true,
+  //   externalHelpers: true,
+  //   presets: [
+  //     [
+  //       '@babel/preset-env',
+  //       {
+  //         modules: false,
+  //       },
+  //     ],
+  //   ],
+  //   plugins: [
+  //     '@babel/external-helpers',
+  //     [
+  //       '@babel/transform-runtime',
+  //       {
+  //         regenerator: false
+  //       },
+  //     ],
+  //   ],
+  // }),
+
+  // google closure compiler
+  compiler({
+    env: "BROWSER",
+    // compilation_level: "BUNDLE",
+    rewrite_polyfills: "FALSE",
+    language_in: "ECMASCRIPT_NEXT",
+    language_out: "ECMASCRIPT5"
+  }),
+
+  // ES5 -> compress
+  // uglify.uglify(),
+
+  // Optimize Compress JS
   optimizeJs()
 ];
 

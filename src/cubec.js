@@ -6,11 +6,12 @@ import _verify from './packages/verify';
 import * as _struct from './utils/usestruct';
 import { createC, createExtend } from './utils/create';
 
-export const cubec = Object.create(null);
-
 // information
-cubec.version = "1.9.14";
-cubec.author = "YiJun";
+// export const cubec = Object.create(null);
+export const cubec = {
+  version: "1.9.15",
+  author: "YiJun",
+};
 
 // enter instance
 _view.__instance[0] = _model;
@@ -32,6 +33,7 @@ view.extend = createExtend(_view);
 model.extend = createExtend(_model);
 router.extend = createExtend(_router);
 
+// freeze cubec;
 Object.freeze(cubec);
 
 export default cubec;
