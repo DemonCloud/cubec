@@ -9,7 +9,7 @@ import { createC, createExtend } from './utils/create';
 export const cubec = Object.create(null);
 
 // information
-cubec.version = "1.9.13";
+cubec.version = "1.9.14";
 cubec.author = "YiJun";
 
 // enter instance
