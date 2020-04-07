@@ -9,7 +9,7 @@ import { createC, createExtend } from './utils/create';
 // information
 // export const cubec = Object.create(null);
 export const cubec = {
-  version: "1.9.16",
+  version: "1.9.17",
   author: "YiJun",
 };
 

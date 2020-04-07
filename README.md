@@ -8,21 +8,9 @@ Micro modal-view framework [gzip 27k]
 
 2. [slot] and [plugin] format standard
 
-3. [mddel API upgrade]
+4. [build] use with (terser+closure-compilter) replace (babel)
 
-   - model.get(filterFunc(modelData))
-
-   - model.set(filterFunc(modelData))
-
-4. [atom API upgrade]
-
-   - atom.toChunk("path.path"|filterFunc(dataChunk));
-
-   - atom.toData(useName|[useName,...]|filterFunc(dataList));
-
-5. [build] use with (terser) replace (babel)
-
-6. wait jQuery upgrade 4.* version, use jQuery new event system
+5. wait jQuery upgrade 4.* version, use jQuery new event system
 
 ## Documentation [v2]
 

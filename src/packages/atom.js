@@ -1,17 +1,19 @@
 // const at = cubec.atom(
-//   [model, model, model]
+//   use: [model, model, model, atom]
+//   ignore: []
 // );
 
-// atom.toChunk();
-// atom.toData();
+// atom.toChunk(path | [paths...] | filterFunc(dataChunk));
+// atom.toData(path | [paths...] | filterFunc(dataList));
 // atom.all();
-// atom.pop(modelNames);
-// atom.use(modelNames, ignores);
+// atom.pop(modelNames|[modelNames...]);
+// atom.use(modelNames|[modelNames...], ignores|[ignores...]);
 
 import ATOM from '../constant/atom.define';
 // import ERRORS from '../constant/errors.define';
 import defined from '../utils/defined';
 import filters from '../utils/atom/filters';
+import chunkPathParser from '../utils/atom/chunkPathParser';
 import model from './model';
 import {on, off, emit} from '../utils/universalEvent';
 import {
@@ -21,11 +23,13 @@ import {
   _has,
   _index,
   _isArray,
+  _trim,
   _isBool,
+  _isString,
   _isFn,
   _define,
   _eachArray,
-  _map,
+  _every,
   _idt,
   _noop,
   _createPrivate,
@@ -114,7 +118,6 @@ atom.prototype = {
       listenList.push.apply(listenList, listenModels);
 
       if(!isStatic) push();
-
     }
 
     return this;
@@ -166,27 +169,89 @@ atom.prototype = {
     return this;
   },
 
-  // alias with toChunk() no arguments;
-  get(){
-    return this.toChunk();
+  // alias with toChunk() with arguments;
+  get(path){
+    return this.toChunk(path);
   },
 
-  toChunk(){
+  toChunk(path){
     const res = {};
+    const all = this.all();
 
+    // get path data
+    if(path && _isString(path)){
+
+      const parse = chunkPathParser(_trim(path));
+
+      const chunkNameSpace = parse[0];
+      const chunkDeepPath = parse[1];
+
+      if(chunkNameSpace){
+        let getChild;
+
+        for(let i=0; i<all.length; i++){
+          const child = all[i];
+
+          if(child.name === chunkNameSpace || child._mid === chunkNameSpace){
+            getChild = child;
+            break;
+          }
+        }
+
+        if(getChild)
+          return getChild.get(chunkDeepPath);
+      }
+
+      return res;
+
+    }else if(_isArray(path) && _every(path, _isString)){
+
+      // list for path
+      _eachArray(path, function(childPath){
+        const parse = chunkPathParser(_trim(childPath));
+        const chunkNameSpace = parse[0];
+
+        if(chunkNameSpace)
+          res[chunkNameSpace] = this.toChunk(childPath);
+      }, this);
+
+      return res;
+    }
+
+    // chunk all data
     _eachArray(this.all(), function(m){
       res[m.name || m._mid] = m.get();
     });
 
-    return res;
+    return _isFn(path) ? path(res) : res;
   },
 
-  toData(){
-    return _map(this.all(), function(m){
-      return m.get();
+  toData(path){
+    const res = [];
+
+    if(path){
+
+      if(_isArray(path) && _every(path, _isString)){
+        _eachArray(path, function(pathName){
+          res.push(this.toChunk(pathName));
+        }, this);
+
+      }else if(_isString(path)){
+        res.push(this.toChunk(path));
+
+      }
+
+      return res;
+    }
+
+    _eachArray(this.all(), function(child){
+      res.push(child.get());
     });
+
+    return res;
   }
 
 };
 
 export default atom;
+

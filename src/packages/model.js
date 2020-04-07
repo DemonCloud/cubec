@@ -59,10 +59,10 @@ const model = function(option=broken_object) {
 
   let cdata = config.data || {};
 
+  let identify_lock = (this.isLock = !!config.lock);
   const identify_existname = _isString(config.name);
   const identify_usestore = _isBool(config.store) && config.store && identify_existname;
   const identify_usehistory = _isBool(config.history) && config.history;
-  let identify_lock = (this.isLock = !!config.lock);
 
   const historyRAM = [];
   const changeDetect = [];
@@ -176,6 +176,7 @@ const modelProtoType = {
         // single pointer select
         isStatic = val;
 
+        // support function
         key = key instanceof model ? key.get() : (_isFn(key) ? key(this.get()) : key);
 
         if (
@@ -354,7 +355,7 @@ const modelProtoType = {
 };
 
 // FUCK DEAD Internet Explorer!! FUCK FUCK FUCK
-// if is under IE<9. auto add function name
+// if is under Internet Explorer IE(8-11). auto add function name
 if(isIE && Function.prototype.name == null)
   _eachObject(modelProtoType, function(proto, keyName){ proto.name = keyName; });
 
