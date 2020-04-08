@@ -69,10 +69,11 @@ import {
   _eq,
   _on,
   _off,
-  // _createPrivate,
   _emit,
+  _createPrivate,
 
   broken_object,
+  broken_array,
 } from '../utils/usestruct';
 
 let rid = 0;
@@ -102,12 +103,12 @@ class Router {
       function(event, eventName){ _on(this, eventName, event); },
       defined(this, {
         _rid: rid++,
-        _assert: idt => (_idt === idt ? source : {}),
+        _assert: _createPrivate(source, broken_object),
         _status: (idt, change) => (_idt === idt ? (status=change) : null),
-        _idmap: idt => (_idt === idt ? idmap: {}),
+        _idmap: _createPrivate(idmap, broken_object),
         _clear: idt => (_idt === idt ? (cache = {}) : null),
         _s: idt => (_idt === idt ? status : null),
-        _c: idt => (_idt === idt ? cache : {})
+        _c: _createPrivate(cache, broken_object),
       })
     );
 

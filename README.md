@@ -8,9 +8,9 @@ Micro modal-view framework [gzip 27k]
 
 2. [slot] and [plugin] format standard
 
-4. [build] use with (terser+closure-compilter) replace (babel)
+3. [build] use with (terser+closure-compilter) replace (babel)
 
-5. wait jQuery upgrade 4.* version, use jQuery new event system
+4. wait jQuery upgrade 4.* version, use jQuery new event system
 
 ## Documentation [v2]
 
