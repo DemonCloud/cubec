@@ -1,27 +1,27 @@
-import {_noop, _extend, _idt, _isFn, _isNumber} from "../../../usestruct";
+import {_noop, _cool, _extend, _idt, _isFn, _isNumber} from "../../../usestruct";
+
+import parseRenderData from '../utils/parseRenderData';
 
 // get parents props
 const createParentProps = function(view){
   return _extend(
     // call view getParentProps proto function
     _extend({}, view.getParentProps()),
-    { [view.name]: view.props },
+    { [view.name||view._vid]: view.props },
   );
 };
 
 // call SLOT render
 const renderSlot = function(slotRender, root, view, data){
   let render = _noop;
+  const renderData = parseRenderData(slotRender.slotAcceptRender, data, slotRender);
 
-  if(_isFn(slotRender.slotAcceptRender)){
-    const renderData = slotRender.slotAcceptRender(data);
-    if(renderData === false || renderData == null) return;
-  }
+  // console.log("slotrender", slotRender, data, renderData);
+  // if parser data as false, will prevent render
+  if(renderData === false) return;
 
-  // view to render;
-  if (slotRender instanceof view.constructor &&
-      _isNumber(slotRender._vid)) {
-
+  // view slot render
+  if(slotRender instanceof view.constructor && _isNumber(slotRender._vid)){
     // render
     render = function() {
       // createParentProps
@@ -30,39 +30,48 @@ const renderSlot = function(slotRender, root, view, data){
       if (slotRender.root && slotRender.render) {
         // same root between rerender
         if(slotRender.root !== root){
-          // ????
+
           if(root.parentNode)
+            // ????
             root.parentNode.replaceChild(slotRender.root, root);
           else{
             // when it root has not mount at document,
             // it is new node at internal storage
             root.__replaceToSlotRoot = slotRender.root;
           }
+
         }
 
-        slotRender.render(data);
+        slotRender.render(renderData);
+
       } else if(slotRender.mount) {
+
         // mount render
-        slotRender.mount(root, data);
+        slotRender.mount(root, renderData);
       }
 
       return function(){ return slotRender.destroy(true); };
+
     };
 
   } else if (_isFn(slotRender)) {
+
     render = function() {
+
       const renderRecycler = slotRender.call(
         view,
         root,
-        data,
+        renderData,
         function(){ return createParentProps(view); }
       );
 
       if(!_isFn(renderRecycler))
-        console.warn("[cubec view] case performance, the custom <slot> render function component should return a recycle function");
+        console.warn("[cubec view] [slot] case performance, the custom <slot> render should return a recycle function");
 
       return renderRecycler;
+
     };
+
   }
 
   // execute render

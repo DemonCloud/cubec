@@ -8,6 +8,7 @@ const REGEXP_PARSER_TEMPLATE_EXCAPED_TAB = /^[\r\n\f\t\s]+|[\r\n\f\t\s]+$/gi;
 
 // html render template string to Tree with algorithm
 const parser = function(renderString, view, args) {
+  // console.log(view);
   // create virtual cubec ROOT Element
   const cubecRoot = {
     tagName: DOCUMENT_TAGS_CUBEC_ROOTNAME,
@@ -55,13 +56,12 @@ const parser = function(renderString, view, args) {
         c = p.child;
         // special tag
       } else if (stag) {
-        n = createTreeNode(stag, view, id++, args);
+        n = createTreeNode(stag, p, view, id++, args);
         n.i = c.length;
         c.push(n);
-        n.parent = p;
         // normal tag
       } else if (tag) {
-        n = createTreeNode(tag, view, id++, args);
+        n = createTreeNode(tag, p, view, id++, args);
 
         const tagName = tag.split(" ")[0];
 
@@ -72,7 +72,6 @@ const parser = function(renderString, view, args) {
 
         n.i = c.length;
         c.push(n);
-        n.parent = p;
 
         if (!(n.tagName in DOCUMENT_TAGS_SHORTCUT)) {
           p = n;

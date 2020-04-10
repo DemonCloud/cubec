@@ -17,37 +17,19 @@ import pluginList from "../constant/pluginList";
 import renderSlot from "./renderSlot";
 import forkSetterAttributes from "../utils/forkSetterAttributes";
 
-const CREATE_PLUGIN_FORK_VIEWPROPS = "this.";
-const REGEXP_CREATE_PLUGIN_FORK_VIEWPROPS = /^this\./;
-
-const parserPluginProps = function(attrs, view, data) {
-  let props = {};
-
-  _eachObject(attrs, function(v,k){
-    if(k[0] === "#"){
-      k = k.substr(1);
-      v = REGEXP_CREATE_PLUGIN_FORK_VIEWPROPS.test(v) ?
-        _get(view, v.replace(CREATE_PLUGIN_FORK_VIEWPROPS,"")) :
-        _get(data||{}, v);
-    }
-    props[k] = v;
-  });
-
-  return props;
-};
-
 const createPluginProps = function(elm, obj, view, args){
+  const props = _extend({}, obj.attributes);
+  props.children = obj.children;
+
   return {
     __cubec_plugin__: true,
     __cubec_parent_view__: view,
+
     root: elm,
     refs: {},
     name: obj.tagName,
     prefix: empty,
-    props: _extend(
-      parserPluginProps(obj.attributes, view, args),
-      { children: obj.children }
-    )
+    props: props
   };
 };
 
@@ -58,7 +40,8 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
 
   // is not SLOT or PLUGIN
   if(!elm) {
-    elm = obj.isRoot ? document.createDocumentFragment() :
+    elm =
+      obj.isRoot ? document.createDocumentFragment() :
       obj.isSvg ? document.createElementNS(SVG_XML_NAMESPACE, obj.tagName) :
       document.createElement(obj.tagName);
   }
@@ -94,7 +77,6 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
     }
   }
 
-
   // parse if it's <slot>
   // slot is significative in [cubec.view.createSlot]
   if (view && obj.isSlot && obj.text) {
@@ -108,7 +90,9 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
       const viewSlotRecycler = view._assr(_idt);
 
       if(viewSlotRender){
-        const renderData = (slotDataPath && _isObject(args)) ? _get(args, slotDataPath) : args;
+        const renderData =
+          (slotDataPath && _isObject(args)) ?
+          _get(args, slotDataPath) : args;
         const renderRecycler = renderSlot(viewSlotRender, elm, view, renderData);
 
         if(_isFn(renderRecycler)) viewSlotRecycler[slotName] = renderRecycler;

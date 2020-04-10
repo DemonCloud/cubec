@@ -1,53 +1,46 @@
-import { _idt } from '../../../usestruct';
+import { _idt, _trim } from '../../../usestruct';
 import { SVG_TAGNAMES_MAPPING } from '../constant/svg';
-import { ATTRIBUTES_SHORTCUT_NAME } from '../constant/attr';
 import pluginList from "../constant/pluginList";
 
-const REGEXP_ATTRIBUTES_EXECUTE = /(\S+)=["'](.*?)["']|([\w-]+)/gi;
+import parserAttributes from '../utils/parseAttributes';
+
+const spaceSplit = ' ';
 
 // create TreeNode
-const createTreeNode = function(str, view, id, args) {
-  let arr = str.split(' '),
-    tagName = arr.shift(),
-    attributes = arr.join(' '),
-    elm = {tagName, child: [], id};
+const createTreeNode = function(str, parent, view, id, args) {
+
+  let arr = str.split(spaceSplit),
+    tagName = arr.shift(), // post tagName first
+    attributes = _trim(arr.join(spaceSplit)),
+    elm = { tagName: tagName, child: [], id: id };
+
+  if(parent)
+    elm.parent = parent;
 
   // cubec slot tag
   if (tagName === 'slot')
-    elm.isSlot = true;  // define is view slot
+    elm.isSlot = true;
   // cubec plugin register
   else if(
     (view._aspu && view._aspu(_idt)[tagName]) ||
     pluginList[tagName])
-    elm.isPlug = true; // define is register view plugin
+    elm.isPlug = true;
   // svg element is not HTML Web Standard
-  else if(SVG_TAGNAMES_MAPPING[tagName]){
-    elm.tagName = SVG_TAGNAMES_MAPPING[tagName];
+  else if(
+    (parent && parent.isSvg) ||
+    SVG_TAGNAMES_MAPPING[tagName]
+  ){
+    elm.tagName = SVG_TAGNAMES_MAPPING[tagName] || tagName;
     elm.isSvg = true;
   }
 
   if (attributes) {
-    let attrs = {}, s, tg;
-    while ((s = REGEXP_ATTRIBUTES_EXECUTE.exec(attributes))) {
-      if (!s[1]) {
-        // shortcut props in html5
-        if(ATTRIBUTES_SHORTCUT_NAME[s[0]]){
-          attrs[s[0]] = true;
-        } else if(!tg) {
-          tg = s[0];
-        } else {
-          attrs[tg] = s[0];
-          tg = 0;
-        }
-      } else {
-        // set attribute key/value
-        attrs[s[1]] = s[2];
-      }
-    }
-
+    let attrs = parserAttributes({}, attributes, view, args);
     // embed attribute to TreeNode
-    elm.attributes = attrs;
+    if(attrs) elm.attributes = attrs;
   }
+
+  // console.log(elm);
 
   return elm;
 };

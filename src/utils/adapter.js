@@ -1,6 +1,7 @@
 // adapter for IE
 // FUCK IE9
 // JUST FUCK Internet Explorer, FUCK!!!
+// detector IE version IE9 - IE11, Also it can include Edge
 function IEVersion() {
   const ua = window.navigator.userAgent;
 

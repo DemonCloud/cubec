@@ -14,10 +14,6 @@ const forkSetterAttributes = function(elm, attr, values) {
   const isSvgElement = window.SVGElement ? elm instanceof window.SVGElement : false;
   const val = _isString(values) ? _decode(values) : values;
 
-  // if(attrName === "*checked"){
-  //   console.log("*checked", val);
-  // }
-
   // with defaultValue, must redo default setting
   if (REGEXP_ATTRIBUTES_DEFAULT_ATTR.test(attrName)) {
     // is defaultAttr

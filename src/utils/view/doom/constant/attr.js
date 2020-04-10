@@ -101,6 +101,7 @@ const ATTRIBUTES_SHORTCUT_NAME = {
   // async: true
   // readonly
 };
+
 // attributes need set use [dom.setAttributes]
 _eachArray(ATTRIBUTES_NEED_SETATTRIBUTES, function(attrName){
   const prefixRenderAttrName = attrName.toLowerCase();
@@ -121,6 +122,7 @@ _eachArray(ATTRIBUTES_NEED_SETBOOLEANVALUES, function(attrName){
   if(prefixRenderName !== attrName) ATTRIBUTES_SHORTCUT_NAME[prefixRenderName] = true;
 });
 
+// fast lock dict
 _lock(ATTRIBUTES_NEED_SETATTRIBUTES);
 _lock(ATTRIBUTES_NEED_SETBOOLEANVALUES);
 _lock(ATTRIBUTES_FORK_RENDER_TEMPLATE);

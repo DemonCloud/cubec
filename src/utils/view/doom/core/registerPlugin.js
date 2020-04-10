@@ -15,6 +15,7 @@ import {bindDomEvent, removeDomEvent} from "../../domEventSystem";
 import {emit, off, on} from "../../../universalEvent";
 import { DOCUMENT_TAGS_SHORTCUT } from '../constant/tags';
 import pluginList from "../constant/pluginList";
+import parseRenderData from '../utils/parseRenderData';
 
 import parser from './parser';
 import createElement from './createElement';
@@ -39,18 +40,17 @@ const createPluginEvents = function(root, newProps, events) {
 
 const createPluginRender = function(name, pugOptions){
   const createThis = {};
-  const pluginRenderToString = pugOptions.cache?
+
+  const pluginRenderToString = pugOptions.cache ?
     _axtc(pugOptions.render || pugOptions.template, createThis):
     _axt(pugOptions.render || pugOptions.template, createThis);
   const acceptHooks = pugOptions.pluginAcceptRender || _cool;
 
   // render func
   return function(root, props, view, args, isUpdate){
-    const renderData = acceptHooks.call(props, args);
+    const renderData = parseRenderData(acceptHooks, args, props);
 
-    // prevent render by hooks
-    if(renderData === false || renderData == null) return root;
-
+    if(renderData === false) return root;
     // dynamic this and render string
     const renderString = pluginRenderToString(renderData, createThis.view = props);
 
@@ -60,12 +60,16 @@ const createPluginRender = function(name, pugOptions){
     // parser to tree
     const target = parser(
       renderString,
-      view.props,
-      args
+      props,
+      renderData
     );
 
     // recreate dom events
-    createPluginEvents(root, props, pugOptions.events);
+    createPluginEvents(
+      root,
+      props,
+      pugOptions.events
+    );
 
     // compact refs
     if(root.__cpprr) _extend(props.refs, root.__cpprr);
@@ -76,7 +80,8 @@ const createPluginRender = function(name, pugOptions){
       root.__cpprs = renderString;
       root.__cpprr = props.refs;
 
-      const internal = createElement((root.axml = target), props, args);
+      const internal = createElement((root.axml = target), props, renderData);
+
       root.appendChild(internal, root.innerHTML='');
 
     }else{
@@ -84,8 +89,8 @@ const createPluginRender = function(name, pugOptions){
       // diff render
       applyPatch(
         root,
-        treeDiff(root.axml, target, [], null, null, props, args),
-        args,
+        treeDiff(root.axml, target, [], null, null, props, renderData),
+        renderData,
         (root.axml = target),
         (root.__ccprs = renderString)
       );
@@ -97,7 +102,7 @@ const createPluginRender = function(name, pugOptions){
     }
 
     // sync run completeRender event with Plugin
-    emit.call(root, "completeRender", args);
+    emit.call(root, "completeRender", renderData);
 
     return root;
   };
@@ -105,10 +110,12 @@ const createPluginRender = function(name, pugOptions){
 
 // alias createPlugin
 // createGlobalPlugin
-export default function(name, pugOptions, idt, existViewPluginList){
+export default function createPlugin(name, pugOptions, idt, existViewPluginList){
+
   if(!_isString(name) ||
     !_isPlainObject(pugOptions) ||
     !_isString(pugOptions.render || pugOptions.template))
+
     return console.error(`[cubec view] [plugin] name of [${name}] is not plugin format`);
 
   if(name in DOCUMENT_TAGS_SHORTCUT){

@@ -278,6 +278,7 @@ const modelProtoType = {
     return this;
   },
 
+  // back prev data-set history
   back(pos, isStatic) {
     if (modelLockStatus(this) || !this._h) return;
 
@@ -316,6 +317,7 @@ const modelProtoType = {
     return currentData;
   },
 
+  // create link form LinkSystem
   link(proto){
     if(proto &&
        _isFn(proto) &&

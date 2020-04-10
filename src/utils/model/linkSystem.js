@@ -4,7 +4,6 @@
 //   runtime
 //   solve
 //   catch
-
 import MODEL from '../../constant/model.define';
 import {
   _has,
@@ -15,6 +14,10 @@ import {
   _isArrayLike,
   _extend,
   _map,
+  _createPrivate,
+
+  broken_array,
+  broken_object
 } from '../usestruct';
 import defined from '../defined';
 
@@ -35,6 +38,7 @@ const modelLinkRecords = {
   update: {},
 };
 
+// register link function
 const registerLinkProto = function(modelAPI, linkProto, linkType, linkFunction){
   // register coll
   const connect = function(){
@@ -47,12 +51,23 @@ const registerLinkProto = function(modelAPI, linkProto, linkType, linkFunction){
   connect.type = linkType;
 
   modelLinkRecords[modelAPI][linkProto] = connect;
+
+  return [linkType, connect];
 };
 
 const registerNextRuntime = function(func){ return this.next("runtime", func); };
 const registerNextBefore = function(func){ return this.next("before", func); };
 const registerNextSolve = function(func){ return this.next("solve", func); };
 const registerNextCatch = function(func){ return this.next("catch", func); };
+const registerUse = function(linkReturn){
+  const map = linkReturn[0];
+  const coll = linkReturn[1];
+  // bind args
+  const collArgs = _slice(arguments, 1);
+  this.next(map, coll.apply(this, collArgs));
+
+  return this;
+};
 
 // brefore arguments caller
 const linkBeforeCaller = function(beforeQueue, args){
@@ -99,16 +114,10 @@ export const linkCatchCaller = function(catchQueue, args){
     res = link.apply(link.core, res);
 
     if(res == null) break;
-    else if(i!==(l-1) && !_isArrayLike(res)) res = [res];
+    else if(i !== (l-1) && !_isArrayLike(res)) res = [res];
   }
 
   return ( res === args || res === LINKPERSET ) ? null : res;
-};
-
-const createLinkProps = function(returnValue){
-  return function(idt){
-    return idt === _idt ? returnValue : LINKPERSET;
-  };
 };
 
 export const createLink = function(model, modelAPI, b, r, s, c){
@@ -131,6 +140,7 @@ export const createLink = function(model, modelAPI, b, r, s, c){
     const useSolve = !!linkSolve.length;
     const useBefore = !!linkBefore.length;
     const useRuntime = !!linkRuntime.length;
+
     let args = _slice(arguments);
     let result;
 
@@ -176,14 +186,20 @@ export const createLink = function(model, modelAPI, b, r, s, c){
 
   // create prototype
   defined(linkInstance, _extend(makeInstanceLinkPrototype, {
-    _s: createLinkProps(linkSolve),
-    _c: createLinkProps(linkCatch),
-    _b: createLinkProps(linkBefore),
-    _r: createLinkProps(linkRuntime),
-    _m: createLinkProps(model),
+    _s: _createPrivate(linkSolve, broken_array),
+    _c: _createPrivate(linkCatch, broken_array),
+    _b: _createPrivate(linkBefore, broken_array),
+    _r: _createPrivate(linkRuntime, broken_array),
+    _m: _createPrivate(model, broken_object),
     _a: modelAPI, // link adapter name
 
-    next: function(runtime="solve", func){
+    use: registerUse,
+    nextBefore: registerNextBefore,
+    nextRuntime: registerNextRuntime,
+    nextSolve: registerNextSolve,
+    nextCatch: registerNextCatch,
+
+    next: function(runtime, func){
       if(runtime &&
         _isString(runtime) &&
         linkMapping[runtime] &&
@@ -191,10 +207,6 @@ export const createLink = function(model, modelAPI, b, r, s, c){
         linkMapping[runtime].push(func);
       return this;
     },
-    nextBefore: registerNextBefore,
-    nextRuntime: registerNextRuntime,
-    nextSolve: registerNextSolve,
-    nextCatch: registerNextCatch,
 
     extend(){
       return createLink(model, modelAPI, linkBefore, linkRuntime, linkSolve, linkCatch);
@@ -204,26 +216,43 @@ export const createLink = function(model, modelAPI, b, r, s, c){
   return linkInstance;
 };
 
-export const registerLink = function(modelAPI, linkProto, linkType, linkFunction, idt){
-  if(_isString(modelAPI) &&
-     _isString(linkProto) &&
-     _isString(linkType) &&
-     _isFn(linkFunction)){
+// record
+// globalLink(modelAPI, linkProto, linkType, linkFunction);
+// privateLink(linkType, linkFunction);
+export const registerLink = function(modelAPI, linkProto, linkType, linkFunction){
+  let use;
 
+  const useGlobalLink =
+    arguments.length >= 4 &&
+    _isString(modelAPI) &&
+    _isString(linkProto) &&
+    _isString(linkType) &&
+    _isFn(linkFunction);
+
+  const usePrivateLink =
+    arguments.length === 2 &&
+    _isString(modelAPI) &&
+    _isFn(linkProto);
+
+  if(useGlobalLink){
     // use api
     if(!_has(ALLOWLINKAPIS, modelAPI))
-      return console.error(`[cubec model] [${linkProto}] is not format model.proto.api to register in model linkSystem`);
-
+      console.error(`[cubec model] [${linkProto}] is not format model.proto.api to register in model linkSystem`);
     // runtime path
-    // if(!_has(idt === _idt ? ALLOWLINKTYPESWITHRUNTIME : ALLOWLINKTYPES, linkType))
-    if(!_has(ALLOWLINKTYPES, linkType))
-      return console.error(`[cubec model] [${linkType}] linkType is not allow for register by linkSystem`);
-
-    return registerLinkProto(modelAPI, linkProto, linkType, linkFunction);
+    else if(!_has(ALLOWLINKTYPES, linkType))
+      console.error(`[cubec model] [${linkType}] linkType is not allow for register by linkSystem`);
     // registerLinkProto(modelAPI, linkProto, linkType, linkFunction);
     // return console.log(modelLinkRecords)
+    else
+      use = registerLinkProto(modelAPI, linkProto, linkType, linkFunction);
+
+  }else if(usePrivateLink){
+    use = [modelAPI, linkProto];
+
+  }else{
+    console.error("[cubec model] link register linkSystem not current format arguments", arguments);
   }
 
-  return console.error("[cubec model] linkSystem not current format arguments", arguments);
+  return use;
 };
 

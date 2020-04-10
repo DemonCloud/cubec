@@ -18,3 +18,4 @@ function memoize(fn,context){
 export default function axtc(){
   return memoize(axt.apply(this,arguments));
 }
+

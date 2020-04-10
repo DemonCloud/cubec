@@ -407,10 +407,8 @@ view.prototype = {
 
 };
 
-
 //include instance [model, atom]
 view.__instance = [_noop, _noop];
-
 
 // create Global Plugin
 view.createGlobalPlugin = registerDOOMPlugin;
@@ -429,7 +427,7 @@ view.createSlot = function(options={}){
   if(!slotOptions.slotAcceptRender || _isFn(slotOptions.slotAcceptRender))
     slotOptions.slotAcceptRender = _cool;
 
-  // createC (this)
+  // createExtend (this) get Extend API
   return this.extend(slotOptions);
 };
 

@@ -25,10 +25,10 @@ const optimizer = {
   tagright : />\s{2,}/gim
 };
 const axtSetting  = {
-  escape      : '{{-([\\s\\S]+?)}}',
-  interpolate : '{{#([\\s\\S]+?)}}',
-  command     : '{{\\*([\\s\\S]+?)}}',
-  evaluate    : '{{([\\s\\S]+?)}}',
+  escape      : '{{-([\\s\\S]+?)}}',   // {{-value}}
+  interpolate : '{{#([\\s\\S]+?)}}',   // {{#value}}
+  command     : '{{\\*([\\s\\S]+?)}}', // {{*commander}}
+  evaluate    : '{{([\\s\\S]+?)}}',    // {{ javascript }}
 };
 const tools = {
   est,
@@ -71,6 +71,7 @@ function makeEvaluate(evaluate){
     else if(
       (elseifpart === 'elseif' ||
         elseifpart === 'elseif(' ||
+        elseifpart === 'else if(' ||
         elseifpart === 'else if')
     )
       evaluatec = '}else if(' + parserEval.slice(6) + '){';
