@@ -4,21 +4,20 @@ import pluginList from "../constant/pluginList";
 
 import parserAttributes from '../utils/parseAttributes';
 
-const spaceSplit = ' ';
+const REGEXP_PARSER_TAGNAME = /\s/im;
 
 // create TreeNode
 const createTreeNode = function(str, parent, view, id, args) {
+  const tagSplit = str.search(REGEXP_PARSER_TAGNAME);
+  const existAttributes = (tagSplit > 0);
+  const tagName = existAttributes ? str.slice(0, tagSplit) : str;
+  const attributes = existAttributes ? _trim(str.slice(tagSplit+1)) : null;
+  const elm = { tagName: tagName, child: [], id: id };
 
-  let arr = str.split(spaceSplit),
-    tagName = arr.shift(), // post tagName first
-    attributes = _trim(arr.join(spaceSplit)),
-    elm = { tagName: tagName, child: [], id: id };
-
-  if(parent)
-    elm.parent = parent;
+  if(parent) elm.parent = parent;
 
   // cubec slot tag
-  if (tagName === 'slot')
+  if(tagName === 'slot')
     elm.isSlot = true;
   // cubec plugin register
   else if(
@@ -35,12 +34,11 @@ const createTreeNode = function(str, parent, view, id, args) {
   }
 
   if (attributes) {
+    // parse attribute
     let attrs = parserAttributes({}, attributes, view, args);
     // embed attribute to TreeNode
     if(attrs) elm.attributes = attrs;
   }
-
-  // console.log(elm);
 
   return elm;
 };

@@ -1,18 +1,20 @@
 import {
-  _idt,
   _axt,
   _axtc,
-  // _ayc,
+  _isFn,
   _eachObject,
-  _eqdom,
   _extend,
   _cool,
   _isPlainObject,
+  _createPrivate,
   _isString,
+
+  broken_object,
+  empty,
   eventNameSpace
 } from "../../../usestruct";
 import {bindDomEvent, removeDomEvent} from "../../domEventSystem";
-import {emit, off, on} from "../../../universalEvent";
+import { emit, off, on } from "../../../universalEvent";
 import { DOCUMENT_TAGS_SHORTCUT } from '../constant/tags';
 import pluginList from "../constant/pluginList";
 import parseRenderData from '../utils/parseRenderData';
@@ -44,15 +46,24 @@ const createPluginRender = function(name, pugOptions){
   const pluginRenderToString = pugOptions.cache ?
     _axtc(pugOptions.render || pugOptions.template, createThis):
     _axt(pugOptions.render || pugOptions.template, createThis);
-  const acceptHooks = pugOptions.pluginAcceptRender || _cool;
+  const acceptHooks = _isFn(pugOptions.pluginAcceptRender) ?
+    pugOptions.pluginAcceptRender : _cool;
+  const pluginList = _isPlainObject(pugOptions.plugin) ?
+    pugOptions.plugin : {};
+  const defaultProps = pugOptions.props || {};
 
   // render func
-  return function(root, props, view, args, isUpdate){
-    const renderData = parseRenderData(acceptHooks, args, props);
+  return function(root, pView, view, args, isUpdate){
+    let render = false;
+    // create private self plugin list
+    pView._aspu = _createPrivate(pluginList, broken_object);
+    pView.props = _extend(defaultProps, pView.props);
 
+    const renderData = parseRenderData(acceptHooks, args, pView);
     if(renderData === false) return root;
+
     // dynamic this and render string
-    const renderString = pluginRenderToString(renderData, createThis.view = props);
+    const renderString = pluginRenderToString(renderData, createThis.view = pView);
 
     // prevent render when with same prev renderString
     if(root.__cpprs === renderString) return root;
@@ -60,49 +71,56 @@ const createPluginRender = function(name, pugOptions){
     // parser to tree
     const target = parser(
       renderString,
-      props,
+      pView,
       renderData
     );
 
     // recreate dom events
     createPluginEvents(
       root,
-      props,
+      pView,
       pugOptions.events
     );
 
     // compact refs
-    if(root.__cpprr) _extend(props.refs, root.__cpprr);
+    if(root.__cpprr) _extend(pView.refs, root.__cpprr);
 
     // new render
     if(!root.axml || (root.__cpprn !== name && isUpdate)){
       root.__cpprn = name;
       root.__cpprs = renderString;
-      root.__cpprr = props.refs;
+      root.__cpprr = pView.refs;
 
-      const internal = createElement((root.axml = target), props, renderData);
+      const internal = createElement((root.axml = target), pView, renderData);
 
-      root.appendChild(internal, root.innerHTML='');
+      root.appendChild(internal, root.innerHTML=empty);
 
+      render = true;
     }else{
+      const patches = treeDiff(root.axml, target, [], null, null, pView, renderData);
       // console.log("update plugin diff render");
       // diff render
-      applyPatch(
-        root,
-        treeDiff(root.axml, target, [], null, null, props, renderData),
-        renderData,
-        (root.axml = target),
-        (root.__ccprs = renderString)
-      );
+      if(patches.length){
+        applyPatch(
+          root,
+          patches,
+          renderData,
+          (root.axml = target),
+          (root.__ccprs = renderString)
+        );
+
+        render = true;
+      }
 
       // remove and gc unexist elm ref
-      _eachObject(props.refs, function(elm, refName){
-        if(!root.contains(elm)) delete props.refs[refName];
+      _eachObject(pView.refs, function(elm, refName){
+        if(!root.contains(elm)) delete pView.refs[refName];
       });
     }
 
     // sync run completeRender event with Plugin
-    emit.call(root, "completeRender", renderData);
+    if(render)
+      emit.call(root, "completeRender", renderData);
 
     return root;
   };
@@ -110,7 +128,7 @@ const createPluginRender = function(name, pugOptions){
 
 // alias createPlugin
 // createGlobalPlugin
-export default function createPlugin(name, pugOptions, idt, existViewPluginList){
+export default function createPlugin(name, pugOptions, existViewPluginList){
 
   if(!_isString(name) ||
     !_isPlainObject(pugOptions) ||
@@ -123,14 +141,13 @@ export default function createPlugin(name, pugOptions, idt, existViewPluginList)
     return null;
   }
 
-  // createPlugin
+  // create plugin render bounder
   const createPlugin = createPluginRender(name, pugOptions);
 
-  if(idt === _idt && _isPlainObject(existViewPluginList)){
+  if(_isPlainObject(existViewPluginList))
     existViewPluginList[name] = createPlugin;
-  }else{
+  else
     pluginList[name] = createPlugin;
-  }
 
   return pugOptions;
 }

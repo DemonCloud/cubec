@@ -71,10 +71,6 @@ const view = function(options=broken_object) {
   const useSlot = {};          // { slotName:  slotView }
   const useSlotRecycler = {};  // { slotName: slotRecycler }
 
-  // create refs;
-  this.refs = {};
-  this.directRender = false;
-
   defined(this, {
     name : name,
     prefix : ("#"+ prefix + name + " "),
@@ -84,16 +80,16 @@ const view = function(options=broken_object) {
     _assu : _createPrivate(useSlot, broken_object),
     _assr : _createPrivate(useSlotRecycler, broken_object),
     _asp : function(v){ return v === _idt ? parentProps : broken_object; },
-    _assp : function(v, newProps){
-      if(v === _idt && newProps && _isPlainObject(newProps))
-        parentProps = _lock(newProps);
+    _assp : function(v, newParentProps){
+      if(v === _idt && newParentProps && _isPlainObject(newParentProps))
+        parentProps = _lock(newParentProps);
     }
   });
 
   options = _extend(_clone(VIEW.DEFAULT_OPTION), options);
 
   // define property
-  let props = _lock(_extend({}, _isPlainObject(options.props) ? options.props : broken_object)),
+  let props = _extend({}, _isPlainObject(options.props) ? options.props : broken_object),
       slots = _isPlainObject(options.slot) ? options.slot : broken_object,
       vroot = options.root,
       render,
@@ -104,6 +100,13 @@ const view = function(options=broken_object) {
       models = _isArray(connect) ? connect
         : (connect instanceof view.__instance[0] || connect instanceof view.__instance[1]) ? [connect]
         : broken_array;
+
+  // create refs;
+  this.refs = {};
+  // directRender
+  this.directRender = false;
+  // defaultProps
+  this.defaultProps = _lock(props);
 
   // format slots as cubecView
   _eachObject(slots, function(viewExtend, key){
@@ -118,7 +121,7 @@ const view = function(options=broken_object) {
   // create self plugins
   _eachObject(plugins, function(pluginOptions, pluginName){
     // inject pluginRender into view
-    view.createGlobalPlugin(pluginName, pluginOptions, _idt, usePlugins);
+    view.createGlobalPlugin(pluginName, pluginOptions, usePlugins);
   });
 
   // console.log(connect);
@@ -186,6 +189,7 @@ const view = function(options=broken_object) {
     const createRender = function(){
       try{
         const newRenderString = this.renderToString(renderData);
+        let executeRender = true;
 
         // if is same string, not need render
         // if(renderString === newRenderString) return;
@@ -198,27 +202,27 @@ const view = function(options=broken_object) {
           this.root.innerHTML = newRenderString;
         // use renderDOOM
         else
-          renderDOOM(this.root, newRenderString, this, renderData);
-
+          executeRender = renderDOOM(this.root, newRenderString, this, renderData);
+        // write _vid
         this.root._vid = this._vid;
 
         // emit complete render and write vid
-        this.emit("completeRender", [renderData, this._vid],);
-
-        renderIntime = false;
+        if(executeRender)
+          this.emit("completeRender", [renderData, this._vid]);
 
       }catch(e){
         console.error(ERRORS.VIEW_RENDER, e, renderData);
-
-        renderIntime = false;
 
         // send catch event
         if(!_hasEvent(this,"catch")) throw e;
         else this.emit("catch", [renderData]);
       }
+
+      renderIntime = false;
+
     }.bind(this);
 
-    // do render
+    // do async render
     _ayc(createRender);
 
     return true;

@@ -2,7 +2,7 @@ import {
   _decode,
   _eachArray,
   _eachObject,
-  _extend,
+  _merge,
   _get,
   _idt,
   _isFn,
@@ -16,11 +16,16 @@ import { SVG_XML_NAMESPACE } from '../constant/svg';
 import pluginList from "../constant/pluginList";
 import renderSlot from "./renderSlot";
 import forkSetterAttributes from "../utils/forkSetterAttributes";
+import forkSetterPartAttributes from '../utils/forkSetterPartAttributes';
 
-const createPluginProps = function(elm, obj, view, args){
-  const props = _extend({}, obj.attributes);
-  props.children = obj.children;
+const createSlotProps = function(slotRender, elm, obj, view, args){
+  return _merge(
+    slotRender.defaultProps || {},
+    obj.attributes
+  );
+};
 
+const createPluginDelegateView = function(elm, obj, view, args){
   return {
     __cubec_plugin__: true,
     __cubec_parent_view__: view,
@@ -29,7 +34,10 @@ const createPluginProps = function(elm, obj, view, args){
     refs: {},
     name: obj.tagName,
     prefix: empty,
-    props: props
+    props: _merge(
+      obj.attributes,
+      { children: obj.children }
+    )
   };
 };
 
@@ -47,33 +55,23 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
   }
 
   // registered view.refs Update
-  if (obj.attributes){
-    // set attributes
-    _eachObject(obj.attributes, function (value, key) {
-      forkSetterAttributes(elm, key, value);
-    });
+  if (obj.attributes && obj.attributes.ref){
+    const refName = obj.attributes.ref;
 
-    // set ref
-    if(obj.attributes.ref){
-      const refName = obj.attributes.ref;
+    // set in refs at orgView
+    view.refs[refName] = elm;
 
-      // set in refs at orgView
-      view.refs[refName] = elm;
+    // in cubec.plugin.scope
+    // exist refs scope
+    if(createPlugin && view.props.children){
+      const children = view.props.children;
+      const refSearch = new RegExp(`ref\\s*=\\s*[\'\"]?${refName}[\'\"]?`);
 
-      // in cubec.plugin.scope
-      // exist refs scope
-      if(createPlugin){
-        const children = view.props.children;
-        // check plugin childrens [exist this refs]
-        if(children &&
-          _isString(children) &&
-          (children.indexOf(`'${refName}'`) > -1 ||
-           children.indexOf(`"${refName}"`) > -1 )){
-          // childrens exist should write in ParentCubecView
-          view.__cubec_parent_view__.refs[refName] = elm;
-        }
+      // check plugin childrens [exist this refs]
+      if(children.search(refSearch) > 0){
+        // childrens exist should write in ParentCubecView
+        view.__cubec_parent_view__.refs[refName] = elm;
       }
-
     }
   }
 
@@ -82,7 +80,12 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
   if (view && obj.isSlot && obj.text) {
     const slotStr = _isString(obj.text) ? obj.text : '';
 
+    _eachObject(obj.attributes, function (value, key) {
+      forkSetterPartAttributes(elm, key, value);
+    });
+
     if(slotStr){
+      // parser slot
       const slot = _trim(slotStr).split('::');
       const slotName = _trim(slot[0] || "");
       const slotDataPath = _trim(slot[1] || "");
@@ -93,7 +96,22 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
         const renderData =
           (slotDataPath && _isObject(args)) ?
           _get(args, slotDataPath) : args;
-        const renderRecycler = renderSlot(viewSlotRender, elm, view, renderData);
+
+        // update props;
+        viewSlotRender.props = createSlotProps(
+          viewSlotRender,
+          elm,
+          obj,
+          view,
+          renderData
+        );
+
+        const renderRecycler = renderSlot(
+          viewSlotRender,
+          elm,
+          view,
+          renderData
+        );
 
         if(_isFn(renderRecycler)) viewSlotRecycler[slotName] = renderRecycler;
       }
@@ -115,15 +133,24 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
       _get(view._aspu(_idt), obj.tagName) ||
       _get(pluginList, obj.tagName);
 
+    _eachObject(obj.attributes, function (value, key) {
+      forkSetterPartAttributes(elm, key, value);
+    });
+
     // start plugin render;
     return getPluginRender(
       elm,
-      createPluginProps(elm, obj, view, args),
+      createPluginDelegateView(elm, obj, view, args),
       view,
       args,
       isUpdatePlugin
     );
   }
+
+  // set attributes
+  _eachObject(obj.attributes, function (value, key) {
+    forkSetterAttributes(elm, key, value);
+  });
 
   if (obj.text) {
     // pureText content
@@ -141,3 +168,4 @@ const createElement =  function(obj, view, args, isUpdateSlot=false, isUpdatePlu
 };
 
 export default createElement;
+

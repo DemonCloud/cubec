@@ -134,7 +134,6 @@ const applyPatch = function(orgTargetElement, patches, args) {
 
   // debuglog
   // console.log("usePatches", patches, "execPatches", execPatches);
-
   // fork patches action
   _eachArray(execPatches,function(patch) {
     const execFork = patchExecute[patch.t];

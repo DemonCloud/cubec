@@ -28,6 +28,7 @@ const parser = function(renderString, view, args) {
 
   // start parser
   renderString.replace(
+    // parser REGEXP
     REGEXP_PARSER_TEMPLATE_HTML,
     // parser function
     function(match, close, stag, tag, text) {
@@ -35,9 +36,8 @@ const parser = function(renderString, view, args) {
 
       // match plugin skip
       if(skip){
-        const closeTagName = (close||"").split(" ")[0];
         // not match plugin
-        if(closeTagName !== skipSign){
+        if(!close || _trim(close) !== skipSign){
           skipHTML += match;
           return match;
         }
@@ -54,20 +54,21 @@ const parser = function(renderString, view, args) {
       if (close) {
         p = p.parent;
         c = p.child;
+
         // special tag
       } else if (stag) {
         n = createTreeNode(stag, p, view, id++, args);
         n.i = c.length;
         c.push(n);
+
         // normal tag
       } else if (tag) {
         n = createTreeNode(tag, p, view, id++, args);
 
-        const tagName = tag.split(" ")[0];
-
-        if(pluginList[tagName]){
+        // Plug do skip
+        if(n.isPlug){
           skip = true;
-          skipSign = tagName;
+          skipSign = n.tagName;
         }
 
         n.i = c.length;
@@ -80,6 +81,7 @@ const parser = function(renderString, view, args) {
       } else if (text) {
         if (_trim(text)) p.text = text;
       }
+
       return match;
     }
   );
