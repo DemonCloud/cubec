@@ -12,35 +12,36 @@ const createTreeNode = function(str, parent, view, id, args) {
   const existAttributes = (tagSplit > 0);
   const tagName = existAttributes ? str.slice(0, tagSplit) : str;
   const attributes = existAttributes ? _trim(str.slice(tagSplit+1)) : null;
-  const elm = { tagName: tagName, child: [], id: id };
+  // new treeNode
+  const node = { tagName: tagName, child: [], id: id };
 
-  if(parent) elm.parent = parent;
+  if(parent) node.parent = parent;
 
   // cubec slot tag
   if(tagName === 'slot')
-    elm.isSlot = true;
+    node.isSlot = true;
   // cubec plugin register
   else if(
     (view._aspu && view._aspu(_idt)[tagName]) ||
     pluginList[tagName])
-    elm.isPlug = true;
+    node.isPlug = true;
   // svg element is not HTML Web Standard
   else if(
     (parent && parent.isSvg) ||
     SVG_TAGNAMES_MAPPING[tagName]
   ){
-    elm.tagName = SVG_TAGNAMES_MAPPING[tagName] || tagName;
-    elm.isSvg = true;
+    node.tagName = SVG_TAGNAMES_MAPPING[tagName] || tagName;
+    node.isSvg = true;
   }
 
   if (attributes) {
     // parse attribute
-    let attrs = parserAttributes({}, attributes, view, args);
+    const attrs = parserAttributes({}, attributes, view, args);
     // embed attribute to TreeNode
-    if(attrs) elm.attributes = attrs;
+    if(attrs) node.attributes = attrs;
   }
 
-  return elm;
+  return node;
 };
 
 export default createTreeNode;

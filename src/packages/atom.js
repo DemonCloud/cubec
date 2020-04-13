@@ -2,7 +2,6 @@
 //   use: [model, model, model, atom]
 //   ignore: []
 // );
-
 // atom.toChunk(path | [paths...] | filterFunc(dataChunk));
 // atom.toData(path | [paths...] | filterFunc(dataList));
 // atom.all();
@@ -15,7 +14,7 @@ import defined from '../utils/defined';
 import filters from '../utils/atom/filters';
 import chunkPathParser from '../utils/atom/chunkPathParser';
 import model from './model';
-import {on, off, emit} from '../utils/universalEvent';
+import { on, off, emit } from '../utils/universalEvent';
 import {
   _extend,
   _clone,

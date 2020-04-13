@@ -66,6 +66,7 @@ import _ajax from './struct/ajax';
 
 const rootSign = '/';
 const paramSign = ':';
+const slotPartSign = '::';
 const leafSign = '###';
 const querySign = '?';
 const hashSign = '#';
@@ -144,6 +145,7 @@ export {
   // constant
   rootSign,
   paramSign,
+  slotPartSign,
   leafSign,
   querySign,
   hashSign,

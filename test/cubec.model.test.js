@@ -1,47 +1,6 @@
 const cubec = require('../dist/cubec.min');
 
-test("model get data with no arguments", ()=>{
-  const model = cubec.model({ data: { a:1, b:2 } });
-  expect(model.get()).toEqual({ a:1, b:2 });
-});
-
-test("model get data with key", ()=>{
-  const model = cubec.model({ data: { a: 1 } });
-  expect(model.get("a")).toBe(1);
-});
-
-test("model get data with key [Object]", ()=>{
-  const model = cubec.model({ data: { a: { b: {c:3} } } });
-  expect(model.get("a")).toEqual({ b: {c:3} });
-});
-
-test("model get data immutable", ()=>{
-  const model = cubec.model({ data: { a:1, b:2 } });
-  const getData = model.get();
-  getData.a = 2;
-  getData.b = 3;
-  const getData2 = model.get();
-  expect(
-    getData.a !== getData2.a &&
-    getData.b !== getData2.b
-  ).toBe(true);
-});
-
-test("model set data with Object", ()=>{
-  const model = cubec.model();
-  const data = { a:1, b:2, c:3 };
-  model.set(data);
-  expect(model.get()).toEqual(data);
-});
-
-test("model set data with key & value", ()=>{
-  const model = cubec.model();
-  model.set("a", 1);
-  model.set("b", 2);
-  expect(model.get()).toEqual({ a:1, b:2 });
-});
-
-test("model lock prevent set data", ()=>{
+test("[model] lock prevent set data", ()=>{
   const model = cubec.model();
   model.lock();
   model.set({a:1,b:2});
@@ -80,7 +39,6 @@ test("model off event binding", ()=>{
   model.off("add");
   model.emit("add");
 
-  console.log(value);
   expect(value).toBe(1);
 });
 

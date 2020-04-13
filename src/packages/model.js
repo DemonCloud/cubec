@@ -18,9 +18,9 @@ import modelLockStatus from '../utils/model/lockstatus';
 import modelChangeDetector from '../utils/model/changeDetector';
 import modelUpdate from '../utils/model/update';
 import modelRequest from '../utils/model/request';
-import {createLink, registerLink} from '../utils/model/linkSystem';
-import {on, off, emit, registerEvent} from '../utils/universalEvent';
-import {isIE} from '../utils/adapter';
+import { createLink, registerLink } from '../utils/model/linkSystem';
+import { on, off, emit, registerEvent } from '../utils/universalEvent';
+import { isIE } from '../utils/adapter';
 import {
   _extend,
   _idt,
@@ -148,27 +148,36 @@ const modelProtoType = {
   },
 
   get(key) {
-    const data = this._ast(_clone, _idt);
+    // get data not use clone
+    let res;
 
-    return (key || key === 0) ?
-      (_isFn(key) ? key(data) :
-      _get(data, _toString(key))) :
-      data;
+    if(!key && key !== 0){
+      res = this._ast(_clone, _idt);
+    }else if(_isFn(key)){
+      res = key(this._ast(_clone, _idt));
+    }else{
+      const assert = this._ast(_cool, _idt);
+      // made it immutable
+      res = _clone(_get(assert, _toString(key)));
+    }
+
+    return res;
   },
 
   set(key, val, isStatic) {
     if (modelLockStatus(this)) return;
 
+    let res;
+
     const assert = this._ast(_cool, _idt);
     const assertram = this._ash(_idt);
     const argslength = arguments.length;
     const useKeyword = argslength >= 2 && (_isNumber(key) || _isString(key));
-    // 非法的设置值参数
-    const undefinedArgs = (key == null);
-    const single = !useKeyword && (_isObject(key) || _isFn(key));
-
-    let ref;
-    let currentData = _clone(assert);
+    // undefinedArgs
+    const undefinedArgs = (key == null) || (key !== key);
+    const singleTypeObject = _isObject(key);
+    const singleTypeFunc = _isFn(key);
+    const single = !useKeyword && (singleTypeObject || singleTypeFunc);
 
     if (argslength && !undefinedArgs) {
 
@@ -177,52 +186,47 @@ const modelProtoType = {
         isStatic = val;
 
         // support function
-        key = key instanceof model ? key.get() : (_isFn(key) ? key(this.get()) : key);
+        res = key instanceof model ? key.get() :
+          singleTypeFunc ? key(this.get()) : key;
 
         if (
-          (ref = key) &&
-          !_eq(assert, ref)
+          !_eq(assert, res)
           // && modelMultipleVerify(ref, this)
         ) {
           // create history
-          const prevData = _clone(assert);
-
-          // save history
-          if (this._h) assertram.push(_clone(assert));
+          if (this._h) assertram.push(assert);
 
           // change data
-          this._c(_clone(ref), _idt, (this.change = true));
+          this._c(res, _idt, (this.change = true));
 
           // save store
-          if (this._s) store.set(this.name, ref);
+          if (this._s) store.set(this.name, res);
 
-          currentData = _clone(ref);
+          if (!isStatic) modelChangeDetector(this, _clone(res), _clone(assert));
 
-          if (!isStatic) modelChangeDetector(this,currentData,prevData);
         }
 
-      // multiple key,val
+      // multiple set(key,val)
       } else if (
         !_eq(_get(assert, key), val)
           // && modelSingleVerify(key, val, this)
       ) {
         // create history
-        const prevData = _clone(assert);
-
         if (this._h) assertram.push(_clone(assert));
 
-        _set(assert, key, _clone(val), (this.change = true));
+        const prevData = _clone(assert);
 
-        if (this._s) store.set(this.name, assert);
+        res = _set(assert, key, val, (this.change = true));
 
-        currentData = _clone(assert);
+        if (this._s) store.set(this.name, res);
 
-        if (!isStatic) modelChangeDetector(this,currentData,prevData,key);
+        if (!isStatic) modelChangeDetector(this, _clone(res), prevData, key);
+
       }
 
     }
 
-    return currentData;
+    return res;
   },
 
   remove(prop, isStatic) {
@@ -230,7 +234,6 @@ const modelProtoType = {
 
     const assertram = this._ash(_idt);
     const assert = this._ast(_cool, _idt);
-    let currentData = _clone(assert);
 
     if (_isPrim(prop) && prop != null) {
       // create history
@@ -243,14 +246,19 @@ const modelProtoType = {
       if (this._s) store.set(this.name, assert);
 
       if (!isStatic) {
-        currentData = _clone(assert);
-        modelChangeDetector(this,currentData,prevData,prop);
+        let currentData = _clone(assert);
+
+        modelChangeDetector(this, currentData, prevData, prop);
+
         if(!_eq(currentData, prevData))
           this.emit('remove:' + prop, [currentData]);
+
+        return currentData;
       }
+
     }
 
-    return currentData;
+    return _clone(assert);
   },
 
   clearStore(){
@@ -304,12 +312,16 @@ const modelProtoType = {
 
     if(source){
       const prevData = this.get();
+
       currentData = _clone(source);
+
       this._c(source, _idt, (this.change = true));
+
       if (this._s) store.set(this.name, source);
 
       if (!isStatic){
         modelChangeDetector(this,currentData,prevData);
+
         this.emit('back', [currentData,prevData]);
       }
     }

@@ -150,7 +150,7 @@ export const createLink = function(model, modelAPI, b, r, s, c){
     if(args == null){
       if(useCatch) result =  linkCatchCaller(linkCatch, args);
       // async api interrupted
-      return isAsync ? [result] : result;
+      return isAsync ? [ result ] : result;
     }
 
     // check is async api
@@ -170,6 +170,7 @@ export const createLink = function(model, modelAPI, b, r, s, c){
     result = model[modelAPI].apply(model, args);
 
     if(useSolve) result = linkCaller(linkSolve, [result]);
+
     if(result == null && useCatch) return linkCatchCaller(linkCatch);
 
     return result;

@@ -7,11 +7,9 @@ import * as _struct from './utils/usestruct';
 import { createC, createExtend } from './utils/create';
 
 // information
-// export const cubec = Object.create(null);
-export const cubec = {
-  version: "1.9.18",
-  author: "YiJun",
-};
+export const cubec = Object.create(null);
+cubec.version = "1.9.18";
+cubec.author = "YiJun";
 
 // enter instance
 _view.__instance[0] = _model;

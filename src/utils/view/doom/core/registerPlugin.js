@@ -60,15 +60,16 @@ const createPluginRender = function(name, pugOptions){
     pView.props = _extend(defaultProps, pView.props);
 
     const renderData = parseRenderData(acceptHooks, args, pView);
+
     if(renderData === false) return root;
 
     // dynamic this and render string
     const renderString = pluginRenderToString(renderData, createThis.view = pView);
 
-    // prevent render when with same prev renderString
+    // prevent render when with same equal prev renderString
     if(root.__cpprs === renderString) return root;
 
-    // parser to tree
+    // start parser to tree
     const target = parser(
       renderString,
       pView,
@@ -99,6 +100,7 @@ const createPluginRender = function(name, pugOptions){
     }else{
       const patches = treeDiff(root.axml, target, [], null, null, pView, renderData);
       // console.log("update plugin diff render");
+
       // diff render
       if(patches.length){
         applyPatch(
@@ -114,13 +116,13 @@ const createPluginRender = function(name, pugOptions){
 
       // remove and gc unexist elm ref
       _eachObject(pView.refs, function(elm, refName){
+        // DOM API HTMLElement.contains
         if(!root.contains(elm)) delete pView.refs[refName];
       });
     }
 
     // sync run completeRender event with Plugin
-    if(render)
-      emit.call(root, "completeRender", renderData);
+    if(render) emit.call(root, "completeRender", renderData);
 
     return root;
   };

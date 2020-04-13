@@ -5,8 +5,10 @@ import {
   _get,
   _has,
   _eq,
+  empty
 } from '../usestruct';
 
+const sign = ".";
 const replaceChangeReg = /^change:/;
 
 // match set path matcher
@@ -14,13 +16,13 @@ const presetParser = function(setPath){
    // setPath-> a.b.c => [a.b.c, a.b, a];
    const paths = [];
    if(setPath && setPath.length){
-     const getDotPath = setPath.split(".");
+     const getDotPath = setPath.split(sign);
      if(getDotPath.length > 1){
        // first pop one sign
        getDotPath.pop();
        while(getDotPath.length){
          // pop end path
-         paths.push(getDotPath.join("."));
+         paths.push(getDotPath.join(sign));
          getDotPath.pop();
        }
      }
@@ -29,7 +31,7 @@ const presetParser = function(setPath){
    return paths;
 };
 
-function changeDetector(model,currentData,prevData,preset){
+function changeDetector(model ,currentData ,prevData ,preset){
   const res = [];
   const detectList = model._asc(_idt);
 
@@ -43,7 +45,7 @@ function changeDetector(model,currentData,prevData,preset){
 
       _eachArray(detectList, function(path){
         if(currentPath === path || testReg.test(path)){
-          const spath = path.replace(replaceChangeReg,'');
+          const spath = path.replace(replaceChangeReg,empty);
           const cv = _get(currentData,spath);
           const pv = _get(prevData,spath);
           if(!_eq(cv,pv)) res.push([path, [cv, pv]]);
@@ -65,11 +67,12 @@ function changeDetector(model,currentData,prevData,preset){
     }else{
       // not preset, detect all
       _eachArray(detectList, function(path){
-        const spath = path.replace(replaceChangeReg,'');
+        const spath = path.replace(replaceChangeReg,empty);
         const cv = _get(currentData,spath);
         const pv = _get(prevData,spath);
         if(!_eq(cv,pv)) res.push([path,[cv,pv]]);
       });
+
     }
   }
 
