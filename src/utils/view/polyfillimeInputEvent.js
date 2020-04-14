@@ -1,5 +1,5 @@
 import $ from '../../lib/jquery';
-import { idSign, empty } from '../usestruct';
+import { bindDomEvent } from './domEventSystem';
 
 let _iid = 1;
 const ime = {};
@@ -66,8 +66,9 @@ const polyfillimeInputEvent = function(view, delegateSelector, callback){
 
   $(view.root).
     on('compositionstart', pida, compositionIn).
-    on('compositionend', pida, compositionOut).
-    on('input', (delegateSelector[0] === idSign ? empty : view.prefix)+delegateSelector, pfn);
+    on('compositionend', pida, compositionOut);
+
+  bindDomEvent(view, "input", delegateSelector, pfn);
 };
 
 export default polyfillimeInputEvent;

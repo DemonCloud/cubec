@@ -4,6 +4,7 @@ import pluginList from "../constant/pluginList";
 
 import parserAttributes from '../utils/parseAttributes';
 
+// first empty cat
 const REGEXP_PARSER_TAGNAME = /\s/im;
 
 // create TreeNode
@@ -15,14 +16,12 @@ const createTreeNode = function(str, parent, view, id, args) {
   // new treeNode
   const node = { tagName: tagName, child: [], id: id };
 
-  if(parent) node.parent = parent;
+  if(parent)
+    node.parent = parent;
 
-  // cubec slot tag
-  if(tagName === 'slot')
-    node.isSlot = true;
-  // cubec plugin register
-  else if(
-    (view._aspu && view._aspu(_idt)[tagName]) ||
+  // cubec plugin
+  if(
+    view._aspu(_idt)[tagName] ||
     pluginList[tagName])
     node.isPlug = true;
   // svg element is not HTML Web Standard

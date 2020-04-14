@@ -1,19 +1,22 @@
 import $ from '../../lib/jquery';
-import { idSign, empty } from '../usestruct';
 
-const fixDelegateSelectorPath = function(prefix, delegateSelector){
-  delegateSelector = delegateSelector || "";
-  return ((delegateSelector[0] === idSign ? empty : prefix)+delegateSelector) || "*";
+const createDelegateEventHandler = function(view, handlerFn){
+  return (handlerFn._fn = function(e){
+    const elm = e.currentTarget;
+    // console.log(arguments);
+
+    if(elm && elm._veid === view._vid){
+      return handlerFn.apply(view, arguments);
+    }
+  });
 };
 
 export const bindDomEvent = function(view, eventName, delegateSelector, handler) {
   if(delegateSelector && handler){
-    const bindHandler = handler.bind(view);
-    handler._fn = bindHandler;
     $(view.root).on(
       eventName,
-      fixDelegateSelectorPath(view.prefix, delegateSelector),
-      bindHandler
+      delegateSelector,
+      createDelegateEventHandler(view, handler)
     );
   }
   return view;
@@ -26,7 +29,7 @@ export const removeDomEvent = function(view, eventName, delegateSelector, handle
     else
       $(view.root).off(
         eventName,
-        fixDelegateSelectorPath(view.prefix, delegateSelector),
+        delegateSelector,
         handler ? (handler._fn || handler) : handler
       );
     return view;
@@ -39,9 +42,7 @@ export const removeDomEvent = function(view, eventName, delegateSelector, handle
 };
 
 export const triggerEmitDomEvent = function(view, eventName, delegateSelector, args) {
-  $(view.root).find(
-    fixDelegateSelectorPath(view.prefix, delegateSelector)).
-    trigger(eventName, args);
+  $(view.root).find(delegateSelector).trigger(eventName, args);
   return view;
 };
 

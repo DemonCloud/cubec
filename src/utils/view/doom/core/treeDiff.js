@@ -13,18 +13,10 @@ const treeDiff = function(org, tag, patch, orgParent, tagParent, view, args){
     // remove node
     patch.push(createPatch(org, __EMPTY__, PATCHES_NAME_OPERATE.REMOVE, view, args)); // 3
   else if (org.tagName === tag.tagName) {
-    if (tag.isSlot && org.isSlot && tag.id === org.id){
-      // update slot
-      patch.push(createPatch(org, tag, PATCHES_NAME_OPERATE.UPDATE_SLOT, view, args)); // 10
-      return patch;
-    }else if(tag.isSlot || org.isSlot){
-      patch.push(createPatch(org, tag, PATCHES_NAME_OPERATE.WITH_TEXT, view, args)); // 5 adapter slot
-      return patch;
-    }
-
     if(tag.isPlug || org.isPlug){
       // update plugin
-      patch.push(createPatch(org, tag, PATCHES_NAME_OPERATE.UPDATE_PLUGIN, view, args));
+      patch.push(createPatch(org, tag, PATCHES_NAME_OPERATE.UPDATE_PLUGIN, view, args)); // 10
+
       return patch;
     }
 
@@ -80,6 +72,7 @@ const treeDiff = function(org, tag, patch, orgParent, tagParent, view, args){
           treeDiff(org.child[i], tag.child[i], patch, org, tag, view, args);
       }
     }
+  // not same tagName replace tag
   } else if (org.tagName !== tag.tagName) {
     patch.push(createPatch(org, tag, PATCHES_NAME_OPERATE.REPLACE, view, args)); //1
   }

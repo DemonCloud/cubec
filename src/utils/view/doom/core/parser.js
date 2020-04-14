@@ -1,10 +1,9 @@
-import { _trim } from "../../../usestruct";
+import { _trim, empty } from "../../../usestruct";
 import { DOCUMENT_TAGS_SHORTCUT, DOCUMENT_TAGS_CUBEC_ROOTNAME } from '../constant/tags';
-import pluginList from "../constant/pluginList";
 import createTreeNode from './createTreeNode';
 
-const REGEXP_PARSER_TEMPLATE_HTML =  new RegExp('</([^><]+?)>|<([^><]+?)/>|<([^><]+?)>|([^><]+)|$', 'g');
-const REGEXP_PARSER_TEMPLATE_EXCAPED_TAB = /^[\r\n\f\t\s]+|[\r\n\f\t\s]+$/gi;
+const REGEXP_PARSER_TEMPLATE_HTML = /<\/([^><]+?)>|<([^><]+?)\/>|<([^><]+?)>|([^><]+)|$/g;
+const REGEXP_PARSER_TEMPLATE_EXCAPED_TAB = /^[\r\n\f\t\s]+|[\r\n\f\t\s]+$/g;
 
 // html render template string to Tree with algorithm
 const parser = function(renderString, view, args) {
@@ -23,8 +22,8 @@ const parser = function(renderString, view, args) {
 
   // create skip algorithm
   let skip = false;
-  let skipSign = '';
-  let skipHTML = '';
+  let skipSign = empty;
+  let skipHTML = empty;
 
   // start parser
   renderString.replace(
@@ -32,7 +31,8 @@ const parser = function(renderString, view, args) {
     REGEXP_PARSER_TEMPLATE_HTML,
     // parser function
     function(match, close, stag, tag, text) {
-      if (!match || !match.replace(REGEXP_PARSER_TEMPLATE_EXCAPED_TAB, '')) return match;
+      if (!match || !match.replace(REGEXP_PARSER_TEMPLATE_EXCAPED_TAB, empty))
+        return match;
 
       // match plugin skip
       if(skip){
@@ -44,10 +44,11 @@ const parser = function(renderString, view, args) {
 
         // skip end
         skip = false;
-        skipSign = '';
+        skipSign = empty;
+
         p.children = _trim(skipHTML);
         p.text = void 0;
-        skipHTML = '';
+        skipHTML = empty;
       }
 
       // close tag
@@ -78,8 +79,11 @@ const parser = function(renderString, view, args) {
           p = n;
           c = n.child;
         }
+
       } else if (text) {
+
         if (_trim(text)) p.text = text;
+
       }
 
       return match;

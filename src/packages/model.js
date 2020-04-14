@@ -197,13 +197,12 @@ const modelProtoType = {
           if (this._h) assertram.push(assert);
 
           // change data
-          this._c(res, _idt, (this.change = true));
+          this._c(_clone(res), _idt, (this.change = true));
 
           // save store
           if (this._s) store.set(this.name, res);
 
           if (!isStatic) modelChangeDetector(this, _clone(res), _clone(assert));
-
         }
 
       // multiple set(key,val)
@@ -216,12 +215,11 @@ const modelProtoType = {
 
         const prevData = _clone(assert);
 
-        res = _set(assert, key, val, (this.change = true));
+        res = _set(assert, key, _clone(val), (this.change = true));
 
         if (this._s) store.set(this.name, res);
 
         if (!isStatic) modelChangeDetector(this, _clone(res), prevData, key);
-
       }
 
     }
@@ -333,7 +331,6 @@ const modelProtoType = {
   link(proto){
     if(proto &&
        _isFn(proto) &&
-       proto.name &&
        this[proto.name] === proto)
       return createLink(this, proto.name);
   },
@@ -347,6 +344,7 @@ const modelProtoType = {
       idt = _idt;
       options = {};
     }
+
     options = _isPlainObject(options) ? options : {};
 
     solveLinks = idt === _idt ? (solveLinks || MODEL.LINKPERSET) : null;

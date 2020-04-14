@@ -1,9 +1,15 @@
-import { _eachObject, empty } from '../../usestruct';
+// DOOM
+// author: YiJun
+// Date: 2019.12.21
+// #cubec.view core render engine
+
+import { _eachObject, _isFn, _isPlainObject, _merge, _idt, empty } from '../../usestruct';
+import pluginList from './constant/pluginList';
 import parser from "./core/parser";
 import createElement from "./core/createElement";
 import treeDiff from "./core/treeDiff";
+import recycle from "./core/recycle";
 import applyPatch from "./core/applyPatch";
-import registerPlugin from "./core/registerPlugin";
 
 export const renderDOOM = function(renderRoot, renderString, view, data){
   let render = false;
@@ -43,6 +49,7 @@ export const renderDOOM = function(renderRoot, renderString, view, data){
       applyPatch(
         renderRoot,
         getPatches,
+        view,
         data,
         (view.axml = createNewTree),
       );
@@ -62,6 +69,9 @@ export const renderDOOM = function(renderRoot, renderString, view, data){
 export const destroyDOOM = function(renderRoot, view, withRemoveRoot=false){
   delete renderRoot._vid;
 
+  // recycle child view render
+  recycle(view.axml);
+
   view.axml = null;
 
   if(renderRoot.parentNode && withRemoveRoot)
@@ -70,4 +80,52 @@ export const destroyDOOM = function(renderRoot, view, withRemoveRoot=false){
   renderRoot.innerHTML = empty;
 };
 
-export const registerDOOMPlugin = registerPlugin;
+export const registerPlugin = function(pluginName, plugin, viewConstructor ,selfPluginBlock){
+  let render;
+
+  const useBlock = selfPluginBlock || pluginList;
+  const isCustomRender = _isFn(plugin);
+  const isCreateNewView = _isPlainObject(plugin);
+
+  if(plugin){
+    // current view
+    if(plugin instanceof viewConstructor){
+      // get store view option
+      const newPlugin = plugin._asso(_idt);
+      newPlugin.name = pluginName;
+      render = newPlugin;
+
+    // view.extend
+    }else if(
+      isCustomRender &&
+      plugin.constructor === viewConstructor &
+      plugin._isExtender){
+      // get store view option
+      const newPlugin = plugin()._asso(_idt);
+      newPlugin.name = pluginName;
+      render = newPlugin;
+
+    // function register
+    }else if(isCustomRender){
+      render = plugin;
+
+    // view options [new view]
+    }else if(isCreateNewView){
+      const newPlugin = _merge(plugin, { name: pluginName });
+      newPlugin.name = pluginName;
+      delete newPlugin.root;
+
+      render = newPlugin;
+    }
+  }
+
+  // not require self render
+  if(render && this !== plugin){
+    useBlock[pluginName] = render;
+  }else{
+    console.error("[cubec view] unexpect token register view.plugin with", pluginName, plugin, this);
+    throw new Error("[cubec view] register global|self view.plugin() failed");
+  }
+
+  return render;
+};
