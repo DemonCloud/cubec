@@ -3,10 +3,10 @@ import "./catch";
 import "./toJSON";
 import "./merge";
 import "./seek";
-import "./paramify";
-import "./cache";
-import "./emulateJSON";
-import "./resultJSON";
-import "./emulateForm";
-import "./validate";
-import "./url";
+import "./validate"
+import "./request/url";
+import "./request/paramify";
+import "./request/cache";
+import "./request/emulateJSON";
+import "./request/resultJSON";
+import "./request/emulateForm";

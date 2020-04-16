@@ -12,12 +12,12 @@ import applyPatch from "./core/applyPatch";
 
 export const renderDOOM = function(renderRoot, renderString, view, data){
   let render = false;
+
   // parser new renderString always
   const createNewTree = parser(renderString, view, data);
 
   // if is not render or is not same view, do first render;
   if(renderRoot._vid !== view._vid || !view.axml){
-    renderRoot._destory = function(){ return view.destroy(); };
 
     // new Render DOM Element
     const internal = createElement(

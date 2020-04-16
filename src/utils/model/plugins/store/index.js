@@ -46,3 +46,4 @@ const storePlugin = {
 };
 
 export default storePlugin;
+

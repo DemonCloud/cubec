@@ -5,24 +5,25 @@ import {
   _get,
   _has,
   _eq,
-  empty
+  empty,
+  dot,
+  eventChange
 } from '../usestruct';
 
-const sign = ".";
-const replaceChangeReg = /^change:/;
+const replaceChangeReg = new RegExp(`^${eventChange}:`);
 
 // match set path matcher
 const presetParser = function(setPath){
    // setPath-> a.b.c => [a.b.c, a.b, a];
    const paths = [];
    if(setPath && setPath.length){
-     const getDotPath = setPath.split(sign);
+     const getDotPath = setPath.split(dot);
      if(getDotPath.length > 1){
-       // first pop one sign
+       // first pop one dot path
        getDotPath.pop();
        while(getDotPath.length){
          // pop end path
-         paths.push(getDotPath.join(sign));
+         paths.push(getDotPath.join(dot));
          getDotPath.pop();
        }
      }
@@ -37,11 +38,11 @@ function changeDetector(model ,currentData ,prevData ,preset){
   const detectList = model._asc(_idt);
 
   // first target change event
-  model.emit("change", [currentData,prevData]);
+  model.emit(eventChange, [currentData,prevData]);
 
   if(detectList.length){
     if(preset && _isString(preset)){
-      const currentPath = `change:${preset}`;
+      const currentPath = `${eventChange}:${preset}`;
       const testReg = new RegExp(`^${currentPath}\\.([a-zA-Z_$0-9])+`);
 
       _eachArray(detectList, function(path){
@@ -56,7 +57,7 @@ function changeDetector(model ,currentData ,prevData ,preset){
       // if preset change
       // then enter emit tasks [parent path]
       _eachArray(presetParser(preset), function (ppath) {
-        const fixEvent = `change:${ppath}`;
+        const fixEvent = `${eventChange}:${ppath}`;
         // if preset parent in detectList
         if (_has(detectList, fixEvent)) {
           const cv = _get(currentData, ppath);

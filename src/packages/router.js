@@ -41,6 +41,8 @@
 //   }
 // });
 
+// @ need remake
+
 import ROUTER from '../constant/router.define';
 import $ from '../lib/jquery';
 import defined from '../utils/defined';

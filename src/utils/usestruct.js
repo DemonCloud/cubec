@@ -66,16 +66,17 @@ import _ajax from './struct/ajax';
 
 const rootSign = '/';
 const paramSign = ':';
-const slotPartSign = '::';
 const leafSign = '###';
 const querySign = '?';
 const hashSign = '#';
 const urlSlash = '//';
 const http = 'http://';
 const https = 'https://';
-const idSign = hashSign;
-const empty = "";
-const eventSplit = "|";
+const empty = '';
+const dot = '.';
+const eventSplit = '|';
+const eventInit = 'init';
+const eventChange = 'change';
 const eventNameSpace = paramSign;
 const _isFunction = _isFn;
 
@@ -143,17 +144,18 @@ export {
   broken_object,
 
   // constant
+  dot,
   rootSign,
   paramSign,
-  slotPartSign,
   leafSign,
   querySign,
   hashSign,
   http,
   https,
   urlSlash,
-  idSign,
   empty,
   eventSplit,
+  eventChange,
+  eventInit,
   eventNameSpace,
 };

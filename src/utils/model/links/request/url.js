@@ -1,6 +1,6 @@
-import MODEL from '../../../constant/model.define';
-import { registerLink } from '../linkSystem';
-import { _slice, _trim } from '../../usestruct';
+import MODEL from '../../../../constant/model.define';
+import { registerLink } from '../../linkSystem';
+import { _slice, _trim } from '../../../usestruct';
 
 const linkProto = "url";
 

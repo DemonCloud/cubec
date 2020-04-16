@@ -6,6 +6,7 @@ import { on, off, emit, registerEvent } from '../utils/universalEvent';
 import { bindDomEvent, removeDomEvent, triggerEmitDomEvent } from '../utils/view/domEventSystem';
 import { registerPlugin, renderDOOM, destroyDOOM } from '../utils/view/doom';
 import polyfillimeInputEvent from '../utils/view/polyfillimeInputEvent';
+import connected from '../utils/view/connected';
 import {
   _idt,
   _axt,
@@ -35,6 +36,8 @@ import {
   broken_array,
 
   eventSplit,
+  eventInit,
+  eventChange,
   eventNameSpace,
 } from '../utils/usestruct';
 
@@ -44,7 +47,7 @@ const prefix = "#cubec";
 // cubec Template engine
 function checkElm(el) {
   if (!_isDOM(el))
-    throw new TypeError('el must be typeof DOMElement or NodeList collections -> not ' + el);
+    throw new TypeError('[cubec view] root element must be typeof DOMElement -> ' + el);
   return true;
 }
 
@@ -204,7 +207,8 @@ const view = function(options=broken_object) {
     }.bind(this);
 
     // do async render
-    useSyncRender ? _ayc(createRender) : createRender();
+    if(useSyncRender) _ayc(createRender);
+    else createRender();
 
     return createDestory;
 
@@ -223,7 +227,7 @@ const view = function(options=broken_object) {
   } else {
     // spec with "init" event
     if(events && events.init){
-      this.on("init", events.init);
+      this.on(eventInit, events.init);
       delete events.init;
     }
 
@@ -250,7 +254,9 @@ const view = function(options=broken_object) {
   }
 
   // create view complete
-  _extend(this, options, VIEW.IGNORE_KEYWORDS).emit('init').off('init');
+  _extend(this, options, VIEW.IGNORE_KEYWORDS).
+    emit(eventInit).
+    off(eventInit);
 };
 
 view.prototype = {
@@ -313,48 +319,24 @@ view.prototype = {
     return emit.call(this, fixType, args);
   },
 
-  connect() {
-    let items = _isArray(arguments[0]) ? arguments[0] : _slice(arguments);
+  connect(m) {
     let bounder = this._asb(_idt);
 
-    if (items.length) {
-      _eachArray(items, item => {
-        if ((
-          item instanceof view.__instance[0] ||
-          item instanceof view.__instance[1]) &&
-          item._mid != null &&
-          !bounder[item._mid]
-        ) {
-          bounder[item._mid] = item;
-
-          on.call(item, 'change', this.render);
-        }
-      });
-    }
-
-    return this;
+    return connected(this, view.__instance, m, function(item){
+      if(!bounder[item._mid])
+        on.call((bounder[item._mid] = item), eventChange, this.render);
+    });
   },
 
-  disconnect() {
-    let items = _isArray(arguments[0]) ? arguments[0] : _slice(arguments);
+  disconnect(m) {
     let bounder = this._asb(_idt);
 
-    if (items.length) {
-      _eachArray(items, item => {
-        if ((
-          item instanceof view.__instance[0] ||
-          item instanceof view.__instance[1]) &&
-          item._mid != null &&
-          bounder[item._mid]
-        ) {
-          delete bounder[item._mid];
-
-          off.call(item, 'change', this.render);
-        }
-      });
-    }
-
-    return this;
+    return connected(this, view.__instance, m, function(item){
+      if(bounder[item._mid]){
+        delete bounder[item._mid];
+        off.call(item, eventChange, this.render);
+      }
+    });
   },
 
   destroy(withRemoveRoot=false) {

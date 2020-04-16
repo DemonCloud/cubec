@@ -3,7 +3,6 @@
 //   ignore: []
 // );
 // atom.toChunk(path | [paths...] | filterFunc(dataChunk));
-// atom.toData(path | [paths...] | filterFunc(dataList));
 // atom.all();
 // atom.pop(modelNames|[modelNames...]);
 // atom.use(modelNames|[modelNames...], ignores|[ignores...]);
@@ -13,7 +12,6 @@ import ATOM from '../constant/atom.define';
 import defined from '../utils/defined';
 import filters from '../utils/atom/filters';
 import chunkPathParser from '../utils/atom/chunkPathParser';
-import model from './model';
 import { on, off, emit } from '../utils/universalEvent';
 import {
   _extend,
@@ -32,15 +30,18 @@ import {
   _idt,
   _noop,
   _createPrivate,
+
   broken_array,
   broken_object,
+
+  eventChange,
 } from '../utils/usestruct';
 
 let amid = 0;
 const namePrefix = "__at";
 
 const createPushEmitter = function(){
-  return emit.call(this, "change", this.toChunk());
+  return emit.call(this, eventChange, this.toChunk());
 };
 
 const atom = function(options=broken_object){
@@ -49,6 +50,7 @@ const atom = function(options=broken_object){
   const list = [];
   const listenList = [];
   const push = createPushEmitter.bind(this);
+  const getLength = function(){ return list.length; };
 
   defined(this, {
     name: config.name,
@@ -59,8 +61,8 @@ const atom = function(options=broken_object){
   });
 
   _define(this, "length", {
-    set: ()=>list.length,
-    get: ()=>list.length,
+    set: getLength,
+    get: getLength,
     enumerable: false,
     configurable: false,
   });
@@ -104,12 +106,8 @@ atom.prototype = {
       const listenModels = useModels.filter(function(m){
         const allowed = !_has(useIgnores, m);
 
-        if(allowed){
-          if(m instanceof model)
-            m.on("change", push);
-          else if(m instanceof atom)
-            m.subscribe(push);
-        }
+        if(allowed)
+          on.call(m, eventChange, push);
 
         return allowed;
       });
@@ -141,11 +139,7 @@ atom.prototype = {
         list.splice(findInList, 1);
 
         if(findInListenList != null){
-          if(m instanceof model)
-            m.off("change", push);
-          else if(m instanceof atom)
-            m.unsubscribe(push);
-
+          off.call(m, eventChange, push);
           listenList.splice(findInListenList, 1);
         }
       });
@@ -157,14 +151,12 @@ atom.prototype = {
   },
 
   subscribe(fn){
-    if(_isFn(fn))
-      on.call(this, "change", fn);
+    if(_isFn(fn)) on.call(this, eventChange, fn);
     return this;
   },
 
   unsubscribe(fn){
-    if(_isFn(fn))
-      off.call(this, "change", fn);
+    if(_isFn(fn)) off.call(this, eventChange, fn);
     return this;
   },
 
@@ -224,31 +216,6 @@ atom.prototype = {
 
     return _isFn(path) ? path(res) : res;
   },
-
-  toData(path){
-    const res = [];
-
-    if(path){
-
-      if(_isArray(path) && _every(path, _isString)){
-        _eachArray(path, function(pathName){
-          res.push(this.toChunk(pathName));
-        }, this);
-
-      }else if(_isString(path)){
-        res.push(this.toChunk(path));
-
-      }
-
-      return res;
-    }
-
-    _eachArray(this.all(), function(child){
-      res.push(child.get());
-    });
-
-    return res;
-  }
 
 };
 

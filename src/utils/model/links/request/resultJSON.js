@@ -1,11 +1,11 @@
-import MODEL from '../../../constant/model.define';
-import { registerLink } from '../linkSystem';
+import MODEL from '../../../../constant/model.define';
+import { registerLink } from '../../linkSystem';
 import {
   _map,
   _isString,
   _isArrayLike,
   _isPlainObject
-} from '../../usestruct';
+} from '../../../usestruct';
 
 const linkProto = "resultJSON";
 

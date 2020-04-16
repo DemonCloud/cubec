@@ -44,10 +44,15 @@ import {
 
   broken_array,
   broken_object,
+
+  eventInit,
+  eventChange
 } from '../utils/usestruct';
+import { createC } from '../utils/create';
+import atom from './atom';
 
 let mid = 0;
-const changeReg = /^change:[\S]+$/;
+const changeReg = new RegExp(`^${eventChange}:[\\S]+$`);
 
 const model = function(option=broken_object) {
   // get merged config
@@ -98,8 +103,8 @@ const model = function(option=broken_object) {
   );
 
   _extend(this, config, MODEL.IGNORE_KEYWORDS).
-    emit('init').
-    off('init');
+    emit(eventInit).
+    off(eventInit);
 };
 
 
@@ -284,8 +289,7 @@ const modelProtoType = {
   }
 };
 
-// FUCK DEAD Internet Explorer!! FUCK FUCK FUCK
-// if is under Internet Explorer IE(8-11). auto add function name
+// Function name prefix in Internet Explorer
 if(isIE && Function.prototype.name == null)
   _eachObject(modelProtoType, function(proto, keyName){ proto.name = keyName; });
 
@@ -294,6 +298,9 @@ model.prototype = modelProtoType;
 model.link = registerLink;
 
 model.plugin = createPlugin;
+
+// make atom part of model
+model.atom = createC(atom);
 
 // build inside model plugin
 createPlugin("store", storePlugin);

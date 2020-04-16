@@ -1,11 +1,11 @@
-import MODEL from '../../../constant/model.define';
-import { registerLink } from '../linkSystem';
+import MODEL from '../../../../constant/model.define';
+import { registerLink } from '../../linkSystem';
 import {
   _merge,
   _isObject,
   _isFn,
   _slice,
-} from '../../usestruct';
+} from '../../../usestruct';
 
 const linkProto = "paramify";
 
