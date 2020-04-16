@@ -1,5 +1,6 @@
 import { _isFn } from '../../../usestruct';
 
+// view recycle render parseRenderData should continue to do render
 export default function parseRenderData(dataHook, defaultData, context){
   const useHook = _isFn(dataHook) ? dataHook : false;
 
@@ -13,4 +14,3 @@ export default function parseRenderData(dataHook, defaultData, context){
 
   return parseData;
 }
-

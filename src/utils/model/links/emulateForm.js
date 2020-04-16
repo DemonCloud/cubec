@@ -15,5 +15,4 @@ const emulateFormLink = function(){
   };
 };
 
-registerLink("update",  linkProto, MODEL.LINKTYPES.before, emulateFormLink);
 registerLink("request", linkProto, MODEL.LINKTYPES.before, emulateFormLink);

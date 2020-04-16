@@ -46,5 +46,4 @@ const resultJSON = function(){
   };
 };
 
-registerLink("update",  linkProto, MODEL.LINKTYPES.runtime, resultJSON);
 registerLink("request", linkProto, MODEL.LINKTYPES.runtime, resultJSON);

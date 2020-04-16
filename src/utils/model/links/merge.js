@@ -6,7 +6,6 @@ import {
   _isInt,
   _isPrim,
   _isPlainObject,
-  _isObject,
   _idt,
   _isFn,
 } from '../../usestruct';
@@ -35,15 +34,4 @@ const mergeLink = function(){
   };
 };
 
-const mergeUpdateLink = function(){
-  const model = this._m(_idt);
-
-  return function(key){
-    if(!key || !_isObject(key)) return;
-
-    return _merge(model.get(), key);
-  };
-};
-
-registerLink("update" , linkProto , MODEL.LINKTYPES.runtime , mergeUpdateLink);
 registerLink("set"    , linkProto , MODEL.LINKTYPES.before  , mergeLink);

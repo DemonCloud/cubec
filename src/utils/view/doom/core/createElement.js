@@ -80,7 +80,7 @@ const createElement =  function(treeNode, view, args, isUpdatePlugin=false) {
         treeNode._plugin = new view.constructor(renderPluginViewOpts);
         treeNode._pluginType = 2;
         treeNode._plugin.props = createPluginViewProps(treeNode._plugin.defaultProps, treeNode);
-        treeNode._recycler = treeNode._plugin.mount(elm, args);
+        treeNode._recycler = treeNode._plugin.mount(elm, args, true);
       }
 
     }else{
@@ -94,7 +94,7 @@ const createElement =  function(treeNode, view, args, isUpdatePlugin=false) {
       // plugin view update [view render]
       }else if(treeNode._pluginType === 2){
         treeNode._plugin.props = createPluginViewProps(treeNode._plugin.defaultProps, treeNode);
-        treeNode._recycler = treeNode._plugin.render(args);
+        treeNode._recycler = treeNode._plugin.render(args, true);
       }
 
     }

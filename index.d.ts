@@ -39,9 +39,8 @@ interface ModelOptions extends Options {
 interface ViewOptions extends Options {
   name?: string;
   props?: AnyObject;
+  plugin?: { [x: string]: ViewOptions|ViewInstance|ExportExtendViewInstance|func }
   events?: Events;
-  slot?: { [x: string]: ViewInstance|ExportExtendViewInstance|func }
-  plugin?: { [x: string]: PluginOptions }
   template?: string;
   render?: string;
 }
@@ -174,8 +173,6 @@ declare class View extends BaseInstance {
 
   root?: HTMLElement;
 
-  getParentProps(parentViewName?: string): AnyObject;
-
   mount(root: HTMLElement, data?: AnyObject|ModelInstance): this;
 
   render(data?: AnyObject|ModelInstance|AtomInstance): this;
@@ -229,9 +226,7 @@ export interface model {
 export interface view {
   (options?: ViewOptions): ViewInstance;
   extend(options: ViewOptions): ExportExtendViewInstance;
-  createPlugin(options: PluginOptions): PluginOptions;
-  createGlobalPlugin(pluginName: string, options: PluginOptions): PluginOptions;
-  createSlot(options: ViewOptions): ExportExtendViewInstance;
+  plugin(name: string, options: ViewInstance|ViewOptions|func): ViewOptions|func;
 }
 
 export interface atom {

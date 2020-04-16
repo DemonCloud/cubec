@@ -20,8 +20,6 @@ const parseLink = function(parser){
 };
 
 registerLink("set"     , linkProto , MODEL.LINKTYPES.before  , parseLink);
-registerLink("update"  , linkProto , MODEL.LINKTYPES.runtime , parseLink);
 registerLink("request" , linkProto , MODEL.LINKTYPES.runtime , parseLink);
 registerLink("remove"  , linkProto , MODEL.LINKTYPES.solve   , parseLink);
 registerLink("get"     , linkProto , MODEL.LINKTYPES.solve   , parseLink);
-registerLink("back"    , linkProto , MODEL.LINKTYPES.solve   , parseLink);

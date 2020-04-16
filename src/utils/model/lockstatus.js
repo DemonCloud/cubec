@@ -7,4 +7,3 @@ export default function(model) {
 
   return isLock;
 }
-

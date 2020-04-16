@@ -3,10 +3,10 @@ import {
   _get,
   _keys,
   _type,
-} from '../usestruct';
+} from '../../../usestruct';
 import output from './outputFormaterVerify';
 
-export default function(key, val, model, verify) {
+export default function(key, val, model, verify, eventName) {
   // if (!model._v) return true;
 
   let validData = _set(model.get(), key, val);
@@ -40,7 +40,7 @@ export default function(key, val, model, verify) {
   valid = !error.length;
 
   if (!valid)
-    model.emit(`catch:verify,catch:verify:${parKey}`, error);
+    model.emit(`${eventName},${eventName}:${parKey}`, error);
 
   return valid;
 }

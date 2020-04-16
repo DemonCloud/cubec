@@ -1,26 +1,32 @@
+// [crypto-store]
 // author 亦俊(DemonCloud)
 // github: https://github.com/DemonCloud
 // date: 2017/12/28
 // localStorage with micro encryption
-// store.js
-
-if(window.localStorage == null){
-  console.warn("[cubec model] browser not support localStorage");
-}
+//
+let LS = window.localStorage;
 
 // 如果浏览器不支持localStorage. 则伪装一个代理
-const LS = window.localStorage || {
-  setItem(){},
-  getItem(){},
-  removeItem(){}
-};
+// 使其不报错
+if(window.localStorage == null){
+  console.warn("[cubec model] browser not support localStorage");
+
+  const noop = function(){};
+
+  LS = {
+    setItem: noop,
+    getItem: noop,
+    removeItem: noop
+  };
+}
+
+function revs(str) {
+  return str.split('').reverse().join('');
+}
 
 const SN = 'CUBEC@';
-const revs = function(str) {
-  return str.split('').reverse().join('');
-};
 
-const store = {
+const CryptoStore = {
   t: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 
   kAt(key, i) {
@@ -125,6 +131,7 @@ const store = {
 
     if(str){
       try{
+        // 解析
         res = JSON.parse(decodeURIComponent(this.decyt(str, name)));
       }catch(e){
         // 为了安全考虑, 当localstorge被攻击时, 通过try catch转化, 如果不能被转化, 则默认安全返回
@@ -141,5 +148,5 @@ const store = {
   },
 };
 
-export default store;
+export default CryptoStore;
 

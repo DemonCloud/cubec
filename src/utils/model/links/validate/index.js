@@ -1,7 +1,7 @@
-import MODEL from '../../../constant/model.define';
-import { registerLink } from '../linkSystem';
-import singleVerify from '../singleVerify';
-import multipleVerify from '../multipleVerify';
+import MODEL from '../../../../constant/model.define';
+import { registerLink } from '../../linkSystem';
+import singleVerify from './singleVerify';
+import multipleVerify from './multipleVerify';
 import {
   _isString,
   _isPlainObject,
@@ -9,7 +9,7 @@ import {
   _isFn,
   _size,
   _idt
-} from '../../usestruct';
+} from '../../../usestruct';
 
 const linkProto = "validate";
 
@@ -36,14 +36,14 @@ const validateLink = function(validate){
       if(!_isPlainObject(key)) return;
     }
 
+    const eventName = "catch:validate";
     // true single / false multiple
     checker = useKey ?
-      singleVerify(key, value, model, validator) :
-      multipleVerify(key, model, validator);
+      singleVerify(key, value, model, validator, eventName) :
+      multipleVerify(key, model, validator, eventName);
 
     return checker ? args : defaultData;
   };
 };
 
-registerLink("update" , linkProto , MODEL.LINKTYPES.runtime , validateLink);
-registerLink("set"    , linkProto , MODEL.LINKTYPES.before  , validateLink);
+registerLink("set" , linkProto , MODEL.LINKTYPES.before  , validateLink);

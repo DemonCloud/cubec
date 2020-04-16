@@ -33,5 +33,4 @@ const paramifyLink = function(useOptions){
   };
 };
 
-registerLink("update",  linkProto, MODEL.LINKTYPES.before, paramifyLink);
 registerLink("request", linkProto, MODEL.LINKTYPES.before, paramifyLink);

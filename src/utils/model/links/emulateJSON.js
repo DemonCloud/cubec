@@ -17,5 +17,4 @@ const emulateJSONLink = function(emulate=true){
   };
 };
 
-registerLink("update",  linkProto, MODEL.LINKTYPES.before, emulateJSONLink);
 registerLink("request", linkProto, MODEL.LINKTYPES.before, emulateJSONLink);

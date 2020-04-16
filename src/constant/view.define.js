@@ -1,8 +1,6 @@
 const VIEW = {
   DEFAULT_OPTION: {
-    slot: {},
     props: {},
-    plugin: {}
   },
   IGNORE_KEYWORDS: [
     'name',

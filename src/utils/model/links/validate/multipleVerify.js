@@ -2,10 +2,10 @@ import {
   _keys,
   _get,
   _type,
-} from '../usestruct';
+} from '../../../usestruct';
 import output from './outputFormaterVerify';
 
-export default function(newData, model, verify) {
+export default function(newData, model, verify, eventName) {
   const error = [];
   const key = _keys(verify);
   const s = key.length;
@@ -30,7 +30,7 @@ export default function(newData, model, verify) {
 
   valid = !error.length;
 
-  if (!valid) model.emit(`catch:verify,catch:verify:${errorKey}`, error);
+  if (!valid) model.emit(`${eventName},${eventName}:${errorKey}`, error);
 
   return valid;
 }

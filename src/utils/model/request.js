@@ -9,9 +9,6 @@ import {
   _merge,
 } from '../usestruct';
 
-// import { isIE } from '../adapter';
-// const contentIEsupported = !isIE || isIE > 9;
-
 export default function request(model, options, runtimeLinks, solveLinks, catchLinks){
   let promiseObj;
 
@@ -129,4 +126,3 @@ export default function request(model, options, runtimeLinks, solveLinks, catchL
 
   return promiseObj;
 }
-

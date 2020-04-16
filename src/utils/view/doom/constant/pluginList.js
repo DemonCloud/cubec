@@ -1,3 +1,1 @@
-const pluginList = {};
-
-export default pluginList;
+export default {};

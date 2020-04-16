@@ -1,8 +1,10 @@
 import MODEL from '../../../constant/model.define';
 import { registerLink } from '../linkSystem';
 
-registerLink("get", "toJSON", MODEL.LINKTYPES.solve, function(){
+const toJSONLink = function(){
   return function(data){
     return JSON.stringify(data);
   };
-});
+};
+
+registerLink("get", "toJSON", MODEL.LINKTYPES.solve, toJSONLink);

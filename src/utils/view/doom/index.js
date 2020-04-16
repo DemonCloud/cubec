@@ -2,7 +2,6 @@
 // author: YiJun
 // Date: 2019.12.21
 // #cubec.view core render engine
-
 import { _eachObject, _isFn, _isPlainObject, _merge, _idt, empty } from '../../usestruct';
 import pluginList from './constant/pluginList';
 import parser from "./core/parser";

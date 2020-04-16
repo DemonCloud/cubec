@@ -9,9 +9,7 @@ import {
 const linkProto = "catch";
 
 const catchLink = function(catcher){
-  const useCatch = _isFn(catcher) ? catcher : function(){ return catcher; };
-
-  return useCatch;
+  return _isFn(catcher) ? catcher : function(){ return catcher; };
 };
 
 _eachArray(MODEL.ALLOWLINKAPIS, function(modelAPI){

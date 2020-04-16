@@ -4,7 +4,7 @@ import {
   _isFn,
   _size,
   _toString,
-} from '../usestruct';
+} from '../../../usestruct';
 
 export default function(value){
   let convert = _toString(value);

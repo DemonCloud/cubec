@@ -11,5 +11,4 @@ const cacheLink = function(){
   };
 };
 
-registerLink("update",  linkProto, MODEL.LINKTYPES.before, cacheLink);
 registerLink("request", linkProto, MODEL.LINKTYPES.before, cacheLink);

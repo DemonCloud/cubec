@@ -6,13 +6,11 @@ Micro modal-view framework [gzip 29k]
 
 1. optimize performance
 
-2. [slot] and [plugin] format standard
+2. [cuebc.view] format standard
 
-3. chunk package with producation and development in use
+3. chunk package with production and development in use
 
-4. [build] use with (terser+closure-compilter) replace (babel)
-
-5. wait jQuery upgrade 4.0+ version, use jQuery new event system
+4. wait jQuery upgrade 4.0+ version, use jQuery new event system
 
 ## Documentation [v2]
 

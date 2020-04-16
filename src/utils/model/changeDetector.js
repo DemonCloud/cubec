@@ -31,6 +31,7 @@ const presetParser = function(setPath){
    return paths;
 };
 
+// detector change with currentData & prevData
 function changeDetector(model ,currentData ,prevData ,preset){
   const res = [];
   const detectList = model._asc(_idt);
@@ -76,8 +77,10 @@ function changeDetector(model ,currentData ,prevData ,preset){
     }
   }
 
-  // emit tasks
-  _eachArray(res,function([event,args]){ model.emit(event,args); });
+  // emit deep.key tasks
+  _eachArray(res, function([event,args]){
+    model.emit(event,args);
+  });
 
   return model;
 }

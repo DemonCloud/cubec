@@ -65,7 +65,7 @@ const view = function(options=broken_object) {
     name : name,
     prefix : (prefix + "-"+ name + "-" + id),
     _vid : id,
-    _asb :  _createPrivate(bounder, broken_object),
+    _asb : _createPrivate(bounder, broken_object),
     _aspu : _createPrivate(usePlugins, broken_object),
     _asso : function(v){
       if(v === _idt){
@@ -134,7 +134,7 @@ const view = function(options=broken_object) {
     }
   });
 
-  render = function(data){
+  render = function(data, useSyncRender=false){
     const createDestory = ()=>this.destroy();
 
     // model data format
@@ -204,7 +204,7 @@ const view = function(options=broken_object) {
     }.bind(this);
 
     // do async render
-    _ayc(createRender);
+    useSyncRender ? _ayc(createRender) : createRender();
 
     return createDestory;
 
@@ -228,7 +228,7 @@ const view = function(options=broken_object) {
     }
 
     // create mount method
-    this.mount = function(el, data=broken_object) {
+    this.mount = function(el, data=broken_object, useSyncRender) {
       if (checkElm(el)) {
         // create Root Element
         this.root = vroot = el;
@@ -244,7 +244,7 @@ const view = function(options=broken_object) {
         delete this.mount;
 
         // trigger render
-        return this.render(data);
+        return this.render(data, useSyncRender);
       }
     };
   }
