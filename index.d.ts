@@ -1,5 +1,8 @@
 type primitive = string|number|object|boolean|Array<string|number|object|boolean>;
+
 type func = Function;
+
+type PluginInstanceExport = [func, AnyObject, Events?];
 
 interface Options {
   [propName: string]: any;
@@ -26,13 +29,17 @@ declare class BaseInstance {
   [propName: string]: any;
 }
 
+interface PluginOptions extends Options {
+  constructor?: func;
+  name?: string;
+  events?: Events;
+}
+
 interface ModelOptions extends Options {
   name?: string;
   data?: ModelData;
-  url?: string;
   lock?: boolean;
-  store?: boolean;
-  history?: boolean;
+  plugin?: (PluginInstanceExport|string)[]; // plugin type
   events?: Events;
 }
 
@@ -56,12 +63,6 @@ interface RouterOptions extends Options {
   routes: { [routePath: string]: Array<string> };
   actions: { [actions: string]: func };
   events?: Events;
-}
-
-interface PluginOptions extends Options {
-  events?: AnyObject;
-  render?: string;
-  template?: string;
 }
 
 interface VerifyInstance {
@@ -97,14 +98,6 @@ declare class Model extends BaseInstance {
 
   constructor(options?: ModelOptions)
 
-  extend(extender?: AnyObject): this;
-
-  update(config: object): [any|ModelData, null|undefined|object];
-
-  request(config: object): [any, null|undefined|object];
-
-  back(position?: -1|number, isStatic?: false|boolean): ModelData;
-
   set(data: object|ModelData|ModelInstance, isStatic?: false|boolean): ModelData;
   set(key: string|number, value: primitive, isStatic?: false|boolean): ModelData;
 
@@ -116,8 +109,6 @@ declare class Model extends BaseInstance {
 
   unlock(): this;
 
-  clearStore(): this;
-
   link(proto: func): any;
 
   on(eventType: string, func: func): this;
@@ -125,34 +116,32 @@ declare class Model extends BaseInstance {
   off(eventType?: string, func?: func): this;
 
   emit(eventType: string, ...args: any): this;
+
+  extend(extender?: AnyObject): this;
+
+  request(config: object): [any, null|undefined|AnyObject];
 }
 
 declare class Atom extends BaseInstance {
   readonly _mid: number;
   readonly length: number;
 
-  private _asl(): any;
-  private _asi(): any;
-  private _asp(): any;
-
-  all(): Array<ModelInstance>;
+  all(): (ModelInstance|AtomInstance)[];
 
   use(
-    models: Array<ModelInstance>,
-    ignores: Array<ModelInstance>,
+    models: (ModelInstance|AtomInstance)[],
+    ignores: (ModelInstance|AtomInstance)[],
     isStatic?: boolean
   ): this;
 
   pop(
-    models: Array<ModelInstance>,
+    models: (ModelInstance|AtomInstance)[],
     isStatic?: false|boolean
   ): this;
 
   subscribe(func: func): this;
 
   unsubscribe(func: func): this;
-
-  toData(): Array<ModelData>;
 
   toChunk(): object|any;
 }
@@ -162,14 +151,6 @@ declare class View extends BaseInstance {
   readonly prefix: string;
   readonly refs: Refs;
   readonly props: AnyObject;
-
-  private axml: object;
-  private _asb: any;
-  private _asp: any;
-  private _assp: any;
-  private _aspu: any;
-  private _assu: any;
-  private _assr: any;
 
   root?: HTMLElement;
 
@@ -182,13 +163,6 @@ declare class View extends BaseInstance {
 
 declare class Router extends BaseInstance {
   readonly _rid: number;
-
-  private _assert: any;
-  private _status: any;
-  private _idmap: any;
-  private _clear: any;
-  private _c: any;
-  private _s: any;
 
   to(path: string, querys?: string|AnyObject, state?: AnyObject): this;
 
@@ -217,31 +191,41 @@ type ExportExtendViewInstance = ((options: Options)=> ViewInstance);
 type ExportExtendModelInstance = ((options: Options)=> ModelInstance);
 type ExportExtendRouterInstance = ((options: Options)=> RouterInstance);
 
-export interface model {
-  (options?: ModelOptions): ModelInstance;
-  extend(options: ModelOptions): ExportExtendModelInstance;
-  link(linkMethod: string, linkProto: string, linkRuntime: string, linkFunc: func, idt?: any): func;
-}
-
-export interface view {
-  (options?: ViewOptions): ViewInstance;
-  extend(options: ViewOptions): ExportExtendViewInstance;
-  plugin(name: string, options: ViewInstance|ViewOptions|func): ViewOptions|func;
-}
-
+// model.atom
 export interface atom {
   (options?: AtomOptions): AtomInstance;
   extend(options: AtomOptions): ExportExtendAtomInstance;
 }
 
+// model
+export interface model {
+  (options?: ModelOptions): ModelInstance;
+  extend(options: ModelOptions): ExportExtendModelInstance;
+  link(linkMethod: string, linkProto: string, linkRuntime: string, linkFunc: func, idt?: any): func;
+  plugin(options: PluginOptions): PluginInstanceExport;
+  atom: atom;
+}
+
+// view
+export interface view {
+  (options?: ViewOptions): ViewInstance;
+  extend(options: ViewOptions): ExportExtendViewInstance;
+  plugin(name: string, options: ViewInstance|ViewOptions|ExportExtendViewInstance|func): ViewOptions|func;
+}
+
+// router
 export interface router {
   (options?: RouterOptions): RouterInstance;
   extend(options: RouterOptions): ExportExtendRouterInstance;
 }
 
+// verify
 export const verify: VerifyInstance;
+
+// struct
 export const struct: AnyObject;
 
+// default cubec{}
 declare namespace cubec {
   const model: model;
   const view: view;
@@ -252,3 +236,4 @@ declare namespace cubec {
 }
 
 export default cubec;
+
