@@ -194,7 +194,7 @@ export default function axt(txt, binder={}){
     // render = ev('(function(__tools__,__x__){ '+res+' })');
     render = new Function("__t__", "__x__", res);
   }catch(e){
-    console.error("[cubec view] render template parser Error!", { render : res });
+    console.error("[cubec view] render template parser error!", { render : res });
     e.res = res;
     throw e;
   }
@@ -202,7 +202,9 @@ export default function axt(txt, binder={}){
   // @ Precomplete JavaScript Template Function
   // @ the you build once template that use diff Data, not use diff to build function again
   // @ protect your template code other can observe it?
-  renderToString = function(data){ return trim(render.call(binder.view, tools, data)); };
+  renderToString = function(data){
+    return trim(render.call(binder.view, tools, data));
+  };
 
   return renderToString;
 

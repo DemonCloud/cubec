@@ -10,7 +10,6 @@ import connected from '../utils/view/connected';
 import {
   _idt,
   _axt,
-  _axtc,
   _ayc,
   _lock,
   _extend,
@@ -18,7 +17,6 @@ import {
   _eachObject,
   _fireEvent,
   _some,
-  _slice,
   _isFn,
   _isString,
   _isArray,
@@ -110,7 +108,7 @@ const view = function(options=broken_object) {
 
   // parse template
   // building the render function
-  stencil = (options.cache ? _axtc : _axt)(_trim(stencil), { view: this });
+  stencil = _axt(_trim(stencil), { view: this });
 
   // defined view renderToString
   // switchTemplate function
@@ -131,7 +129,7 @@ const view = function(options=broken_object) {
         switchRender = _toString(switchRender(this.props));
 
       if(switchRender && _isString(switchRender))
-        stencil = (options.cache ? _axtc : _axt)(_trim(switchRender), { view: this });
+        stencil = _axt(_trim(switchRender), { view: this });
       else
         console.warn(ERRORS.VIEW_SWITCHTEMPLATE, newRender);
     }

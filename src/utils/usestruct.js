@@ -58,7 +58,7 @@ import broken_array from './struct/optimize/broken_array';
 import broken_object from './struct/optimize/broken_object';
 
 import _axt from './struct/template/axt';
-import _axtc from './struct/template/axtc';
+// import _axtc from './struct/template/axtc';
 
 import _eachArray from './struct/eachArray';
 import _eachObject from './struct/eachObject';
@@ -126,7 +126,7 @@ export {
   _paramStringify,
   _combined,
   _axt,
-  _axtc,
+  // _axtc,
   _toString,
   _lock,
   _ayc,

@@ -31,4 +31,4 @@ const verify = {
   isMultipleOf,
 };
 
-export default Object.freeze(_v8(verify));
+export default _v8(verify);

@@ -1,4 +1,6 @@
-import { _merge, _extend, _idt, } from './usestruct';
+import { _merge, _lock, _extend, _idt, } from './usestruct';
+
+const ignore = ["__instance"];
 
 // create module extend
 export const createExtend = function(module) {
@@ -21,7 +23,9 @@ export const createC = function(module) {
   };
 
   // create static props
-  _extend(create, module, ["__instance"]);
+  _extend(create, module, ignore);
 
-  return create;
+  _lock(module);
+
+  return _lock(create);
 };

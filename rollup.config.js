@@ -1,3 +1,4 @@
+const path = require('path');
 const rollup = require('rollup');
 
 const commonjs = require('rollup-plugin-commonjs');
@@ -7,23 +8,20 @@ const resolve = require('rollup-plugin-node-resolve');
 const terser = require('rollup-plugin-terser');
 const compiler = require('@ampproject/rollup-plugin-closure-compiler');
 const optimizeJs = require('rollup-plugin-optimize-js');
+const gzipPlugin = require('rollup-plugin-gzip').default;
 
-const path = require('path');
-const inputfile = path.resolve('./') + '/src/cubec.js';
-const outputfile = path.resolve('./') + '/dist/cubec.min.js';
+const dir = __dirname;
+const inputfile = path.join(dir,'/src/cubec.js');
+const outputfile = path.join(dir, '/dist/cubec.min.js');
 
-// const modelfile = path.resolve('./') + '/src/model.js';
-// const outputmodelfile = path.resolve('./') + '/dist/cubec.model.min.js';
+const modelfile = path.join(dir,'/src/part.model.js');
+const outputmodelfile = path.join(dir,'/dist/model.min.js');
 
-// const viewfile = path.resolve('./') + '/src/view.js';
-// const outputviewfile = path.resolve('./') + '/dist/cubec.view.min.js';
+const viewfile = path.join(dir,'/src/part.view.js');
+const outputviewfile = path.join(dir, '/dist/view.min.js');
 
-// const routerfile = path.resolve('./') + '/src/router.js';
-// const outputrouterfile = path.resolve('./') + '/dist/cubec.router.min.js';
-
-// const atomfile = path.resolve('./') + '/src/atom.js';
-// const outputatomfile = path.resolve('./') + '/dist/cubec.atom.min.js';
-
+const routerfile = path.join(dir, '/src/part.router.js');
+const outputrouterfile = path.join(dir, '/dist/router.min.js');
 
 // 定义plugin
 const plugins = [
@@ -91,7 +89,10 @@ const plugins = [
   // uglify.uglify(),
 
   // Optimize Compress JS
-  optimizeJs()
+  optimizeJs(),
+
+  // compress bundle output gz
+  gzipPlugin(),
 ];
 
 const builder = async function() {
@@ -100,25 +101,20 @@ const builder = async function() {
     plugins,
   });
 
-  // const model = await rollup.rollup({
-  //   input: modelfile,
-  //   plugins,
-  // });
+  const model = await rollup.rollup({
+    input: modelfile,
+    plugins,
+  });
 
-  // const view = await rollup.rollup({
-  //   input: viewfile,
-  //   plugins,
-  // });
+  const view = await rollup.rollup({
+    input: viewfile,
+    plugins,
+  });
 
-  // const router = await rollup.rollup({
-  //   input: routerfile,
-  //   plugins,
-  // });
-
-  // const atom = await rollup.rollup({
-  //   input: atomfile,
-  //   plugins,
-  // });
+  const router = await rollup.rollup({
+    input: routerfile,
+    plugins,
+  });
 
   await bundle.write({
     file: outputfile,
@@ -128,35 +124,32 @@ const builder = async function() {
     exports: 'named',
   });
 
-  // await model.write({
-  //   file: outputmodelfile,
-  //   sourcemap: false,
-  //   format: 'umd',
-  //   name: 'cubec',
-  // });
+  await model.write({
+    file: outputmodelfile,
+    sourcemap: false,
+    format: 'umd',
+    name: 'model',
+    exports: 'named',
+  });
 
-  // await view.write({
-  //   file: outputviewfile,
-  //   sourcemap: false,
-  //   format: 'umd',
-  //   name: 'cubec',
-  // });
+  await view.write({
+    file: outputviewfile,
+    sourcemap: false,
+    format: 'umd',
+    name: 'view',
+    exports: 'named',
+  });
 
-  // await atom.write({
-  //   file: outputatomfile,
-  //   sourcemap: false,
-  //   format: 'umd',
-  //   name: 'cubec',
-  // });
-
-  // await router.write({
-  //   file: outputrouterfile,
-  //   sourcemap: false,
-  //   format: 'umd',
-  //   name: 'cubec',
-  // });
+  await router.write({
+    file: outputrouterfile,
+    sourcemap: false,
+    format: 'umd',
+    name: 'cubec',
+    exports: 'named',
+  });
 
   return bundle;
 };
 
+// do building
 builder();
