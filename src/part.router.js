@@ -8,9 +8,7 @@ export const router = createC(_router);
 router.version = "1.9.19";
 
 // create extend option
-router.extend = createExtend(_router);
-
-Object.freeze(router);
+createExtend(router, _router);
 
 export default router;
 

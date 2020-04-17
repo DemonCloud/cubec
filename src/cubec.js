@@ -28,9 +28,9 @@ export const view = cubec.view = createC(_view);
 export const router = cubec.router = createC(_router);
 
 // create extend option
-view.extend = createExtend(_view);
-model.extend = createExtend(_model);
-router.extend = createExtend(_router);
+createExtend(view, _view);
+createExtend(model, _model);
+createExtend(router, _router);
 
 // freeze
 lock(cubec);

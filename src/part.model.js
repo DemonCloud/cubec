@@ -16,9 +16,7 @@ export const struct = model.struct = lock(_struct);
 export const verify = model.verify = lock(_verify);
 
 // create extend option
-model.extend = createExtend(_model);
-
-lock(model);
+createExtend(model, _model);
 
 export default model;
 

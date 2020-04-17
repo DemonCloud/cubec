@@ -8,9 +8,7 @@ export const view = createC(_view);
 view.version = "1.9.19";
 
 // create extend option
-view.extend = createExtend(_view);
-
-Object.freeze(view);
+createExtend(view, _view);
 
 export default view;
 
