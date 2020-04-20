@@ -1,5 +1,5 @@
-import CryptoStore from './crypto-store';
 import { _idt } from '../../../usestruct';
+import CryptoStore from './crypto-store';
 
 const storePlugin = {
 
@@ -39,6 +39,11 @@ const storePlugin = {
   events: {
     // when trigger set
     set(sourceData){
+      if(this.name) CryptoStore.set(this.name, sourceData);
+    },
+
+    // when trigger remove
+    remove(sourceData){
       if(this.name) CryptoStore.set(this.name, sourceData);
     }
   }

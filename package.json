@@ -2,7 +2,7 @@
   "name": "cubec",
   "version": "1.9.19",
   "description": "[cubec] Micro Model-View Framework",
-  "main": "dist/cubec.min.js",
+  "main": "src/cubec.js",
   "scripts": {
     "dev": "xcli dev",
     "test": "jest",

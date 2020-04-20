@@ -2,9 +2,11 @@ import { _idt, _isInt, _clone } from '../../usestruct';
 import defined from '../../defined';
 
 const historyPlugin = {
+
   constructor(config){
     const historys = [];
 
+    // prevHistoryData with current initializeData;
     let preHistoryData = this._ast(_idt);
 
     defined(this, {
@@ -18,15 +20,13 @@ const historyPlugin = {
       },
 
       __back_stack_prevhistory(backHistoryData, idt){
-        if(idt === _idt)
-          preHistoryData = backHistoryData;
+        if(idt === _idt) preHistoryData = backHistoryData;
       },
 
       // get history queue
       __get_queue_history__(idt){
         if(idt === _idt) return historys;
       },
-
     });
   },
 
@@ -46,6 +46,7 @@ const historyPlugin = {
         Math.max(0, (existHistorys + pos)) :
         Math.min(pos, existHistorys - 1);
 
+      // get source history data
       source = historys[index];
       // splice chunk with historys
       historys.splice(index);
@@ -59,8 +60,7 @@ const historyPlugin = {
 
         delete this.__temp_inback_stack_history__;
 
-        if(!isStatic)
-          this.emit('backHistory', [copySource]);
+        if(!isStatic) this.emit('backHistory', [copySource, isStatic]);
 
         return true;
       }
@@ -72,6 +72,15 @@ const historyPlugin = {
   events: {
     // when trigger set
     set(sourceData){
+      if(!this.__temp_inback_stack_history__){
+        this.__push_stack_history__(
+          _clone(sourceData), _idt
+        );
+      }
+    },
+
+    // when trigger remove
+    remove(sourceData){
       if(!this.__temp_inback_stack_history__){
         this.__push_stack_history__(
           _clone(sourceData), _idt

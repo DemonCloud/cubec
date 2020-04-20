@@ -3,7 +3,7 @@ import "./catch";
 import "./toJSON";
 import "./merge";
 import "./seek";
-import "./validate"
+import "./validate";
 import "./request/url";
 import "./request/paramify";
 import "./request/cache";

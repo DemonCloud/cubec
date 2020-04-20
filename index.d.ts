@@ -12,10 +12,6 @@ interface AnyObject {
   [propName: string]: any;
 }
 
-interface ModelData {
-  [propName: string]: any;
-}
-
 interface Refs {
   [propName: string]: HTMLElement;
 }
@@ -37,7 +33,7 @@ interface PluginOptions extends Options {
 
 interface ModelOptions extends Options {
   name?: string;
-  data?: ModelData;
+  data?: AnyObject;
   lock?: boolean;
   plugin?: (PluginInstanceExport|string)[]; // plugin type
   events?: Events;
@@ -87,23 +83,14 @@ declare class Model extends BaseInstance {
   readonly change: boolean;
   readonly isLock: boolean;
 
-  private _asc(): any;
-  private _ash(): any;
-  private _asl(): any;
-  private _ast(): any;
-  private _l(): any;
-  private _c(): any;
-  private _s(): any;
-  private _h(): any;
-
   constructor(options?: ModelOptions)
 
-  set(data: object|ModelData|ModelInstance, isStatic?: false|boolean): ModelData;
-  set(key: string|number, value: primitive, isStatic?: false|boolean): ModelData;
+  set(data: object|AnyObject|ModelInstance, isStatic?: false|boolean): AnyObject;
+  set(key: string|number, value: primitive, isStatic?: false|boolean): AnyObject;
 
-  get(key?: string|number|func): ModelData;
+  get(key?: string|number|func): AnyObject;
 
-  remove(key: string|number, isStatic?: false|boolean): ModelData;
+  remove(key: string|number, isStatic?: false|boolean): AnyObject;
 
   lock(): this;
 
