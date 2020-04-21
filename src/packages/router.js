@@ -16,8 +16,13 @@
 // example:
 //
 // cubec.router({
+//   // 触发路由的全局class
 //   targets: ".elmclass",
 //
+//   // 基础路由
+//   base: "/login",
+//
+//   // 定义路由
 //   routes: {
 //     '/home': ['home'],
 //     '/home/better/': ['better'],
@@ -25,6 +30,7 @@
 //     '/custom/:id/event/:marked : ['custom']
 //   },
 //
+//   // 对应于路由的事件
 //   actions: {
 //     'home': function,
 //     'better': function,
@@ -32,6 +38,7 @@
 //     'custom': function,
 //   }
 //
+//   // 事件hooks
 //   events: {
 //     beforeActions: function,
 //     completeActions: function,
@@ -40,7 +47,7 @@
 //     catch: function
 //   }
 // });
-
+//
 // @ need remake
 
 import ROUTER from '../constant/router.define';
@@ -60,6 +67,7 @@ import {
   _merge,
   _isString,
   _isObject,
+  _toString,
   _isArray,
   _isFn,
   _paramParse,
@@ -75,13 +83,12 @@ import {
   _createPrivate,
 
   broken_object,
+  leafSign,
+  paramSign,
+  rootSign,
 } from '../utils/usestruct';
 
 let rid = 0;
-
-const leafSign = '###';
-const paramSign = ':';
-const rootSign = '/';
 
 // Router Class
 class Router {
@@ -91,11 +98,29 @@ class Router {
     let cache = {};
     let status = false;
 
+    const base = config.base ? _toString(config.base) : "";
     const idmap = {};
-    const targets = _isArray(config.targets) ? config.targets.join(",") : config.targets;
+    const targets = _isArray(config.targets) ?
+      config.targets.join(",") :
+      config.targets; // className or className[]
+
+    // create router
+    const routes = {};
+    _eachObject(
+      config.routes,
+      function(routeAction, routePath){
+        const typeStringAction = _isString(routeAction);
+        const typeArrayAction = _isArray(routeAction);
+
+        if(typeArrayAction || typeStringAction){
+          routes[base+routePath] = typeStringAction ? [routeAction] : routeAction;
+        }
+      }
+    );
+
     const source = {
       idmap,
-      tree: generatorRouteTree(config.routes, idmap),
+      tree: generatorRouteTree(routes, idmap),
       actions: config.actions
     };
 
@@ -104,6 +129,7 @@ class Router {
       function(event, eventName){ _on(this, eventName, event); },
       defined(this, {
         _rid: rid++,
+        _base: base,
         _assert: _createPrivate(source, broken_object),
         _status: (idt, change) => (_idt === idt ? (status=change) : null),
         _idmap: _createPrivate(idmap, broken_object),
@@ -131,6 +157,7 @@ class Router {
     // binding DOM events
     if(config.targets && targets){
       gevent = generatorEvents(this);
+
       $(document.documentElement).on("click", targets, gevent);
     }
 
@@ -142,8 +169,7 @@ class Router {
 
       window.removeEventListener('popstate', gfn);
 
-      if(gevent)
-        $(document.documentElement).off("click", targets, gevent);
+      if(gevent) $(document.documentElement).off("click", targets, gevent);
 
       delete this.destory;
 
@@ -161,13 +187,12 @@ class Router {
   // self method match route
   __match(path, query, state, isResolve=false, isPopState=false, isStart=false){
     if(!isStart && (
-         !path
-      || !this._s(_idt)
-      || ((!isPopState && !isResolve) &&
-           (rootSign+path) === location.pathname &&
-             _eq(query, _paramParse(location.search)))
+      !path ||
+      !this._s(_idt) ||
+      ((!isPopState && !isResolve) &&
+        (rootSign+path) === location.pathname &&
+          _eq(query, _paramParse(location.search)))
     )) return this;
-
 
     let matchId = false;
     let activepath = pathpatch(path, query);
@@ -315,16 +340,19 @@ class Router {
     return this;
   }
 
+  // just refresh state
   resolve(state={}){
     return this.__match(
       pathfixer(location.pathname),
       _paramParse(location.search),
       (state && _isObject(state)) ? state : {},
       true,  // isResolve
+      false,
       false
     );
   }
 
+  // replace currentRoute
   replace(path, query, state) {
     if(_isFn(this.destory)) this._status(_idt, true);
 

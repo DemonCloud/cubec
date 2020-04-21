@@ -56,7 +56,8 @@ interface AtomOptions extends Options {
 
 interface RouterOptions extends Options {
   targets?: string|Array<string>;
-  routes: { [routePath: string]: Array<string> };
+  base?: string;
+  routes: { [routePath: string]: string|string[] };
   actions: { [actions: string]: func };
   events?: Events;
 }
@@ -88,7 +89,7 @@ declare class Model extends BaseInstance {
   set(data: object|AnyObject|ModelInstance, isStatic?: false|boolean): AnyObject;
   set(key: string|number, value: primitive, isStatic?: false|boolean): AnyObject;
 
-  get(key?: string|number|func): AnyObject;
+  get(key?: string|number|func): any;
 
   remove(key: string|number, isStatic?: false|boolean): AnyObject;
 
@@ -179,29 +180,29 @@ type ExportExtendModelInstance = ((options: Options)=> ModelInstance);
 type ExportExtendRouterInstance = ((options: Options)=> RouterInstance);
 
 // model.atom
-export interface atom {
+interface atom {
   (options?: AtomOptions): AtomInstance;
   extend(options: AtomOptions): ExportExtendAtomInstance;
 }
 
 // model
-export interface model {
+interface model {
   (options?: ModelOptions): ModelInstance;
   extend(options: ModelOptions): ExportExtendModelInstance;
-  link(linkMethod: string, linkProto: string, linkRuntime: string, linkFunc: func, idt?: any): func;
+  link(linkMethod: string, linkProtoType: string, linkRuntime: string, linkFunc: func, idt?: any): func;
   plugin(options: PluginOptions): PluginInstanceExport;
   atom: atom;
 }
 
 // view
-export interface view {
+interface view {
   (options?: ViewOptions): ViewInstance;
   extend(options: ViewOptions): ExportExtendViewInstance;
   plugin(name: string, options: ViewInstance|ViewOptions|ExportExtendViewInstance|func): ViewOptions|func;
 }
 
 // router
-export interface router {
+interface router {
   (options?: RouterOptions): RouterInstance;
   extend(options: RouterOptions): ExportExtendRouterInstance;
 }
@@ -212,11 +213,16 @@ export const verify: VerifyInstance;
 // struct
 export const struct: AnyObject;
 
+export const router : router;
+
+export const model : model;
+
+export const view: view;
+
 // default cubec{}
 declare namespace cubec {
   const model: model;
   const view: view;
-  const atom: atom;
   const router: router;
   const struct: AnyObject;
   const verify: VerifyInstance;

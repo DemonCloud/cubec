@@ -10,7 +10,7 @@ import MODEL from '../constant/model.define';
 import ERRORS from '../constant/errors.define';
 
 import '../utils/model/links';
-import storePlugin from '../utils/model/plugins/store';
+import { storePlugin, sessionPlugin } from '../utils/model/plugins/store';
 import historyPlugin from '../utils/model/plugins/history';
 
 import defined from '../utils/defined';
@@ -304,6 +304,7 @@ model.atom = createC(atom);
 
 // build inside model plugin
 createPlugin("store", storePlugin);
+createPlugin("session", sessionPlugin);
 createPlugin("history", historyPlugin);
 
 export default model;

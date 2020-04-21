@@ -2,23 +2,8 @@
 // author 亦俊(DemonCloud)
 // github: https://github.com/DemonCloud
 // date: 2017/12/28
-// localStorage with micro encryption
-//
-let LS = window.localStorage;
-
-// 如果浏览器不支持localStorage. 则伪装一个代理
-// 使其不报错
-if(window.localStorage == null){
-  console.warn("[cubec model] browser not support localStorage");
-
-  const noop = function(){};
-
-  LS = {
-    setItem: noop,
-    getItem: noop,
-    removeItem: noop
-  };
-}
+// localStorage|sessionStorage with micro encryption
+import { _noop, _merge, broken_object } from '../../../usestruct';
 
 function revs(str) {
   return str.split('').reverse().join('');
@@ -27,6 +12,12 @@ function revs(str) {
 const SN = 'CUBEC@';
 
 const CryptoStore = {
+  _adapter: {
+    setItem: _noop,
+    getItem: _noop,
+    removeItem: _noop
+  },
+
   t: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
 
   kAt(key, i) {
@@ -117,7 +108,7 @@ const CryptoStore = {
   },
 
   set(name, data) {
-    LS.setItem(
+    this._adapter.setItem(
       SN + this.incry(name, revs(name)),
       this.incry(encodeURIComponent((data && typeof data === 'object') ? JSON.stringify(data) : data+""), name),
     );
@@ -127,7 +118,7 @@ const CryptoStore = {
     const key = SN + this.incry(name, revs(name));
 
     let res;
-    let str = LS.getItem(key);
+    let str = this._adapter.getItem(key);
 
     if(str){
       try{
@@ -136,7 +127,7 @@ const CryptoStore = {
       }catch(e){
         // 为了安全考虑, 当localstorge被攻击时, 通过try catch转化, 如果不能被转化, 则默认安全返回
         // 如果转化出错, 立即删除当前这个key, 说明可能被攻击过, 或者改版遗留的问题
-        LS.removeItem(key);
+        this._adapter.removeItem(key);
       }
     }
 
@@ -144,9 +135,11 @@ const CryptoStore = {
   },
 
   rm(name) {
-    LS.removeItem(SN + this.incry(name, revs(name)));
+    this._adapter.removeItem(SN + this.incry(name, revs(name)));
   },
 };
 
-export default CryptoStore;
+export default function useStore(adapter){
+  return _merge(CryptoStore, adapter ? { _adapter: adapter } : broken_object);
+}
 
