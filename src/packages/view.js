@@ -197,6 +197,7 @@ const view = function(options=broken_object) {
 
         // send catch event
         if(!_hasEvent(this,"catch")) throw e;
+
         else this.emit("catch", [renderData]);
       }
 

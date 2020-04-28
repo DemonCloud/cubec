@@ -22,6 +22,8 @@ export default function(router, path, actions, args, isResolve, isPopState, isSt
       if(!isPopState && !isStart)
         history[isResolve ? 'replaceState' : 'pushState'](args[2], null, path);
 
+      // console.log(router);
+
       // use action
       _eachArray(actions, function(action){ if(_isFn(action)) action.apply(router, emitargs); });
 

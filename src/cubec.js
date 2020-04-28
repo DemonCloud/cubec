@@ -12,7 +12,7 @@ const lock = _struct._lock;
 export const cubec = Object.create(null);
 
 // information
-cubec.version = "1.9.19";
+cubec.version = "1.9.20";
 
 // enter instance
 _view.__instance[0] = _model;

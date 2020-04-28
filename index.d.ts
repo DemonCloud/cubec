@@ -142,7 +142,9 @@ declare class View extends BaseInstance {
 
   root?: HTMLElement;
 
-  mount(root: HTMLElement, data?: AnyObject|ModelInstance): this;
+  mount(root: HTMLElement, data?: AnyObject|ModelInstance|AtomInstance): this;
+
+  destroy(withRoot?: boolean): this;
 
   render(data?: AnyObject|ModelInstance|AtomInstance): this;
 
