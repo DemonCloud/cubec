@@ -33,8 +33,8 @@ import {
   broken_object,
   broken_array,
 
+  empty,
   eventSplit,
-  eventInit,
   eventChange,
   eventNameSpace,
 } from '../utils/usestruct';
@@ -58,9 +58,11 @@ const view = function(options=broken_object) {
   let renderData = broken_object;
   let renderIntime = false;
 
-  const name = options.name || "cubec";
+  const name = options.name || empty;
   const bounder = {};
-  const usePlugins = {};       // { pluginName: pluginView }
+  const usePlugins = {};
+  const createDestory = function(){ return this.destroy(); }.bind(this);
+  const newOptions = _extend(_clone(VIEW.DEFAULT_OPTION), options);
 
   defined(this, {
     name : name,
@@ -76,8 +78,6 @@ const view = function(options=broken_object) {
       }
     },
   });
-
-  const newOptions = _extend(_clone(VIEW.DEFAULT_OPTION), options);
 
   // define property
   let props = _extend({}, _isPlainObject(newOptions.props) ? newOptions.props : broken_object),
@@ -103,22 +103,19 @@ const view = function(options=broken_object) {
     registerPlugin.call(this, pluginName, plugin, view, usePlugins);
   }, this);
 
-  // console.log(connect);
-  stencil = _toString(_isFn(stencil) ? stencil(props) : stencil);
-
   // parse template
   // building the render function
-  stencil = _axt(_trim(stencil), { view: this });
+  stencil = _axt(_toString(_isFn(stencil) ? stencil(props) : stencil), { view: this });
 
   // defined view renderToString
   // switchTemplate function
   defined(this, {
 
     renderToString: function(data){
-      if (data instanceof view.__instance[0]) data = data.get();
-      // atom data format
-      else if (data instanceof view.__instance[1]) data = data.toChunk();
-      // console.log(stencil);
+      if (data instanceof view.__instance[0] ||
+          data instanceof view.__instance[1])
+        data = data.get();
+
       return stencil.call(this, data || broken_object);
     },
 
@@ -133,15 +130,14 @@ const view = function(options=broken_object) {
       else
         console.warn(ERRORS.VIEW_SWITCHTEMPLATE, newRender);
     }
+
   });
 
   render = function(data, useSyncRender=false){
-    const createDestory = ()=>this.destroy();
-
     // model data format
-    if (data instanceof view.__instance[0]) data = data.get();
-    // atom data format
-    else if (data instanceof view.__instance[1]) data = data.toChunk();
+    if (data instanceof view.__instance[0] ||
+        data instanceof view.__instance[1])
+      data = data.get();
 
     // before render hook
     // check if should prevent render
@@ -207,6 +203,7 @@ const view = function(options=broken_object) {
 
     // do async render
     if(useSyncRender) _ayc(createRender);
+
     else createRender();
 
     return createDestory;
@@ -224,11 +221,6 @@ const view = function(options=broken_object) {
 
     this.connect.apply(this, models);
   } else {
-    // spec with "init" event
-    if(events && events.init){
-      this.on(eventInit, events.init);
-      delete events.init;
-    }
 
     // create mount method
     this.mount = function(el, data=broken_object, useSyncRender) {
@@ -253,9 +245,7 @@ const view = function(options=broken_object) {
   }
 
   // create view complete
-  _extend(this, options, VIEW.IGNORE_KEYWORDS).
-    emit(eventInit).
-    off(eventInit);
+  _extend(this, options, VIEW.IGNORE_KEYWORDS);
 };
 
 view.prototype = {
@@ -263,7 +253,9 @@ view.prototype = {
   constructor: view,
 
   on(type, fn) {
+
     if (_isFn(fn)) {
+
       _eachArray(_toString(type).split(eventSplit), function(mk) {
         let param = mk.split(eventNameSpace);
 
@@ -279,13 +271,16 @@ view.prototype = {
           on.call(this, mk, fn);
         }
       }, this);
+
     }
 
     return this;
   },
 
   off(type, fn) {
+
     if (type && _isString(type)) {
+
       _eachArray(type.split(eventSplit), function(mk) {
         let param = mk.split(eventNameSpace);
 
@@ -296,6 +291,7 @@ view.prototype = {
       },this);
 
       return this;
+
     }
 
     removeDomEvent(off.call(this));
@@ -350,6 +346,8 @@ view.prototype = {
 
       // destroy DOOM html elements
       destroyDOOM(this.root, this, withRemoveRoot);
+
+      this.isDestroyed = true;
 
       // emit destroy event
       this.emit('destroy');

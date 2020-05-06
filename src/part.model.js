@@ -8,9 +8,6 @@ const lock = _struct._lock;
 // create cubec
 export const model = createC(_model);
 
-// information
-model.version = "1.9.19";
-
 // verify utils functions
 export const struct = model.struct = lock(_struct);
 export const verify = model.verify = lock(_verify);

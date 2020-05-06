@@ -106,8 +106,7 @@ atom.prototype = {
       const listenModels = useModels.filter(function(m){
         const allowed = !_has(useIgnores, m);
 
-        if(allowed)
-          on.call(m, eventChange, push);
+        if(allowed) on.call(m, eventChange, push);
 
         return allowed;
       });
@@ -140,6 +139,7 @@ atom.prototype = {
 
         if(findInListenList != null){
           off.call(m, eventChange, push);
+
           listenList.splice(findInListenList, 1);
         }
       });
@@ -160,7 +160,7 @@ atom.prototype = {
     return this;
   },
 
-  // alias with toChunk() with arguments;
+  // alias toChunk
   get(path){
     return this.toChunk(path);
   },

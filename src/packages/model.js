@@ -293,19 +293,23 @@ const modelProtoType = {
 if(isIE && Function.prototype.name == null)
   _eachObject(modelProtoType, function(proto, keyName){ proto.name = keyName; });
 
+// set prototype
 model.prototype = modelProtoType;
 
+// linkSystem [createLink]
 model.link = registerLink;
 
+// pluginSystem [createPlugin]
 model.plugin = createPlugin;
 
 // make atom part of model
 model.atom = createC(atom);
 
-// build inside model plugin
+// build-in plugins
 createPlugin("store", storePlugin);
 createPlugin("session", sessionPlugin);
 createPlugin("history", historyPlugin);
+
 
 export default model;
 

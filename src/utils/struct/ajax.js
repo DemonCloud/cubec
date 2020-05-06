@@ -16,7 +16,6 @@ import eachObject from './eachObject';
 import { isIE } from '../adapter';
 
 const contentIEsupported = !isIE || isIE > 9;
-const EmptyAjaxParam = {};
 
 const MIME = {
   'application/x-www-form-urlencoded': 0,
@@ -44,7 +43,7 @@ function dataMIME(enableTrans, contentType, param){
 function formatRequestUrl(url){
   const splitArray = (url && isString(url) && url.length > 1) ? url.split("?") : ["/", ""];
   const ajaxUrl = trim(splitArray[0]);
-  const ajaxParseParam = splitArray[1] ? paramParse(splitArray[1]) : EmptyAjaxParam;
+  const ajaxParseParam = splitArray[1] ? paramParse(splitArray[1]) : broken;
 
   return {
     ajaxUrl,
@@ -56,7 +55,7 @@ export default function ajax(options={}, context=window){
   const config = extend({
     url       : '',
     type      : 'GET',
-    param     : EmptyAjaxParam,
+    param     : broken,
     charset   : 'utf-8',
     vaild     : true,
     cache     : false,
@@ -74,7 +73,8 @@ export default function ajax(options={}, context=window){
   } , options || broken);
 
   // format Ajax URL and Default Params
-  const { ajaxUrl, ajaxParseParam } = formatRequestUrl(config.url);
+  const { ajaxUrl, ajaxParseParam } =
+    formatRequestUrl(config.url);
   const ajaxParams = config.param ?
     ((isPlainObject(config.param) ? merge(ajaxParseParam, config.param) :
     (isString(config.param) ? paramParse(config.param) :
@@ -147,6 +147,7 @@ export default function ajax(options={}, context=window){
   // set http header
   if(isPlainObject(useHeader) && size(useHeader))
     eachObject(useHeader,function(val,key){ xhr.setRequestHeader(key,val); });
+  // prevent CRSF
   xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
   // ready event
@@ -200,10 +201,12 @@ export default function ajax(options={}, context=window){
   }
 
   // send request
-  xhr.send(isPlainObject(useParams) ?
+  xhr.send(
+    isPlainObject(useParams) ?
     dataMIME(useContentType, MIME[useHeaderContentType], useParams) :
     useParams
   );
 
   return xhr;
 }
+
