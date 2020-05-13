@@ -46,13 +46,13 @@ const patchExecute = _lock({
   // modify text
   [PATCHES_NAME_OPERATE.MODIFY_TEXT]: function(patch){  //4
     let t = patch.s;
-    t.textContent = _decode(patch.c);
+    if(t) t.textContent = _decode(patch.c);
   },
 
   // change text
   [PATCHES_NAME_OPERATE.WITH_TEXT]: function(patch){  //5
     let t = patch.s;
-    t.textContent = _decode(patch.c);
+    if(t) t.textContent = _decode(patch.c);
   },
 
   // remove text

@@ -11,9 +11,9 @@ const linkProto = "paramify";
 
 const paramifyLink = function(useOptions){
   const staticOptions = useOptions || {};
+  const useFn = _isFn(staticOptions);
 
   return function(params={}){
-    const useFn = _isFn(staticOptions);
     const args = _slice(arguments);
 
     if(useFn)
@@ -24,10 +24,13 @@ const paramifyLink = function(useOptions){
       params = (params && _isObject(params)) ? params : {};
 
     let createOptions = {};
+
     if(useFn)
       createOptions = params;
     else
-      createOptions = _merge(staticOptions, { param: params });
+      createOptions = _merge(staticOptions, {
+        param: params
+      });
 
     return createOptions;
   };

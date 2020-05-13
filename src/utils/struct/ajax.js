@@ -3,6 +3,7 @@ import broken from './constant/broken';
 
 import isPlainObject from './type/isPlainObject';
 import isString from './type/isString';
+import isArray from './type/isArray';
 import size from './tools/size';
 import extend from './tools/extend';
 import merge from './tools/merge';
@@ -78,7 +79,7 @@ export default function ajax(options={}, context=window){
   const ajaxParams = config.param ?
     ((isPlainObject(config.param) ? merge(ajaxParseParam, config.param) :
     (isString(config.param) ? paramParse(config.param) :
-    (!config.contentType ? config.param : ajaxParseParam)))) :
+    ((!config.contentType || isArray(config.param)) ? config.param : ajaxParseParam)))) :
     ajaxParseParam;
 
   // create [use] variable
@@ -202,7 +203,7 @@ export default function ajax(options={}, context=window){
 
   // send request
   xhr.send(
-    isPlainObject(useParams) ?
+    (isPlainObject(useParams) || isArray(useParams)) ?
     dataMIME(useContentType, MIME[useHeaderContentType], useParams) :
     useParams
   );
