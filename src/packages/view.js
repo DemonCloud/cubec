@@ -83,7 +83,7 @@ const view = function(options=broken_object) {
   let props = _extend({}, _isPlainObject(newOptions.props) ? newOptions.props : broken_object),
       vroot = newOptions.root,
       render,
-      events = newOptions.events,
+      events = newOptions.events || broken_object,
       plugins = _isPlainObject(newOptions.plugin) ? newOptions.plugin : broken_object,
       connect = newOptions.connect,
       stencil = newOptions.template || newOptions.render,
@@ -110,6 +110,7 @@ const view = function(options=broken_object) {
   // defined view renderToString
   // switchTemplate function
   defined(this, {
+    willRender: events.willRender,
 
     renderToString: function(data){
       if (data instanceof view.__instance[0] ||
@@ -130,7 +131,6 @@ const view = function(options=broken_object) {
       else
         console.warn(ERRORS.VIEW_SWITCHTEMPLATE, newRender);
     }
-
   });
 
   render = function(data, useSyncRender=false){
@@ -163,6 +163,19 @@ const view = function(options=broken_object) {
     // async render
     // directRender without virtual node render
     const createRender = function(){
+      let doRender = true;
+
+      if(this.willRender){
+        doRender = this.willRender(renderData, this.props);
+        if(_isPlainObject(doRender)) renderData = doRender;
+      }
+
+      // return false to prevent render
+      if(doRender === false){
+        renderIntime = false;
+        return createDestory;
+      }
+
       try{
         const newRenderString = this.renderToString(renderData);
         let executeRender = true;
@@ -180,10 +193,11 @@ const view = function(options=broken_object) {
         else
           executeRender = renderDOOM(this.root, newRenderString, this, renderData);
 
+        // write _vid
+        this.root._vid = this._vid;
+
         // emit complete render and write vid
         if(executeRender){
-          // write _vid
-          this.root._vid = this._vid;
           // emit complete event
           this.emit("completeRender", [renderData]);
         }
@@ -198,12 +212,10 @@ const view = function(options=broken_object) {
       }
 
       renderIntime = false;
-
     }.bind(this);
 
     // do async render
     if(useSyncRender) _ayc(createRender);
-
     else createRender();
 
     return createDestory;

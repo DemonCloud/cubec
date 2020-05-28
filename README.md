@@ -12,6 +12,8 @@ Micro modal-view framework [gzip 29k]
 
 4. wait jQuery upgrade 4.0+ version, use jQuery new event system
 
+5. atom schema mode support
+
 ## Documentation [v2]
 
 [doc/v2] in development... will publish with version 2.0.0

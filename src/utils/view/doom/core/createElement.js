@@ -71,7 +71,7 @@ const createElement =  function(treeNode, view, args, isUpdatePlugin=false) {
       if(_isFn(renderPluginViewOpts)){
         treeNode._plugin = { render: renderPluginViewOpts };
         treeNode._pluginType = 1;
-        treeNode._recycler = treeNode._plugin.render(elm, args, createPluginViewProps(broken_object, treeNode));
+        treeNode._recycler = treeNode._plugin.render.call(view, elm, args, createPluginViewProps(broken_object, treeNode));
 
         if(!_isFn(treeNode._recycler))
           console.warn("[cubec view] [plugin] case performance and optimizer, the [custom] render plugin should return recycle method[function]", treeNode.tagName);
@@ -86,7 +86,7 @@ const createElement =  function(treeNode, view, args, isUpdatePlugin=false) {
     }else{
       // plugin update [custom render]
       if(treeNode._pluginType === 1){
-        treeNode._recycler = treeNode._plugin.render(elm, args, createPluginViewProps(broken_object, treeNode));
+        treeNode._recycler = treeNode._plugin.render.call(view, elm, args, createPluginViewProps(broken_object, treeNode));
 
         if(!_isFn(treeNode._recycler))
           console.warn("[cubec view] [plugin] case performance and optimizer, the [custom] render plugin should return recycle method[function]", treeNode.tagName);

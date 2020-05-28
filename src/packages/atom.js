@@ -1,11 +1,31 @@
-// const at = cubec.atom(
-//   use: [model, model, model, atom]
-//   ignore: []
+// const at = cubec.model.atom(
+//   schema: [model, model, model, atom]
+//   async: true
 // );
-// atom.toChunk(path | [paths...] | filterFunc(dataChunk));
-// atom.all();
-// atom.pop(modelNames|[modelNames...]);
-// atom.use(modelNames|[modelNames...], ignores|[ignores...]);
+// atom.toChunk(path | filterFunc(dataChunk));
+// atom.get = atom.toChunk;
+// atom.asSchema(0);
+// atom.asSchema("b.a.c");
+// atom.subscribe();
+// atom.unsubscribe();
+
+// atom schema design
+// const at = cubec.model.atom(
+//   schema: {
+//     a: model1,
+//     b: {
+//       model2,
+//       model3,
+//     }
+//     c: {
+//       d: atom2
+//     },
+//     e: [model3, model4]
+//   },
+//   async: true
+// );
+//
+// view.connect(at.asSchema(0))
 
 import ATOM from '../constant/atom.define';
 // import ERRORS from '../constant/errors.define';
