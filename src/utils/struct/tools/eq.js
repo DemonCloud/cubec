@@ -1,6 +1,5 @@
 import isPrim from '../type/isPrim';
 import isArray from '../type/isArray';
-import isDOM from '../type/isDOM';
 import keys from './keys';
 
 const ts = ({}).toString;

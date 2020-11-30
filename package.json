@@ -16,19 +16,19 @@
     "url": "git+https://github.com/DemonCloud/cubec.git"
   },
   "devDependencies": {
-    "@ampproject/rollup-plugin-closure-compiler": "^0.25.2",
-    "@babel/core": "^7.10.1",
-    "@babel/plugin-external-helpers": "^7.10.1",
-    "@babel/plugin-transform-runtime": "^7.10.1",
-    "@babel/preset-env": "^7.10.1",
-    "@babel/runtime": "^7.10.1",
-    "rollup": "^2.11.1",
+    "@ampproject/rollup-plugin-closure-compiler": "^0.26.0",
+    "@babel/core": "^7.12.9",
+    "@babel/plugin-external-helpers": "^7.12.1",
+    "@babel/plugin-transform-runtime": "^7.12.1",
+    "@babel/preset-env": "^7.12.7",
+    "@babel/runtime": "^7.12.5",
+    "rollup": "^2.34.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-gzip": "^2.5.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-optimize-js": "^0.0.4",
-    "rollup-plugin-terser": "^6.1.0",
+    "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-uglify": "^6.0.4"
   }
 }
